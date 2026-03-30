@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>DIG – Discover Indie Games</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8f8f8;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    .card {
+      background: white;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 600px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>DIG – Discover Indie Games</h1>
+<p id="count">Loading...</p>
+
+<div id="list"></div>
+
+<script>
+const csv_url = "ここにCSV URL";
+
+fetch(csv_url)
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.split("\n").slice(1);
+    document.getElementById("count").innerText =
+      "Entries: " + rows.length;
+
+    const list = document.getElementById("list");
+
+    rows.forEach(row => {
+      const cols = row.split(",");
+      if (cols.length < 4) return;
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <strong>${cols[2]}</strong><br>
+        <a href="${cols[3]}" target="_blank">Steam</a><br>
+        <a href="${cols[1]}" target="_blank">Twitch</a>
+      `;
+
+      list.appendChild(card);
+    });
+  });
+</script>
+
+</body>
+</html>
