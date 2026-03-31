@@ -27,6 +27,16 @@ header p {
   color: #555;
 }
 
+a {
+  color: #6b46c1;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+  
 #count {
   text-align: center;
   margin-bottom: 20px;
@@ -65,6 +75,9 @@ header p {
 .streamer {
   font-size: 18px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .game {
@@ -73,6 +86,12 @@ header p {
   margin-top:2px;
 }
 
+.game-image {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+  
 .meta {
   font-size: 15px;
   color: #666;
@@ -88,7 +107,7 @@ header p {
 .top {
   display: flex;
   gap: 14px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .info {
@@ -160,6 +179,9 @@ fetch(csv_url)
 
     const iconPath = username ? `icons/${username}.png` : "";
 
+    const appId = steam.match(/app\/(\d+)/)?.[1];
+    const gameImage = appId ? `images/${appId}.jpg` : "";
+    
     let langIcon = "";
     if (language.includes("日本語") || language.includes("Japanese")) {
       langIcon += "🇯🇵 ";
@@ -180,8 +202,16 @@ fetch(csv_url)
           src="${iconPath}"
           onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
+        ${gameImage ? `
+          <img src="${gameImage}" class="game-image"
+            onerror="this.style.display='none'">
+        ` : ""}
+
         <div class="info">
-          <div class="streamer">🎙️ <a href="${twitch}" target="_blank">${streamer}</a></div>
+          <div class="streamer">
+            <span>🎙️ </span>
+            <a href="${twitch}" target="_blank">${streamer}</a>
+          </div>
           <div class="game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
           ${date ? `<div class="meta">📅 ${date}</div>` : ""}
           ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
