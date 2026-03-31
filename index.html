@@ -116,8 +116,11 @@ fetch(csv_url)
     header: true
   }).data;
 
+  const get = (row, key) =>
+    Object.keys(row).find(k => k.includes(key));
+
   // 空行除外
-  const validData = data.filter(row => row["Game Title"]);
+  const validData = data.filter(row => row[get(row, "Game")]);
 
   document.getElementById("count").innerText =
     `参加数：${validData.length}`;
