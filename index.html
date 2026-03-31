@@ -147,7 +147,7 @@ fetch(csv_url)
     card.innerHTML = `
       <img class="icon"
         src="${iconPath}"
-        onerror="this.src='https://via.placeholder.com/50?text=?'">
+        onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
       <div class="game">${game}</div>
 
