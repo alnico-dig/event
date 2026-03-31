@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>DIG – Discover Indie Games</title>
 
+<!-- PapaParse -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
 <style>
 body {
   font-family: sans-serif;
@@ -71,10 +74,16 @@ header p {
   margin-bottom: 5px;
 }
 
-/* 小テキスト */
+/* メタ情報 */
 .meta {
   font-size: 13px;
   color: #666;
+  margin-top: 2px;
+}
+
+/* 備考だけちょい強調 */
+.meta.note {
+  font-style: italic;
 }
 
 /* リンク */
@@ -97,39 +106,49 @@ a {
 <div id="list"></div>
 
 <script>
-const csv_url = "ここにCSV URL";
+const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
 
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
 
-  const rows = text.split("\n").slice(1);
+  const data = Papa.parse(text, {
+    header: true
+  }).data;
+
+  // 空行除外
+  const validData = data.filter(row => row["Game Title"]);
+
   document.getElementById("count").innerText =
-    `参加数：${rows.length}`;
+    `参加数：${validData.length}`;
 
   const list = document.getElementById("list");
 
-  rows.forEach(row => {
-    const cols = row.split(",");
+  validData.forEach(row => {
 
-    if (cols.length < 5) return;
+    const streamer = row["Streamer Name"];
+    const twitch = row["Twitch Channel URL"];
+    const game = row["Game Title"];
+    const steam = row["Steam URL"];
+    const date = row["Stream Date"];
+    const time = row["Stream Time"];
+    const language = row["Stream Language"];
+    const notes = row["Notes"];
 
-    const streamer = cols[1];
-    const twitch = cols[2];
-    const game = cols[3];
-    const steam = cols[4];
-    const date = cols[5];
-    const time = cols[6];
-
-    // username抽出
+    // Twitch username抽出（強化版）
     const username = twitch
-      .replace("https://www.twitch.tv/", "")
+      ?.replace("https://www.twitch.tv/", "")
       .replace("https://twitch.tv/", "")
       .split("?")[0]
       .replace("/", "")
       .toLowerCase();
 
     const iconPath = `icons/${username}.jpg`;
+
+    // 言語アイコン
+    let langIcon = "🌐";
+    if (language?.includes("JP")) langIcon = "🇯🇵";
+    if (language?.includes("EN")) langIcon = "🇺🇸";
 
     const card = document.createElement("div");
     card.className = "card";
@@ -142,12 +161,17 @@ fetch(csv_url)
       <div class="meta">by ${streamer}</div>
       <div class="meta">${date || ""} ${time || ""}</div>
 
+      ${language ? `<div class="meta">${langIcon} ${language}</div>` : ""}
+
+      ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
+
       <br>
       <a href="${steam}" target="_blank">Steam</a><br>
       <a href="${twitch}" target="_blank">Twitch</a>
     `;
 
     list.appendChild(card);
+
   });
 
 });
