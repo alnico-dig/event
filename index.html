@@ -70,6 +70,21 @@ header p {
 .meta.note {
   font-style: italic;
 }
+
+.top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.info {
+  flex: 1;
+}
+
+.streamer {
+  font-size: 18px;
+  font-weight: bold;
+}
 </style>
 </head>
 
@@ -137,9 +152,15 @@ fetch(csv_url)
     const iconPath = username ? `icons/${username}.png` : "";
 
     // 言語アイコン
-    let langIcon = "🌐";
-    if (language.includes("JP")) langIcon = "🇯🇵";
-    if (language.includes("EN")) langIcon = "🇺🇸";
+    let langIcon = "";
+
+    if (language.includes("日本語") || language.includes("Japanese")) {
+      langIcon += "🇯🇵 ";
+    }
+    if (language.includes("英語") || language.includes("English")) {
+      langIcon += "🇺🇸 ";
+    }
+    if (!langIcon) langIcon = "🌐";
 
     const card = document.createElement("div");
     card.className = "card";
@@ -162,6 +183,31 @@ fetch(csv_url)
       <a href="${twitch}" target="_blank">Twitch</a>
     `;
 
+    card.innerHTML = `
+      <div class="top">
+
+        <img class="icon"
+          src="${iconPath}"
+          onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+
+        <div class="info">
+          <div class="streamer">${streamer}</div>
+          <div class="game">${game}</div>
+
+          <div class="meta">${date} ${time}</div>
+          ${language ? `<div class="meta">${langIcon} ${language}</div>` : ""}
+        </div>
+
+      </div>
+
+      ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
+
+      <div class="links">
+        <a href="${steam}" target="_blank">Steam</a>
+        <a href="${twitch}" target="_blank">Twitch</a>
+      </div>
+    `;
+    
     list.appendChild(card);
   });
 
