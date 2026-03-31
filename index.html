@@ -162,8 +162,8 @@ fetch(csv_url)
           onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
         <div class="info">
-          <div class="streamer">${streamer}</div>
-          <div class="game">${game}</div>
+          <a href="${twitch}" target="_blank"><div class="streamer">${streamer}</div></a>
+          <a href="${steam}" target="_blank"><div class="game">${game}</div></a>
 
           <div class="meta">${date} ${time}</div>
           ${language ? `<div class="meta">🌐 ${language}</div>` : ""}
@@ -172,11 +172,6 @@ fetch(csv_url)
       </div>
 
       ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
-
-      <div class="links">
-        <a href="${steam}" target="_blank">Steam</a>
-        <a href="${twitch}" target="_blank">Twitch</a>
-      </div>
     `;
     
     list.appendChild(card);
