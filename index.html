@@ -126,14 +126,17 @@ fetch(csv_url)
 
   validData.forEach(row => {
 
-    const streamer = row["Streamer Name"];
-    const twitch = row["Twitch Channel URL"];
-    const game = row["Game Title"];
-    const steam = row["Steam URL"];
-    const date = row["Stream Date"];
-    const time = row["Stream Time"];
-    const language = row["Stream Language"];
-    const notes = row["Notes"];
+    const get = (row, key) =>
+      Object.keys(row).find(k => k.includes(key));
+
+    const streamer = row[get(row, "Streamer Name")];
+    const twitch = row[get(row, "Twitch")];
+    const game = row[get(row, "Game")];
+    const steam = row[get(row, "Steam")];
+    const date = row[get(row, "Schedule")];
+    const time = row[get(row, "Time")];
+    const language = row[get(row, "Language")];
+    const notes = row[get(row, "Notes")];
 
     // Twitch username抽出（強化版）
     const username = twitch
