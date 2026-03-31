@@ -27,6 +27,15 @@ header p {
   color: #555;
 }
 
+a {
+  text-decoration: none;
+  color: #333;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+  
 #count {
   text-align: center;
   margin-bottom: 20px;
@@ -43,13 +52,13 @@ header p {
 .card {
   background: white;
   border-radius: 16px;
-  padding: 16px;
+  padding: 18px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .icon {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
@@ -63,7 +72,7 @@ header p {
 
 .game {
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px;
   margin-top:2px;
 }
 
@@ -81,8 +90,8 @@ header p {
 
 .top {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 14px;
+  align-items: center;
 }
 
 .info {
@@ -170,20 +179,22 @@ fetch(csv_url)
 
     card.innerHTML = `
       <div class="top">
-
         <img class="icon"
           src="${iconPath}"
           onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
         <div class="info">
-          🎙️ <a href="${twitch}" target="_blank"><div class="streamer">${streamer}</div></a>
-          🎮 <a href="${steam}" target="_blank"><div class="game">${game}</div></a>
-          📅 <div class="meta">${date} ${time}</div>
-          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
+          <div class="streamer">
+            🎙️ <a href="${twitch}" target="_blank">${streamer}</a>
+          </div>
+          <div class="game">
+            🎮 <a href="${steam}" target="_blank">${game}</a>
+          </div>
+          <div class="meta">
+            📅 ${date} ${time}${language ? `<div class="meta"> 🌐 ${langIcon}</div>` : ""}
+          </div>
         </div>
-
       </div>
-
       ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
     `;
     
