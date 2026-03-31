@@ -133,7 +133,7 @@ fetch(csv_url)
     const twitch = getValue(row, "Twitch");
     const game = getValue(row, "Game");
     const steam = getValue(row, "Steam");
-    const date = getValue(row, "Schedule");
+    const date = getValue(row, "Date");
     const time = getValue(row, "Time");
     const language = getValue(row, "Language");
     const notes = getValue(row, "Notes");
@@ -151,37 +151,8 @@ fetch(csv_url)
 
     const iconPath = username ? `icons/${username}.png` : "";
 
-    // 言語アイコン
-    let langIcon = "";
-
-    if (language.includes("日本語") || language.includes("Japanese")) {
-      langIcon += "🇯🇵 ";
-    }
-    if (language.includes("英語") || language.includes("English")) {
-      langIcon += "🇺🇸 ";
-    }
-    if (!langIcon) langIcon = "🌐";
-
     const card = document.createElement("div");
     card.className = "card";
-
-    card.innerHTML = `
-      <img class="icon"
-        src="${iconPath}"
-        onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
-
-      <div class="game">${game}</div>
-
-      <div class="meta">by ${streamer}</div>
-      <div class="meta">${date} ${time}</div>
-
-      ${language ? `<div class="meta">${langIcon} ${language}</div>` : ""}
-      ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
-
-      <br>
-      <a href="${steam}" target="_blank">Steam</a><br>
-      <a href="${twitch}" target="_blank">Twitch</a>
-    `;
 
     card.innerHTML = `
       <div class="top">
@@ -195,7 +166,7 @@ fetch(csv_url)
           <div class="game">${game}</div>
 
           <div class="meta">${date} ${time}</div>
-          ${language ? `<div class="meta">${langIcon} ${language}</div>` : ""}
+          ${language ? `<div class="meta">🌐 ${language}</div>` : ""}
         </div>
 
       </div>
