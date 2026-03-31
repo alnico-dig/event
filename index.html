@@ -56,19 +56,27 @@ header p {
   background: #ddd;
 }
 
+.streamer {
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .game {
   font-weight: bold;
   font-size: 18px;
+  margin-top:2px;
 }
 
 .meta {
-  font-size: 13px;
+  font-size: 15px;
   color: #666;
   margin-top: 2px;
 }
 
 .meta.note {
-  font-style: italic;
+  font-size: 15px;
+  color: #666;
+  margin-top: 2px;
 }
 
 .top {
@@ -79,11 +87,6 @@ header p {
 
 .info {
   flex: 1;
-}
-
-.streamer {
-  font-size: 18px;
-  font-weight: bold;
 }
 </style>
 </head>
@@ -151,6 +154,17 @@ fetch(csv_url)
 
     const iconPath = username ? `icons/${username}.png` : "";
 
+    let langIcon = "";
+    if (language.includes("日本語") || language.includes("Japanese")) {
+      langIcon += "🇯🇵 ";
+    }
+    if (language.includes("英語") || language.includes("English")) {
+      langIcon += "🇺🇸 ";
+    }
+    if (language.includes("その他") || language.includes("Other")) {
+      langIcon += "etc. ";
+    }
+    
     const card = document.createElement("div");
     card.className = "card";
 
@@ -163,10 +177,9 @@ fetch(csv_url)
 
         <div class="info">
           <a href="${twitch}" target="_blank"><div class="streamer">${streamer}</div></a>
-          <a href="${steam}" target="_blank"><div class="game">${game}</div></a>
-
+          <a href="${steam}" target="_blank"><div class="game">🎮${game}</div></a>
           <div class="meta">${date} ${time}</div>
-          ${language ? `<div class="meta">🌐 ${language}</div>` : ""}
+          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
         </div>
 
       </div>
