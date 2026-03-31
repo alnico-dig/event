@@ -1,59 +1,156 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>DIG – Discover Indie Games</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f8f8f8;
-      padding: 20px;
-    }
-    h1 { text-align: center; }
-    .card {
-      background: white;
-      padding: 15px;
-      margin: 10px auto;
-      max-width: 600px;
-      border-radius: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>DIG – Discover Indie Games</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: linear-gradient(180deg, #ffffff, #f0f0f0);
+}
+
+/* ヘッダー */
+header {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+header p {
+  color: #555;
+}
+
+/* カウント */
+#count {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* グリッド */
+#list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* カード */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* アイコン */
+.icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  background: #ddd;
+}
+
+/* タイトル */
+.game {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+/* 小テキスト */
+.meta {
+  font-size: 13px;
+  color: #666;
+}
+
+/* リンク */
+a {
+  text-decoration: none;
+  color: #0077cc;
+}
+</style>
 </head>
+
 <body>
 
-<h1>DIG – Discover Indie Games</h1>
+<header>
+  <h1>DIG – Discover Indie Games</h1>
+  <p>Steamでレビュー1000件未満の隠れたインディーゲーム発掘イベント</p>
+</header>
+
 <p id="count">Loading...</p>
 
 <div id="list"></div>
 
 <script>
-const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
+const csv_url = "ここにCSV URL";
 
 fetch(csv_url)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.split("\n").slice(1);
-    document.getElementById("count").innerText =
-      "Entries: " + rows.length;
+.then(res => res.text())
+.then(text => {
 
-    const list = document.getElementById("list");
+  const rows = text.split("\n").slice(1);
+  document.getElementById("count").innerText =
+    `参加数：${rows.length}`;
 
-    rows.forEach(row => {
-      const cols = row.split(",");
-      if (cols.length < 4) return;
+  const list = document.getElementById("list");
 
-      const card = document.createElement("div");
-      card.className = "card";
+  rows.forEach(row => {
+    const cols = row.split(",");
 
-      card.innerHTML = `
-        <strong>${cols[2]}</strong><br>
-        <a href="${cols[3]}" target="_blank">Steam</a><br>
-        <a href="${cols[1]}" target="_blank">Twitch</a>
-      `;
+    if (cols.length < 5) return;
 
-      list.appendChild(card);
-    });
+    const streamer = cols[1];
+    const twitch = cols[2];
+    const game = cols[3];
+    const steam = cols[4];
+    const date = cols[5];
+    const time = cols[6];
+
+    // username抽出
+    const username = twitch
+      .replace("https://www.twitch.tv/", "")
+      .replace("https://twitch.tv/", "")
+      .split("?")[0]
+      .replace("/", "")
+      .toLowerCase();
+
+    const iconPath = `icons/${username}.jpg`;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <img class="icon" src="${iconPath}" onerror="this.src='https://via.placeholder.com/50?text=?'">
+
+      <div class="game">${game}</div>
+
+      <div class="meta">by ${streamer}</div>
+      <div class="meta">${date || ""} ${time || ""}</div>
+
+      <br>
+      <a href="${steam}" target="_blank">Steam</a><br>
+      <a href="${twitch}" target="_blank">Twitch</a>
+    `;
+
+    list.appendChild(card);
   });
+
+});
 </script>
 
 </body>
