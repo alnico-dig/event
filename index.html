@@ -45,17 +45,22 @@ a:hover {
 
 #list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 700px));
+  justify-content: center; /* ←中央寄せ */
   gap: 20px;
   padding: 20px;
 }
 
 .card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
   background: white;
   border-radius: 16px;
   padding: 18px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: 0.2s;
 }
   
 .card:hover {
@@ -86,10 +91,12 @@ a:hover {
   margin-top:2px;
 }
 
-.game-image {
-  width: 100%;
-  border-radius: 12px;
-  margin-bottom: 10px;
+.game-img {
+  width: 200px;      /* ←ここ重要 */
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;    /* ←潰れ防止 */
 }
   
 .meta {
@@ -108,6 +115,13 @@ a:hover {
   display: flex;
   gap: 14px;
   align-items: center;
+}
+
+.left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex: 1;
 }
 
 .info {
@@ -197,21 +211,13 @@ fetch(csv_url)
     card.className = "card";
 
     card.innerHTML = `
-      <div class="top">
+      <div class="left">
         <img class="icon"
           src="${iconPath}"
           onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
-        ${gameImage ? `
-          <img src="${gameImage}" class="game-image"
-            onerror="this.style.display='none'">
-        ` : ""}
-
         <div class="info">
-          <div class="streamer">
-            <span>🎙️</span>
-            <a href="${twitch}" target="_blank">${streamer}</a>
-          </div>
+          <div class="streamer">🎙 <a href="${twitch}" target="_blank">${streamer}</a></div>
           <div class="game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
           ${date ? `<div class="meta">📅 ${date}</div>` : ""}
           ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
@@ -219,6 +225,8 @@ fetch(csv_url)
           ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
         </div>
       </div>
+
+      ${gameImage ? `<img src="${gameImage}" class="game-image" onerror="this.style.display='none'">` : ""}
     `;
     
     list.appendChild(card);
