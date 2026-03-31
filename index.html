@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>DIG – Discover Indie Games</title>
 
-<!-- PapaParse -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
@@ -14,7 +13,6 @@ body {
   background: linear-gradient(180deg, #ffffff, #f0f0f0);
 }
 
-/* ヘッダー */
 header {
   text-align: center;
   padding: 40px 20px;
@@ -29,14 +27,12 @@ header p {
   color: #555;
 }
 
-/* カウント */
 #count {
   text-align: center;
   margin-bottom: 20px;
   font-weight: bold;
 }
 
-/* グリッド */
 #list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -44,20 +40,13 @@ header p {
   padding: 20px;
 }
 
-/* カード */
 .card {
   background: white;
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: 0.2s;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-}
-
-/* アイコン */
 .icon {
   width: 50px;
   height: 50px;
@@ -67,29 +56,19 @@ header p {
   background: #ddd;
 }
 
-/* タイトル */
 .game {
   font-weight: bold;
   font-size: 18px;
-  margin-bottom: 5px;
 }
 
-/* メタ情報 */
 .meta {
   font-size: 13px;
   color: #666;
   margin-top: 2px;
 }
 
-/* 備考だけちょい強調 */
 .meta.note {
   font-style: italic;
-}
-
-/* リンク */
-a {
-  text-decoration: none;
-  color: #0077cc;
 }
 </style>
 </head>
@@ -102,25 +81,31 @@ a {
 </header>
 
 <p id="count">Loading...</p>
-
 <div id="list"></div>
 
 <script>
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
 
+// 🔑 安全にカラム取得
+const getValue = (row, keyword) => {
+  const key = Object.keys(row).find(k => k && k.includes(keyword));
+  return key ? row[key] : "";
+};
+
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
 
-  const data = Papa.parse(text, {
-    header: true
-  }).data;
+  const parsed = Papa.parse(text, { header: true });
+  const data = parsed.data;
 
-  const get = (row, key) =>
-    Object.keys(row).find(k => k.includes(key));
+  console.log("DEBUG:", data[0]); // ←確認用
 
-  // 空行除外
-  const validData = data.filter(row => row[get(row, "Game")]);
+  // ✅ 安全なフィルタ
+  const validData = data.filter(row => {
+    const game = getValue(row, "Game");
+    return game && game.trim() !== "";
+  });
 
   document.getElementById("count").innerText =
     `参加数：${validData.length}`;
@@ -129,46 +114,47 @@ fetch(csv_url)
 
   validData.forEach(row => {
 
-    const get = (row, key) =>
-      Object.keys(row).find(k => k.includes(key));
+    const streamer = getValue(row, "Streamer");
+    const twitch = getValue(row, "Twitch");
+    const game = getValue(row, "Game");
+    const steam = getValue(row, "Steam");
+    const date = getValue(row, "Schedule");
+    const time = getValue(row, "Time");
+    const language = getValue(row, "Language");
+    const notes = getValue(row, "Notes");
 
-    const streamer = row[get(row, "Streamer Name")];
-    const twitch = row[get(row, "Twitch")];
-    const game = row[get(row, "Game")];
-    const steam = row[get(row, "Steam")];
-    const date = row[get(row, "Schedule")];
-    const time = row[get(row, "Time")];
-    const language = row[get(row, "Language")];
-    const notes = row[get(row, "Notes")];
+    // username抽出（完全安全版）
+    let username = "";
+    if (twitch) {
+      username = twitch
+        .replace("https://www.twitch.tv/", "")
+        .replace("https://twitch.tv/", "")
+        .split("?")[0]
+        .replace("/", "")
+        .toLowerCase();
+    }
 
-    // Twitch username抽出（強化版）
-    const username = twitch
-      ?.replace("https://www.twitch.tv/", "")
-      .replace("https://twitch.tv/", "")
-      .split("?")[0]
-      .replace("/", "")
-      .toLowerCase();
-
-    const iconPath = `icons/${username}.jpg`;
+    const iconPath = username ? `icons/${username}.jpg` : "";
 
     // 言語アイコン
     let langIcon = "🌐";
-    if (language?.includes("JP")) langIcon = "🇯🇵";
-    if (language?.includes("EN")) langIcon = "🇺🇸";
+    if (language.includes("JP")) langIcon = "🇯🇵";
+    if (language.includes("EN")) langIcon = "🇺🇸";
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <img class="icon" src="${iconPath}" onerror="this.src='https://via.placeholder.com/50?text=?'">
+      <img class="icon"
+        src="${iconPath}"
+        onerror="this.src='https://via.placeholder.com/50?text=?'">
 
       <div class="game">${game}</div>
 
       <div class="meta">by ${streamer}</div>
-      <div class="meta">${date || ""} ${time || ""}</div>
+      <div class="meta">${date} ${time}</div>
 
       ${language ? `<div class="meta">${langIcon} ${language}</div>` : ""}
-
       ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
 
       <br>
@@ -177,9 +163,11 @@ fetch(csv_url)
     `;
 
     list.appendChild(card);
-
   });
 
+})
+.catch(err => {
+  console.error("CSV取得失敗:", err);
 });
 </script>
 
