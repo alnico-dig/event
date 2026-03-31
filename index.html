@@ -75,6 +75,7 @@ a:hover {
   object-fit: cover;
   margin-bottom: 10px;
   background: #ddd;
+  align-self: center;
 }
 
 .streamer {
@@ -102,7 +103,7 @@ a:hover {
 }
 
 .game-img {
-  width: 180px;
+  width: 160px;
   aspect-ratio: 460 / 215;
   object-fit: cover;
   border-radius: 8px;
@@ -237,7 +238,7 @@ fetch(csv_url)
         </div>
       </div>
 
-      ${gameImage ? `<img src="${gameImage}" class="game-image" onerror="this.style.display='none'">` : ""}
+      ${gameImage ? `<img src="${gameImage}" class="game-img" onerror="this.style.display='none'">` : ""}
     `;
     
     list.appendChild(card);
