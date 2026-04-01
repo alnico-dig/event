@@ -162,17 +162,15 @@ a:hover {
 }
 
 .hero {
-  width: 100%;
-  background: #2a1f5a; /* 余白の色合わせ */
-  display: flex;
-  justify-content: center;
+  height: 320px;
+  overflow: hidden;
 }
 
 .hero-img {
   width: 100%;
-  max-width: 1100px;  /* ←ここ重要 */
-  height: 340px;       /* ←トリミングしない */
-  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
 }
 
 .section-title {
