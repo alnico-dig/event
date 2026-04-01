@@ -273,7 +273,7 @@ a:hover {
 
 <h2 class="section-title">DIGspotlight - Discover Indie Games Spotlight | 未発見ゲームスポットライト</h2>
 <p class="summary">
-  Steamレビュー1000件未満のゲームを発掘・紹介する配信イベントです。
+  Steamレビュー1000件未満のゲームを発掘・紹介する配信イベントです。<br>
   Streaming event showcasing indie games under 1000 Steam reviews.
 </p>
   
@@ -297,7 +297,6 @@ a:hover {
 <script>
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
 
-// 🔑 安全にカラム取得
 const getValue = (row, keyword) => {
   const key = Object.keys(row).find(k => k && k.includes(keyword));
   return key ? row[key] : "";
@@ -310,7 +309,6 @@ fetch(csv_url)
   const parsed = Papa.parse(text, { header: true });
   const data = parsed.data;
 
-  // ✅ 安全なフィルタ
   const validData = data.filter(row => {
     const game = getValue(row, "Game");
     return game && game.trim() !== "";
@@ -328,7 +326,6 @@ fetch(csv_url)
     const language = getValue(row, "Language");
     const notes = getValue(row, "Notes");
 
-    // username抽出（完全安全版）
     let username = "";
     if (twitch) {
       username = twitch
@@ -340,7 +337,6 @@ fetch(csv_url)
     }
 
     const iconPath = username ? `icons/${username}.png` : "";
-
     const appId = steam.match(/app\/(\d+)/)?.[1];
     const gameImage = appId ? `images/${appId}.jpg` : "";
     
@@ -387,7 +383,7 @@ fetch(csv_url)
 </script>
 
 <footer class="footer">
-  © 2026 alnico_GameNews
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
 </footer>
   
 </body>
