@@ -18,17 +18,7 @@ body {
 }
 
 header {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 32px;
-}
-
-header p {
-  color: #555;
+  padding: 0;
 }
 
 a {
@@ -167,6 +157,29 @@ a:hover {
   position: relative;
 }
 
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+  display: block;
+}
+  
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+
+  background: linear-gradient(
+    to top,
+    rgba(255,255,255,0),
+    #f7f7f7
+  );
+}
+  
 .hero::after {
   content: "";
   position: absolute;
