@@ -205,6 +205,13 @@ a:hover {
   margin-top: 0;
 }
 
+.rules li small {
+  display: block;
+  color: #aaa;
+  margin-top: 4px;
+  font-size: 0.9em;
+}
+
 .cta {
   display: block;
   width: fit-content;
