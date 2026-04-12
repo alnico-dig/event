@@ -285,6 +285,13 @@ a:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
+.banner-note {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #777;
+  line-height: 1.4;
+}
+
 /* DLボタン（押せる色に） */
 .download-btn {
   display: inline-block;
