@@ -12,6 +12,12 @@ header {
   padding: 0;
 }
 
+header img {
+  width: 100%;
+  max-height: 220px;  /* ←ここ重要 */
+  object-fit: cover; /* トリミング */
+}
+
 a {
   color: #6c3cff;
   text-decoration: none;
@@ -280,10 +286,12 @@ a:hover {
 }
 
 .banner {
-  max-width: 100%;
+  max-width: 500px;
+  width: 100%;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  margin: 10px auto;
+  display: block;
 }
 
 .banner-actions {
@@ -292,12 +300,12 @@ a:hover {
 
 .download-btn {
   display: inline-block;
-  padding: 10px 20px;
-  background: #6c5ce7;
+  padding: 8px 16px;
+  background: #aaa;
   color: white;
   text-decoration: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 13px;
 }
 
 .download-btn:hover {
