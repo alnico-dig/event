@@ -255,46 +255,50 @@ a:hover {
   margin-bottom: 10px;
 }
 
+/* セクション余白調整 */
 .assets {
-  margin: 40px 0;
+  margin: 30px 0 20px; /* 下を詰める */
   text-align: center;
 }
 
-.assets h3 {
+/* 見出し小さく */
+.assets-title {
+  font-size: 16px;
   margin-bottom: 10px;
 }
 
-.assets p {
-  margin-bottom: 15px;
-  font-size: 14px;
-  line-height: 1.5;
+/* 横並び */
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }
 
+/* バナー */
 .banner {
   max-width: 200px;
   width: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  margin: 10px auto;
-  display: block;
 }
 
-.banner-actions {
-  margin-top: 10px;
-}
-
+/* DLボタン（押せる色に） */
 .download-btn {
   display: inline-block;
-  padding: 8px 16px;
-  background: #aaa;
+  padding: 10px 14px;
+  background: #6c5ce7; /* CTAと同系統 */
   color: white;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
+  line-height: 1.3;
+  transition: 0.2s;
 }
 
 .download-btn:hover {
-  opacity: 0.9;
+  background: #5a4bd1;
+  transform: translateY(-1px);
 }
 
 .event-info {
