@@ -143,7 +143,7 @@ a:hover {
 }
 
 .hero {
-  height: 260px;
+  height: 320px;
   overflow: hidden;
   position: relative;
 }
@@ -152,7 +152,7 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 45%;
+  object-position: center 50%;
   display: block;
   filter: brightness(0.92);
 }
@@ -271,7 +271,7 @@ a:hover {
 }
 
 .banner {
-  max-width: 100px;
+  max-width: 200px;
   width: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
