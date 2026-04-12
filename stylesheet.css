@@ -285,6 +285,12 @@ a:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
+.banner-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .banner-note {
   margin-top: 6px;
   font-size: 11px;
