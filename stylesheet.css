@@ -359,6 +359,13 @@ a:hover {
 }
 
 /* DIG Selection */
+.selection-note {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin: 10px 0 10px;
+}
+
 .dig-selection {
   max-width: 900px;
   margin: 20px auto 40px;
@@ -370,7 +377,7 @@ a:hover {
 
 .carousel-track {
   position: relative;
-  height: 180px;
+  height: 160px;
   overflow: hidden;
 }
 
@@ -433,12 +440,13 @@ a:hover {
   width: 32px;
   height: 32px;
   cursor: pointer;
+  z-index: 10;
 
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.prev { left: -16px; }
-.next { right: -16px; }
+.prev { left: 8px; }
+.next { right: 8px; }
 
 .nav:hover {
   background: #f3f0ff;
