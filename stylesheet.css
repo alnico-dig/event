@@ -387,11 +387,17 @@ a:hover {
   opacity: 0;
   transform: translateX(20px);
   transition: opacity 0.4s ease, transform 0.4s ease;
+  
+  pointer-events: none;
+  z-index: 0;
 }
 
 .carousel-item.active {
   opacity: 1;
   transform: translateX(0);
+
+  pointer-events: auto;
+  z-index: 1;
 }
 
 /* カード風 */
