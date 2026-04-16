@@ -357,3 +357,89 @@ a:hover {
   color: #6c3cff;
   font-weight: 600;
 }
+
+/* DIG Selection */
+.dig-selection {
+  max-width: 900px;
+  margin: 20px auto 40px;
+}
+
+.carousel {
+  position: relative;
+}
+
+.carousel-track {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.carousel-item {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.carousel-item.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* カード風 */
+.selection-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+}
+
+.selection-img {
+  width: 260px;
+  aspect-ratio: 460 / 215;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.selection-info h3 {
+  margin: 0 0 6px;
+}
+
+.selection-info p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+/* ナビ */
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.prev { left: -16px; }
+.next { right: -16px; }
+
+.nav:hover {
+  background: #f3f0ff;
+}
