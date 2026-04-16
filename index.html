@@ -205,6 +205,11 @@ fetch(csv_url)
 
   
 <h2 class="section-title">DIG Selection</h2>
+<p class="selection-note">
+  どのゲームを遊ぶか迷ったら、ここからどうぞ。<br>
+  <span class="sub">Not sure what to play? Start here.</span>
+</p>
+  
 <section class="dig-selection">
   <div class="carousel">
     <button class="nav prev">‹</button>
@@ -255,17 +260,40 @@ const prev = document.querySelector('.prev');
 const next = document.querySelector('.next');
 
 let current = 0;
+let interval;
 
+// 表示切替
 function show(index) {
   items[current].classList.remove('active');
-
   current = (index + items.length) % items.length;
-
   items[current].classList.add('active');
 }
 
-prev.addEventListener('click', () => show(current - 1));
-next.addEventListener('click', () => show(current + 1));
+// 自動再生
+function startAutoSlide() {
+  interval = setInterval(() => {
+    show(current + 1);
+  }, 7000); //秒数調整
+}
+
+// 停止（ボタン操作時）
+function resetAutoSlide() {
+  clearInterval(interval);
+  startAutoSlide();
+}
+
+prev.addEventListener('click', () => {
+  show(current - 1);
+  resetAutoSlide();
+});
+
+next.addEventListener('click', () => {
+  show(current + 1);
+  resetAutoSlide();
+});
+
+// 初期起動
+startAutoSlide();
 </script>
   
 <footer class="footer">
