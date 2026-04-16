@@ -202,6 +202,62 @@ fetch(csv_url)
 });
 </script>
 
+<script>
+const items = document.querySelectorAll('.carousel-item');
+const prev = document.querySelector('.prev');
+const next = document.querySelector('.next');
+
+let current = 0;
+
+function show(index) {
+  items[current].classList.remove('active');
+
+  current = (index + items.length) % items.length;
+
+  items[current].classList.add('active');
+}
+
+prev.addEventListener('click', () => show(current - 1));
+next.addEventListener('click', () => show(current + 1));
+</script>
+  
+<h2 class="section-title">DIG Selection</h2>
+<section class="dig-selection">
+  <div class="carousel">
+    <button class="nav prev">‹‹</button>
+
+    <div class="carousel-track">
+      <!-- ▼ 作品1 -->
+      <div class="carousel-item active">
+        <div class="selection-card">
+          <img src="images/123456.jpg" class="selection-img">
+
+          <div class="selection-info">
+            <h3>Game Title</h3>
+            <p>短い紹介文をここに入れる。雰囲気重視でOK。</p>
+            <a href="https://store.steampowered.com/app/123456/" target="_blank">Steamを見る</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▼ 作品2 -->
+      <div class="carousel-item">
+        <div class="selection-card">
+          <img src="images/654321.jpg" class="selection-img">
+          <div class="selection-info">
+            <h3>Another Game</h3>
+            <p>発掘感のあるコメントを軽く。</p>
+            <a href="#">Steamを見る</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="nav next">››</button>
+  </div>
+</section>
+  
 <footer class="footer">
   ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
 </footer>
