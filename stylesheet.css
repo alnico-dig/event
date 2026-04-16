@@ -257,19 +257,17 @@ a:hover {
   margin-bottom: 10px;
 }
 
-/* セクション余白調整 */
 .assets {
-  margin: 30px 0 20px; /* 下を詰める */
+  margin: 30px 0 20px;
   text-align: center;
+  opacity: 0.9;
 }
 
-/* 見出し小さく */
 .assets-title {
-  font-size: 16px;
+  font-size: 14px;
   margin-bottom: 10px;
 }
 
-/* 横並び */
 .banner-row {
   display: flex;
   align-items: center;
@@ -277,7 +275,6 @@ a:hover {
   gap: 16px;
 }
 
-/* バナー */
 .banner {
   max-width: 200px;
   width: 100%;
