@@ -202,6 +202,53 @@ fetch(csv_url)
 });
 </script>
 
+
+  
+<h2 class="section-title">DIG Selection</h2>
+<section class="dig-selection">
+  <div class="carousel">
+    <button class="nav prev">‹</button>
+
+    <div class="carousel-track">
+      <!-- ▼ 作品1 -->
+      <div class="carousel-item active">
+        <div class="selection-card">
+          <img src="images/2956820.jpg" class="selection-img">
+          <div class="selection-info">
+            <h3><a href="https://store.steampowered.com/app/2956820/" target="_blank">近畿霊務局 - Kinki Spiritual Affairs Bureau</a></h3>
+            <p>映画を見ているかのような脚本＆演出と、散りばめられたユーモアのセンスが光る作品です！</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▼ 作品2 -->
+      <div class="carousel-item">
+        <div class="selection-card">
+          <img src="images/2152740.jpg" class="selection-img">
+          <div class="selection-info">
+            <h3><a href="https://store.steampowered.com/app/2152740/" target="_blank">亜電</a></h3>
+            <p>ユニークな曲達とダンスアクションがたのし、ダンスしかなし！</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▼ 作品3 -->
+      <div class="carousel-item">
+        <div class="selection-card">
+          <img src="images/2793240.jpg" class="selection-img">
+          <div class="selection-info">
+            <h3><a href="https://store.steampowered.com/app/2793240/" target="_blank">監視業務 -禁忌-</a></h3>
+            <p>いち早くARG風要素を取り入れたオブザベーション系ゲームです！</p>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+    <button class="nav next">›</button>
+  </div>
+</section>
+
 <script>
 const items = document.querySelectorAll('.carousel-item');
 const prev = document.querySelector('.prev');
@@ -220,43 +267,6 @@ function show(index) {
 prev.addEventListener('click', () => show(current - 1));
 next.addEventListener('click', () => show(current + 1));
 </script>
-  
-<h2 class="section-title">DIG Selection</h2>
-<section class="dig-selection">
-  <div class="carousel">
-    <button class="nav prev">‹‹</button>
-
-    <div class="carousel-track">
-      <!-- ▼ 作品1 -->
-      <div class="carousel-item active">
-        <div class="selection-card">
-          <img src="images/123456.jpg" class="selection-img">
-
-          <div class="selection-info">
-            <h3>Game Title</h3>
-            <p>短い紹介文をここに入れる。雰囲気重視でOK。</p>
-            <a href="https://store.steampowered.com/app/123456/" target="_blank">Steamを見る</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- ▼ 作品2 -->
-      <div class="carousel-item">
-        <div class="selection-card">
-          <img src="images/654321.jpg" class="selection-img">
-          <div class="selection-info">
-            <h3>Another Game</h3>
-            <p>発掘感のあるコメントを軽く。</p>
-            <a href="#">Steamを見る</a>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <button class="nav next">››</button>
-  </div>
-</section>
   
 <footer class="footer">
   ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
