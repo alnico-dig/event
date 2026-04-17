@@ -441,20 +441,29 @@ a:hover {
   
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   border: 1px solid #eee;
+
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .selection-img {
-  width: 260px;
   aspect-ratio: 460 / 215;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
+
+  width: 100%;
+  max-width: 420px;
 }
 
 .selection-info {
-  padding-right: 40px;
   display: flex;
   align-items: center;
+
+  padding-right: 0;
+  margin-top: 10px;
+  justify-content: center;
 }
 
 .selection-info h3 {
