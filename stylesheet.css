@@ -453,10 +453,13 @@ a:hover {
 
 .selection-info {
   padding-right: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .selection-info h3 {
-  margin: 0 0 6px;
+  margin: 0;
+  font-size: 16px;
 }
 
 .selection-info p {
