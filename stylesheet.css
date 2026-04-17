@@ -204,6 +204,35 @@ a:hover {
   font-size: 0.9em;
 }
 
+.rule-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tab.active {
+  background: #6c3cff;
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
 .cta {
   display: block;
   width: fit-content;
