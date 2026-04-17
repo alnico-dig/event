@@ -403,7 +403,7 @@ a:hover {
 
 .carousel-track {
   position: relative;
-  height: 160px;
+  min-height: 260px;
   overflow: hidden;
 }
 
@@ -414,7 +414,7 @@ a:hover {
   left: 0;
 
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(10px);
   transition: opacity 0.4s ease, transform 0.4s ease;
   
   pointer-events: none;
@@ -442,6 +442,9 @@ a:hover {
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   border: 1px solid #eee;
 
+  max-width: 520px;
+  margin: 0 auto;
+  
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -454,7 +457,8 @@ a:hover {
   flex-shrink: 0;
 
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
+  height: auto;
 }
 
 .selection-info {
@@ -480,7 +484,7 @@ a:hover {
 /* ナビ */
 .nav {
   position: absolute;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   background: white;
   border: 1px solid #ddd;
