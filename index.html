@@ -257,7 +257,11 @@ fetch(csv_url)
         </div>
       </div>
 
-      ${gameImage ? `<img src="${gameImage}" class="game-img" onerror="this.style.display='none'">` : ""}
+      ${gameImage ? `
+        <a href="${steam}" target="_blank">
+          <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
+        </a>
+      ` : ""}
     `;
     
     list.appendChild(card);
@@ -327,8 +331,9 @@ function renderCarousel(data) {
 
     div.innerHTML = `
       <div class="selection-card">
-        <img src="${img}" class="selection-img"
-             onerror="this.style.display='none'">
+        <a href="${item.Steam}" target="_blank">
+          <img src="${img}" class="selection-img" onerror="this.style.display='none'">
+        </a>
 
         <div class="selection-info">
           <h3>
