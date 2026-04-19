@@ -180,6 +180,7 @@ tabs.forEach(tab => {
 
   
 <h2 class="section-title">参加配信一覧</h2>
+<div id="list-loading">Loading...</div>
 <div id="list"></div>
 <script>
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
@@ -189,6 +190,7 @@ const getValue = (row, keyword) => {
   return key ? row[key] : "";
 };
 
+const listLoading = document.getElementById("list-loading");
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
@@ -201,8 +203,9 @@ fetch(csv_url)
     return game && game.trim() !== "";
   });
 
+  listLoading.style.display = "none";
   const list = document.getElementById("list");
-
+    
   validData.forEach(row => {
     const streamer = getValue(row, "Streamer");
     const twitch = getValue(row, "Twitch");
@@ -270,6 +273,7 @@ fetch(csv_url)
 })
 .catch(err => {
   console.error("CSV取得失敗:", err);
+  listLoading.innerText = "Failed to load data.";
 });
 </script>
 
@@ -284,6 +288,7 @@ fetch(csv_url)
 <section class="dig-selection">
   <div class="carousel">
     <button class="nav prev">‹</button>
+    <div id="selection-loading">Loading...</div>
     <div class="carousel-track" id="carousel-track">
       <!-- JS生成 -->
     </div>
@@ -310,10 +315,12 @@ Papa.parse(SELECTION_CSV, {
   download: true,
   header: true,
   complete: function(results) {
+    const selectionLoading = document.getElementById("selection-loading");
     const data = results.data.filter(d => d.Title && d.Steam);
 
     renderCarousel(data);
     initCarousel();
+    selectionLoading.style.display = "none";
   }
 });
 
