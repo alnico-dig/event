@@ -300,6 +300,7 @@ fetch(csv_url)
 <section class="dig-selection">
   <div class="carousel">
     <button class="nav prev">‹</button>
+    <div id="carousel-index"></div>
     <div id="selection-loading">Loading...</div>
     <div class="carousel-track" id="carousel-track">
       <!-- JS生成 -->
@@ -312,6 +313,7 @@ fetch(csv_url)
 const SELECTION_CSV = "https://docs.google.com/spreadsheets/d/1CxWnkxWTwVUl-KEBpJzgBLSJxfiqWcmTddsLRz2FaG0/export?format=csv";
 
 const track = document.getElementById("carousel-track");
+const indexEl = document.getElementById("carousel-index");
 
 let items = [];
 let current = 0;
@@ -346,7 +348,6 @@ function renderCarousel(data) {
 
     const div = document.createElement("div");
     div.className = "carousel-item";
-    if (index === 0) div.classList.add("active");
 
     div.innerHTML = `
       <div class="selection-card">
@@ -370,11 +371,17 @@ function renderCarousel(data) {
   items = document.querySelectorAll('.carousel-item');
 }
 
+// インデックス件数表示
+function updateIndex() {
+  indexEl.textContent = `${current + 1} / ${items.length}`;
+}
+  
 // 表示切替
 function show(index) {
   items[current].classList.remove('active');
   current = (index + items.length) % items.length;
   items[current].classList.add('active');
+  updateIndex();
 }
 
 // 自動再生
@@ -392,6 +399,10 @@ function resetAutoSlide() {
 
 // 初期化
 function initCarousel() {
+  current = Math.floor(Math.random() * items.length);
+  items[current].classList.add('active');
+  updateIndex();
+  
   const prev = document.querySelector('.prev');
   const next = document.querySelector('.next');
 
