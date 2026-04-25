@@ -86,7 +86,7 @@ body {
 
 @keyframes scrollCredits {
   from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
+  to { transform: translateY(calc(-1 * var(--scroll-distance))); }
 }
 </style>
 </head>
@@ -207,12 +207,18 @@ fetch(csv_url)
 
   // ===== 高さベースで速度決定 =====
   requestAnimationFrame(() => {
-    const height = track.scrollHeight;
-    const speed = 50; // px/sec
+    const contentHeight = track.scrollHeight;
+    const screenHeight = window.innerHeight;
 
-    const duration = height / speed;
+    const totalDistance = contentHeight + screenHeight;
+
+    const speed = 50; // px/sec
+    const duration = totalDistance / speed;
 
     wrapper.style.animationDuration = duration + "s";
+
+    // CSS変数で移動距離渡す
+    wrapper.style.setProperty("--scroll-distance", totalDistance + "px");
 
     startScroll();
   });
