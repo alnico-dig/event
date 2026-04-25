@@ -205,10 +205,6 @@ fetch(csv_url)
     track.appendChild(block);
   });
 
-  // ===== ループ =====
-  const clone = track.cloneNode(true);
-  track.appendChild(clone);
-
   // ===== 高さベースで速度決定 =====
   requestAnimationFrame(() => {
     const height = track.scrollHeight;
