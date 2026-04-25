@@ -81,7 +81,7 @@ body {
 
 /* スクロール */
 .scroll {
-  animation: scrollCredits linear infinite;
+  animation: scrollCredits linear;
 }
 
 @keyframes scrollCredits {
@@ -211,13 +211,28 @@ fetch(csv_url)
 
   // ===== 高さベースで速度決定 =====
   requestAnimationFrame(() => {
-    const height = track.scrollHeight / 2; // 元データ分だけ
-    const speed = 50; // px/sec（調整ポイント）
+    const height = track.scrollHeight;
+    const speed = 50; // px/sec
 
     const duration = height / speed;
 
     wrapper.style.animationDuration = duration + "s";
+
+    startScroll();
+  });
+
+  function startScroll() {
+    wrapper.classList.remove("scroll");
+
+    // 再スタートのために強制リフロー
+    void wrapper.offsetWidth;
+
     wrapper.classList.add("scroll");
+  }
+
+  // 1周ごとにリセット
+  wrapper.addEventListener("animationend", () => {
+    setTimeout(startScroll, 1500); // 1.5秒休憩
   });
 
 })
