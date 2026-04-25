@@ -15,33 +15,70 @@ body {
   overflow: hidden;
 }
 
-/* スクロール領域 */
 #wrapper {
   position: absolute;
   width: 100%;
   bottom: -100%;
 }
 
-/* 中身 */
 #track {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 40px;
+}
+
+/* ストリーマーブロック */
+.credit-block {
   text-align: center;
-  font-size: 18px;
 }
 
-/* 1行 */
-.credit-item {
-  line-height: 1.6;
+/* ヘッダー（アイコン＋名前） */
+.streamer-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.credit-item strong {
+.streamer-header img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #222;
+}
+
+.streamer-name {
   font-size: 20px;
+  font-weight: bold;
 }
 
-/* アニメーション */
+/* ゲーム一覧 */
+.game-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 800px;
+}
+
+.game-item {
+  width: 180px;
+}
+
+.game-item img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.game-title {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* スクロール */
 .scroll {
   animation: scrollCredits linear infinite;
 }
@@ -70,6 +107,22 @@ const getValue = (row, keyword) => {
 const track = document.getElementById("track");
 const wrapper = document.getElementById("wrapper");
 
+// Twitchユーザー名抽出
+function getUsername(twitch) {
+  if (!twitch) return "";
+  return twitch
+    .replace("https://www.twitch.tv/", "")
+    .replace("https://twitch.tv/", "")
+    .split("?")[0]
+    .replace("/", "")
+    .toLowerCase();
+}
+
+// AppID
+function getAppId(url) {
+  return url.match(/app\/(\d+)/)?.[1];
+}
+
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
@@ -82,32 +135,80 @@ fetch(csv_url)
     return game && game.trim() !== "";
   });
 
-  // タイトル
+  // ===== ストリーマーごとにまとめる =====
+  const map = {};
+
+  validData.forEach(row => {
+    const streamer = getValue(row, "Streamer");
+    const twitch = getValue(row, "Twitch");
+    const game = getValue(row, "Game");
+    const steam = getValue(row, "Steam");
+
+    const username = getUsername(twitch);
+
+    if (!map[username]) {
+      map[username] = {
+        streamer,
+        username,
+        games: []
+      };
+    }
+
+    map[username].games.push({
+      game,
+      steam
+    });
+  });
+
+  const grouped = Object.values(map);
+
+  // ===== タイトル =====
   const title = document.createElement("div");
   title.innerHTML = "<h2>Thank you for participating</h2>";
   track.appendChild(title);
 
-  // 本体
-  validData.forEach(row => {
-    const streamer = getValue(row, "Streamer");
-    const game = getValue(row, "Game");
+  // ===== 描画 =====
+  grouped.forEach(user => {
 
-    const div = document.createElement("div");
-    div.className = "credit-item";
-    div.innerHTML = `
-      <strong>${streamer}</strong><br>
-      <span style="opacity:0.7">${game}</span>
+    const block = document.createElement("div");
+    block.className = "credit-block";
+
+    const icon = user.username
+      ? `icons/${user.username}.png`
+      : "";
+
+    const header = `
+      <div class="streamer-header">
+        <img src="${icon}" onerror="this.src='https://placehold.co/50x50?text=?'">
+        <div class="streamer-name">${user.streamer}</div>
+      </div>
     `;
-    track.appendChild(div);
+
+    const gamesHTML = user.games.map(g => {
+      const appId = getAppId(g.steam);
+      const img = appId ? `images/${appId}.jpg` : "";
+
+      return `
+        <div class="game-item">
+          <img src="${img}" onerror="this.style.display='none'">
+          <div class="game-title">${g.game}</div>
+        </div>
+      `;
+    }).join("");
+
+    block.innerHTML = `
+      ${header}
+      <div class="game-list">${gamesHTML}</div>
+    `;
+
+    track.appendChild(block);
   });
 
-  // ループ用に複製（超重要）
+  // ===== ループ =====
   const clone = track.cloneNode(true);
   track.parentNode.appendChild(clone);
 
-  // 高さに応じて速度調整（雑にいい感じ）
-  const duration = Math.max(30, validData.length * 1.5);
-
+  const duration = Math.max(40, grouped.length * 4);
   wrapper.style.animationDuration = duration + "s";
   wrapper.classList.add("scroll");
 
