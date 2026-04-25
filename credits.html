@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DIGspotlight Credits</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+/* スクロール領域 */
+#wrapper {
+  position: absolute;
+  width: 100%;
+  bottom: -100%;
+}
+
+/* 中身 */
+#track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* 1行 */
+.credit-item {
+  line-height: 1.6;
+}
+
+.credit-item strong {
+  font-size: 20px;
+}
+
+/* アニメーション */
+.scroll {
+  animation: scrollCredits linear infinite;
+}
+
+@keyframes scrollCredits {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+</style>
+</head>
+
+<body>
+
+<div id="wrapper">
+  <div id="track"></div>
+</div>
+
+<script>
+const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
+
+const getValue = (row, keyword) => {
+  const key = Object.keys(row).find(k => k && k.includes(keyword));
+  return key ? row[key] : "";
+};
+
+const track = document.getElementById("track");
+const wrapper = document.getElementById("wrapper");
+
+fetch(csv_url)
+.then(res => res.text())
+.then(text => {
+
+  const parsed = Papa.parse(text, { header: true });
+  const data = parsed.data;
+
+  const validData = data.filter(row => {
+    const game = getValue(row, "Game");
+    return game && game.trim() !== "";
+  });
+
+  // タイトル
+  const title = document.createElement("div");
+  title.innerHTML = "<h2>Thank you for participating</h2>";
+  track.appendChild(title);
+
+  // 本体
+  validData.forEach(row => {
+    const streamer = getValue(row, "Streamer");
+    const game = getValue(row, "Game");
+
+    const div = document.createElement("div");
+    div.className = "credit-item";
+    div.innerHTML = `
+      <strong>${streamer}</strong><br>
+      <span style="opacity:0.7">${game}</span>
+    `;
+    track.appendChild(div);
+  });
+
+  // ループ用に複製（超重要）
+  const clone = track.cloneNode(true);
+  track.parentNode.appendChild(clone);
+
+  // 高さに応じて速度調整（雑にいい感じ）
+  const duration = Math.max(30, validData.length * 1.5);
+
+  wrapper.style.animationDuration = duration + "s";
+  wrapper.classList.add("scroll");
+
+})
+.catch(err => {
+  console.error("CSV取得失敗:", err);
+});
+</script>
+
+</body>
+</html>
