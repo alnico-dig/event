@@ -218,10 +218,37 @@ fetch(csv_url)
       Presented by alnico_GameNews
     </div>
   `;
+
   track.appendChild(ending);
   
-  // ===== 高さベースで速度決定 =====
-  requestAnimationFrame(() => {
+  function waitForImages() {
+    const images = track.querySelectorAll("img");
+    let loaded = 0;
+
+    if (images.length === 0) {
+      startMeasurement();
+      return;
+    }
+
+    images.forEach(img => {
+      if (img.complete) {
+        loaded++;
+      } else {
+        img.onload = img.onerror = () => {
+          loaded++;
+          if (loaded === images.length) {
+            startMeasurement();
+          }
+        };
+      }
+    });
+
+    if (loaded === images.length) {
+      startMeasurement();
+    }
+  }
+
+  function startMeasurement() {
     const contentHeight = track.scrollHeight;
     const screenHeight = window.innerHeight;
 
@@ -231,12 +258,12 @@ fetch(csv_url)
     const duration = totalDistance / speed;
 
     wrapper.style.animationDuration = duration + "s";
-
-    // CSS変数で移動距離渡す
     wrapper.style.setProperty("--scroll-distance", totalDistance + "px");
 
     startScroll();
-  });
+  }
+
+  waitForImages();
 
   function startScroll() {
     wrapper.classList.remove("scroll");
