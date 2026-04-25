@@ -163,11 +163,6 @@ fetch(csv_url)
 
   const grouped = Object.values(map);
 
-  // ===== タイトル =====
-  const title = document.createElement("div");
-  title.innerHTML = "<h2>Thank you for participating</h2>";
-  track.appendChild(title);
-
   // ===== 描画 =====
   grouped.forEach(user => {
 
@@ -205,6 +200,26 @@ fetch(csv_url)
     track.appendChild(block);
   });
 
+  // ===== エンディング =====
+  const ending = document.createElement("div");
+  ending.className = "credit-block";
+  ending.style.marginTop = "80px";
+
+  ending.innerHTML = `
+    <div style="font-size:28px; font-weight:bold; margin-bottom:20px;">
+      Thank you for watching & supporting
+    </div>
+
+    <div style="font-size:20px; opacity:0.8;">
+      and all streamers & developers
+    </div>
+
+    <div style="margin-top:40px; font-size:18px; opacity:0.6;">
+      Presented by alnico_GameNews
+    </div>
+  `;
+  track.appendChild(ending);
+  
   // ===== 高さベースで速度決定 =====
   requestAnimationFrame(() => {
     const contentHeight = track.scrollHeight;
