@@ -18,14 +18,15 @@ body {
 #wrapper {
   position: absolute;
   width: 100%;
-  bottom: -100%;
+  top: 100%;
 }
 
 #track {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  gap: 60px;
+  font-size: 22px;
 }
 
 /* ストリーマーブロック */
@@ -43,15 +44,15 @@ body {
 }
 
 .streamer-header img {
-  width: 50px;
-  height: 50px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
   background: #222;
 }
 
 .streamer-name {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: bold;
 }
 
@@ -65,7 +66,7 @@ body {
 }
 
 .game-item {
-  width: 180px;
+  width: 220px;
 }
 
 .game-item img {
@@ -85,7 +86,7 @@ body {
 
 @keyframes scrollCredits {
   from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
+  to { transform: translateY(-100%); }
 }
 </style>
 </head>
@@ -206,11 +207,18 @@ fetch(csv_url)
 
   // ===== ループ =====
   const clone = track.cloneNode(true);
-  track.parentNode.appendChild(clone);
+  track.appendChild(clone);
 
-  const duration = Math.max(40, grouped.length * 4);
-  wrapper.style.animationDuration = duration + "s";
-  wrapper.classList.add("scroll");
+  // ===== 高さベースで速度決定 =====
+  requestAnimationFrame(() => {
+    const height = track.scrollHeight / 2; // 元データ分だけ
+    const speed = 50; // px/sec（調整ポイント）
+
+    const duration = height / speed;
+
+    wrapper.style.animationDuration = duration + "s";
+    wrapper.classList.add("scroll");
+  });
 
 })
 .catch(err => {
