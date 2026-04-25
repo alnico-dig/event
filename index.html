@@ -2,100 +2,198 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>DIGspotlight Credits</title>
-
+<title>DIGspotlight - Discover Indie Games Spotlight | 未発見ゲームスポットライト</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="stylesheet" href="stylesheet.css">
 
-<style>
-body {
-  margin: 0;
-  background: #000;
-  color: #fff;
-  font-family: sans-serif;
-  overflow: hidden;
-}
-
-#wrapper {
-  position: absolute;
-  width: 100%;
-  bottom: -100%;
-}
-
-#track {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-}
-
-/* ストリーマーブロック */
-.credit-block {
-  text-align: center;
-}
-
-/* ヘッダー（アイコン＋名前） */
-.streamer-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.streamer-header img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #222;
-}
-
-.streamer-name {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-/* ゲーム一覧 */
-.game-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  max-width: 800px;
-}
-
-.game-item {
-  width: 180px;
-}
-
-.game-item img {
-  width: 100%;
-  border-radius: 6px;
-}
-
-.game-title {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* スクロール */
-.scroll {
-  animation: scrollCredits linear infinite;
-}
-
-@keyframes scrollCredits {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
-}
-</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SFHVH7WR23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SFHVH7WR23', {
+    'anonymize_ip': true
+  });
+</script>
 </head>
 
 <body>
+<header class="hero">
+  <img src="header.png" class="hero-img">
+</header>
 
-<div id="wrapper">
-  <div id="track"></div>
+<h2 class="section-title">DIGspotlight | 未発見ゲームスポットライト</h2>
+<p class="summary">
+  まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「DIGspotlight」<br>
+  他の配信者とつながりながら、新しいゲームや開発者と出会えるチャンスです<br><br>
+  A streaming event to discover lesser-known and overlooked games — DIGspotlight<br>
+  Connect with fellow streamers while discovering new games and developers
+</p>
+
+<div class="event-info">
+  <div>📍 開催場所：Twitch配信 <span class="sub">/ Streaming on Twitch</span></div>
+  <div>📅 開催期間：6月19日〜6月21日 <span class="sub">/ June 19–21 (JST)</span></div>
 </div>
 
+
+  
+<section class="rules">
+  <h2>参加ルール / Rules</h2>
+
+  <!-- タブ -->
+  <div class="rule-tabs">
+    <button class="tab active" data-tab="ja">日本語</button>
+    <button class="tab" data-tab="en">English</button>
+  </div>
+
+  <!-- 日本語 -->
+  <div class="tab-content active" id="rules-ja">
+    <ul>
+      <li>
+        期間内にあなたのTwitchチャンネルでゲームを配信するだけ！
+        <small>
+          ※他配信サイトとの同時配信（YouTubeなど）OK / 他配信者様と配信タイトルが重複してもOK
+        </small>
+      </li>
+      <li>
+        Steamレビュー1000件未満のゲームであること（インディーゲームに限りません）
+        <br>
+        <small>
+          ※ストアページのレビュー数で確認（自身の言語のレビュー数でOK）/
+          <a href="https://kenbogames.com/steamdatabase/" target="_blank">
+            こちらでも探せます(J-STEAM DB by kenbo様)
+          </a>
+        </small>
+      </li>
+      <li>
+        配信タイトルにゲーム名を記載
+        <small>
+          ※配信中のタイトル変更はOKです（ゲームごとに配信を分ける必要はありません）
+        </small>
+      </li>
+      <li>
+        配信タイトルに「DIGspotlight」を入れてください
+        <small>
+          ※レイド先の検索に使います(「#DIGspotlight」で揃えていただくと、企画参加がより分かりやすくなります)
+        </small>
+      </li>
+      <li>
+        Steam以外（Switch / PS など）でのプレイもOK
+        <small>
+          ※Steamに同一ゲームが存在する場合
+        </small>
+      </li>
+      <li>
+        他の参加者へのレイドはお気軽に
+        <small>
+          ※受ける側のレイド受付設定は任意です
+        </small>
+      </li>
+      <li>
+        複数ゲーム配信OK
+        <small>
+          ※ゲームごとに個別申請をお願いします
+        </small>
+      </li>
+      <li>配信するゲームのガイドラインおよび利用規約を遵守してください</li>
+      <li>配信中は当サイトをピン留めして企画に参加していることをお知らせください</li>
+      <li>期間中は主催者が一部配信を紹介・配信する場合があります</li>
+    </ul>
+
+    <p class="contact">
+      申請期間は~6/21までです。(申請後、画像以外は即サイトへ反映されますのでいつでもご自由に)<br>
+      不明点や予定の変更･削除等あれば、主催者のXまたはTwitchのウィスパー機能でお気軽にご連絡ください。<br>
+      Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
+      X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
+    </p>
+  </div>
+
+  <!-- 英語 -->
+  <div class="tab-content" id="rules-en">
+    <ul>
+      <li>
+        Stream a game on your Twitch channel during the event period
+        <small>
+          *Simulcasting (e.g. YouTube) allowed / Duplicate titles between streamers allowed
+        </small>
+      </li>
+      <li>
+        The game must have under 1000 Steam reviews - it doesn’t have to be an indie game
+        <br>
+        <small>
+          *Check the store page (your language reviews are fine) /
+          <a href="https://kenbogames.com/steamdatabase/" target="_blank">
+            You can also search here (J-STEAM DB by kenbo)
+          </a>
+        </small>
+      </li>
+      <li>
+        Include the game title in your stream title
+        <small>
+          *You may change the title during your stream (no need to start a new stream for each game)
+        </small>
+      </li>
+      <li>
+        Include “DIGspotlight” in your stream title  
+        <small>
+          *Using “#DIGspotlight” makes it easier to show that you're part of the event
+        </small>
+      </li>
+      <li>
+        Non-Steam platforms (Switch / PlayStation, etc.) allowed
+        <small>
+          *If the same game exists on Steam
+        </small>
+      </li>
+      <li>
+        Feel free to raid other participants
+        <small>
+          *Receiving raid settings are up to each streamer
+        </small>
+      </li>
+      <li>
+        Multiple games allowed
+        <small>
+          *Submit each game separately
+        </small>
+      </li>
+      <li>Follow each game’s official streaming guidelines and terms</li>
+      <li>Pin this site during your stream to show participation</li>
+      <li>The organizer may feature or restream some broadcasts</li>
+    </ul>
+
+    <p class="contact">
+      Applications open until June 21 (reflected immediately after submission).<br>
+      For questions, changes, cancellations, feel free to contact via X or Twitch whispers.<br>
+      Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
+      X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
+    </p>
+  </div>
+
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSd9vpSN3KsM0wZkkzjOc6M_0RdywYkaOTe2X0hZYR0p8J_QcQ/viewform?usp=dialog" target="_blank" class="cta">参加する / Join Event</a>
+</section>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const contents = document.querySelectorAll('.tab-content');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
+
+    tab.classList.add('active');
+    document.getElementById('rules-' + tab.dataset.tab).classList.add('active');
+  });
+});
+</script>
+
+
+  
+<h2 class="section-title">参加配信一覧</h2>
+<div id="list-loading">Loading...</div>
+<div id="list"></div>
 <script>
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
 
@@ -104,25 +202,7 @@ const getValue = (row, keyword) => {
   return key ? row[key] : "";
 };
 
-const track = document.getElementById("track");
-const wrapper = document.getElementById("wrapper");
-
-// Twitchユーザー名抽出
-function getUsername(twitch) {
-  if (!twitch) return "";
-  return twitch
-    .replace("https://www.twitch.tv/", "")
-    .replace("https://twitch.tv/", "")
-    .split("?")[0]
-    .replace("/", "")
-    .toLowerCase();
-}
-
-// AppID
-function getAppId(url) {
-  return url.match(/app\/(\d+)/)?.[1];
-}
-
+const listLoading = document.getElementById("list-loading");
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
@@ -135,88 +215,236 @@ fetch(csv_url)
     return game && game.trim() !== "";
   });
 
-  // ===== ストリーマーごとにまとめる =====
-  const map = {};
-
+  listLoading.style.display = "none";
+  const list = document.getElementById("list");
+    
   validData.forEach(row => {
     const streamer = getValue(row, "Streamer");
     const twitch = getValue(row, "Twitch");
     const game = getValue(row, "Game");
     const steam = getValue(row, "Steam");
+    const date = getValue(row, "Date");
+    const time = getValue(row, "Time");
+    const language = getValue(row, "Language");
+    const notes = getValue(row, "Notes");
 
-    const username = getUsername(twitch);
-
-    if (!map[username]) {
-      map[username] = {
-        streamer,
-        username,
-        games: []
-      };
+    let username = "";
+    if (twitch) {
+      username = twitch
+        .replace("https://www.twitch.tv/", "")
+        .replace("https://twitch.tv/", "")
+        .split("?")[0]
+        .replace("/", "")
+        .toLowerCase();
     }
 
-    map[username].games.push({
-      game,
-      steam
-    });
-  });
+    const iconPath = username ? `icons/${username}.png` : "";
+    const appId = steam.match(/app\/(\d+)/)?.[1];
+    const gameImage = appId ? `images/${appId}.jpg` : "";
+    
+    let langIcon = "";
+    if (language.includes("日本語") || language.includes("Japanese")) {
+      langIcon += "JA ";
+    }
+    if (language.includes("英語") || language.includes("English")) {
+      langIcon += "EN ";
+    }
+    if (language.includes("その他") || language.includes("Other")) {
+      langIcon += "etc. ";
+    }
+    
+    const card = document.createElement("div");
+    card.className = "card";
 
-  const grouped = Object.values(map);
+    card.innerHTML = `
+      <div class="left">
+        <img class="icon"
+          src="${iconPath}"
+          onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
-  // ===== タイトル =====
-  const title = document.createElement("div");
-  title.innerHTML = "<h2>Thank you for participating</h2>";
-  track.appendChild(title);
-
-  // ===== 描画 =====
-  grouped.forEach(user => {
-
-    const block = document.createElement("div");
-    block.className = "credit-block";
-
-    const icon = user.username
-      ? `icons/${user.username}.png`
-      : "";
-
-    const header = `
-      <div class="streamer-header">
-        <img src="${icon}" onerror="this.src='https://placehold.co/50x50?text=?'">
-        <div class="streamer-name">${user.streamer}</div>
-      </div>
-    `;
-
-    const gamesHTML = user.games.map(g => {
-      const appId = getAppId(g.steam);
-      const img = appId ? `images/${appId}.jpg` : "";
-
-      return `
-        <div class="game-item">
-          <img src="${img}" onerror="this.style.display='none'">
-          <div class="game-title">${g.game}</div>
+        <div class="info">
+          <div class="row streamer">🎙️<a href="${twitch}" target="_blank">${streamer}</a></div>
+          <div class="row game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
+          ${date ? `<div class="meta">📅 ${date}</div>` : ""}
+          ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
+          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
+          ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
         </div>
-      `;
-    }).join("");
+      </div>
 
-    block.innerHTML = `
-      ${header}
-      <div class="game-list">${gamesHTML}</div>
+      ${gameImage ? `
+        <a href="${steam}" target="_blank">
+          <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
+        </a>
+      ` : ""}
     `;
-
-    track.appendChild(block);
+    
+    list.appendChild(card);
   });
-
-  // ===== ループ =====
-  const clone = track.cloneNode(true);
-  track.parentNode.appendChild(clone);
-
-  const duration = Math.max(40, grouped.length * 4);
-  wrapper.style.animationDuration = duration + "s";
-  wrapper.classList.add("scroll");
 
 })
 .catch(err => {
   console.error("CSV取得失敗:", err);
+  listLoading.innerText = "Failed to load data.";
 });
 </script>
 
+
+  
+<h2 class="section-title">DIG Selection</h2>
+<p class="selection-note">
+  どのゲームを遊ぶか迷ったら、ここからどうぞ。<br>
+  <span class="sub">Not sure what to play? Start here.</span>
+</p>
+  
+<section class="dig-selection">
+  <div class="carousel">
+    <button class="nav prev">‹</button>
+    <div id="carousel-index"></div>
+    <div id="selection-loading">Loading...</div>
+    <div class="carousel-track" id="carousel-track">
+      <!-- JS生成 -->
+    </div>
+    <button class="nav next">›</button>
+  </div>
+</section>
+
+<script>
+const SELECTION_CSV = "https://docs.google.com/spreadsheets/d/1CxWnkxWTwVUl-KEBpJzgBLSJxfiqWcmTddsLRz2FaG0/export?format=csv";
+
+const track = document.getElementById("carousel-track");
+const indexEl = document.getElementById("carousel-index");
+
+let items = [];
+let current = 0;
+let interval;
+
+// AppID取得
+function getAppId(url) {
+  return url.match(/app\/(\d+)/)?.[1];
+}
+
+// CSV読み込み
+Papa.parse(SELECTION_CSV, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    const selectionLoading = document.getElementById("selection-loading");
+    const data = results.data.filter(d => d.Title && d.Steam);
+
+    renderCarousel(data);
+    initCarousel();
+    selectionLoading.style.display = "none";
+  }
+});
+
+// DOM生成
+function renderCarousel(data) {
+  track.innerHTML = "";
+
+  data.forEach((item, index) => {
+    const appId = getAppId(item.Steam);
+    const img = appId ? `images/${appId}.jpg` : "";
+
+    const div = document.createElement("div");
+    div.className = "carousel-item";
+
+    div.innerHTML = `
+      <div class="selection-card">
+        <a href="${item.Steam}" target="_blank">
+          <img src="${img}" class="selection-img" onerror="this.style.display='none'">
+        </a>
+
+        <div class="selection-info">
+          <h3>
+            <a href="${item.Steam}" target="_blank">
+              ${item.Title}
+            </a>
+          </h3>
+        </div>
+      </div>
+    `;
+
+    track.appendChild(div);
+  });
+
+  items = document.querySelectorAll('.carousel-item');
+}
+
+// インデックス件数表示
+function updateIndex() {
+  indexEl.textContent = `${current + 1} / ${items.length}`;
+}
+  
+// 表示切替
+function show(index) {
+  items[current].classList.remove('active');
+  current = (index + items.length) % items.length;
+  items[current].classList.add('active');
+  updateIndex();
+}
+
+// 自動再生
+function startAutoSlide() {
+  interval = setInterval(() => {
+    show(current + 1);
+  }, 7000);
+}
+
+// リセット
+function resetAutoSlide() {
+  clearInterval(interval);
+  startAutoSlide();
+}
+
+// 初期化
+function initCarousel() {
+  current = Math.floor(Math.random() * items.length);
+  items[current].classList.add('active');
+  updateIndex();
+  
+  const prev = document.querySelector('.prev');
+  const next = document.querySelector('.next');
+
+  prev.addEventListener('click', () => {
+    show(current - 1);
+    resetAutoSlide();
+  });
+
+  next.addEventListener('click', () => {
+    show(current + 1);
+    resetAutoSlide();
+  });
+
+  // ホバー停止
+  track.addEventListener("mouseenter", () => clearInterval(interval));
+  track.addEventListener("mouseleave", startAutoSlide);
+
+  startAutoSlide();
+}
+</script>
+
+
+  
+<section class="assets">
+  <h3 class="assets-title">配信素材 / Stream Assets</h3>
+  <div class="banner-row">
+    <img src="dig_banner.png" class="banner">
+    <div class="banner-actions">
+      <a href="dig_banner.png" download class="download-btn">
+        ダウンロード<br><small>Download</small>
+      </a>
+      <div class="banner-note">
+        ご自由にお使いください<br>
+        <small>Free to use on your stream</small>
+      </div>
+    </div>
+  </div>
+</section>
+  
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+</footer>
+  
 </body>
 </html>
