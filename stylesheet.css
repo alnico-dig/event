@@ -24,13 +24,14 @@ a:hover {
   
 #count {
   text-align: center;
-  margin-bottom: 20px;
-  font-weight: bold;
+  font-size: 12px;
+  color: #777;
+  margin: 4px 0 0;
 }
 
 #list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(600px, 800px));
+  grid-template-columns: repeat(auto-fit, minmax(min(600px, 100%), 800px));
   justify-content: center;
   gap: 20px;
   padding: 20px;
@@ -45,8 +46,6 @@ a:hover {
   background: white;
   border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 
   border: 1px solid #eee;
@@ -562,4 +561,17 @@ a:hover {
 .filter button.active {
   background: #6c3cff;
   color: #fff;
+}
+
+@media (max-width: 640px) {
+  #list {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+  .card {
+    flex-direction: column;
+  }
+  .game-img {
+    width: 100%;
+  }
 }

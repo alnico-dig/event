@@ -191,6 +191,7 @@ tabs.forEach(tab => {
 
   
 <h2 class="section-title">DIG Game Streams</h2>
+<div id="count"></div>
 <div id="date-filter" class="filter">
   <button data-date="all" class="active">ALL</button>
   <button data-date="6/19">6/19</button>
@@ -238,6 +239,9 @@ fetch(csv_url)
     const list = document.getElementById("list");
     list.innerHTML = "";
 
+    const uniqueCount = new Set(data.map(row => getValue(row, "Game").trim()).filter(Boolean)).size;
+    document.getElementById("count").textContent = `${uniqueCount} titles`;
+
     data.forEach(row => {
       const streamer = getValue(row, "Streamer");
       const twitch = getValue(row, "Twitch");
@@ -274,6 +278,7 @@ fetch(csv_url)
         <div class="left">
           <img class="icon"
             src="${iconPath}"
+            loading="lazy"
             onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
           <div class="info">
@@ -288,7 +293,7 @@ fetch(csv_url)
 
         ${gameImage ? `
           <a href="${safeUrl(steam)}" target="_blank">
-            <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
+            <img src="${gameImage}" class="game-img" loading="lazy" onerror="this.style.display='none'">
           </a>
         ` : ""}
       `;
@@ -397,7 +402,7 @@ function renderCarousel(data) {
     div.innerHTML = `
       <div class="selection-card">
         <a href="${safeUrl(item.Steam)}" target="_blank">
-          <img src="${img}" class="selection-img" onerror="this.style.display='none'">
+          <img src="${img}" class="selection-img" loading="lazy" onerror="this.style.display='none'">
         </a>
 
         <div class="selection-info">
@@ -474,7 +479,7 @@ function initCarousel() {
 <section class="assets">
   <h3 class="assets-title">DIG Stream Assets</h3>
   <div class="banner-row">
-    <img src="dig_banner.png" class="banner">
+    <img src="dig_banner.png" class="banner" loading="lazy">
     <div class="banner-actions">
       <a href="dig_banner.png" download class="download-btn">
         ダウンロード<br><small>Download</small>
