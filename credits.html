@@ -187,7 +187,7 @@ fetch(csv_url)
 
     const gamesHTML = user.games.map(g => {
       const appId = getAppId(g.steam);
-      const img = appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : "";
+      const img = appId ? `images/${appId}.jpg` : "";
 
       return `
         <div class="game-item">
