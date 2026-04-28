@@ -192,9 +192,19 @@ tabs.forEach(tab => {
 
   
 <h2 class="section-title">参加配信一覧</h2>
+<div id="date-filter" class="filter">
+  <button data-date="all" class="active">ALL</button>
+  <button data-date="6/19">6/19</button>
+  <button data-date="6/20">6/20</button>
+  <button data-date="6/21">6/21</button>
+  <button data-date="TBD">未定</button>
+</div>
 <div id="list-loading">Loading...</div>
 <div id="list"></div>
 <script>
+let allData = [];
+let currentFilter = "all";
+
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv";
 
 const getValue = (row, keyword) => {
@@ -215,73 +225,103 @@ fetch(csv_url)
     return game && game.trim() !== "";
   });
 
+  allData = validData;
+
   listLoading.style.display = "none";
-  const list = document.getElementById("list");
     
-  validData.forEach(row => {
-    const streamer = getValue(row, "Streamer");
-    const twitch = getValue(row, "Twitch");
-    const game = getValue(row, "Game");
-    const steam = getValue(row, "Steam");
-    const date = getValue(row, "Date");
-    const time = getValue(row, "Time");
-    const language = getValue(row, "Language");
-    const notes = getValue(row, "Notes");
+  function renderList(data) {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
 
-    let username = "";
-    if (twitch) {
-      username = twitch
-        .replace("https://www.twitch.tv/", "")
-        .replace("https://twitch.tv/", "")
-        .split("?")[0]
-        .replace("/", "")
-        .toLowerCase();
-    }
+    data.forEach(row => {
+      const streamer = getValue(row, "Streamer");
+      const twitch = getValue(row, "Twitch");
+      const game = getValue(row, "Game");
+      const steam = getValue(row, "Steam");
+      const date = getValue(row, "Date");
+      const time = getValue(row, "Time");
+      const language = getValue(row, "Language");
+      const notes = getValue(row, "Notes");
 
-    const iconPath = username ? `icons/${username}.png` : "";
-    const appId = steam.match(/app\/(\d+)/)?.[1];
-    const gameImage = appId ? `images/${appId}.jpg` : "";
-    
-    let langIcon = "";
-    if (language.includes("日本語") || language.includes("Japanese")) {
-      langIcon += "JA ";
-    }
-    if (language.includes("英語") || language.includes("English")) {
-      langIcon += "EN ";
-    }
-    if (language.includes("その他") || language.includes("Other")) {
-      langIcon += "etc. ";
-    }
-    
-    const card = document.createElement("div");
-    card.className = "card";
+      let username = "";
+      if (twitch) {
+        username = twitch
+          .replace("https://www.twitch.tv/", "")
+          .replace("https://twitch.tv/", "")
+          .split("?")[0]
+          .replace("/", "")
+          .toLowerCase();
+      }
 
-    card.innerHTML = `
-      <div class="left">
-        <img class="icon"
-          src="${iconPath}"
-          onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+      const iconPath = username ? `icons/${username}.png` : "";
+      const appId = steam.match(/app\/(\d+)/)?.[1];
+      const gameImage = appId ? `images/${appId}.jpg` : "";
 
-        <div class="info">
-          <div class="row streamer">🎙️<a href="${twitch}" target="_blank">${streamer}</a></div>
-          <div class="row game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
-          ${date ? `<div class="meta">📅 ${date}</div>` : ""}
-          ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
-          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
-          ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
+      let langIcon = "";
+      if (language.includes("日本語") || language.includes("Japanese")) langIcon += "JA ";
+      if (language.includes("英語") || language.includes("English")) langIcon += "EN ";
+      if (language.includes("その他") || language.includes("Other")) langIcon += "etc. ";
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="left">
+          <img class="icon"
+            src="${iconPath}"
+            onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+
+          <div class="info">
+            <div class="row streamer">🎙️<a href="${twitch}" target="_blank">${streamer}</a></div>
+            <div class="row game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
+            ${date ? `<div class="meta">📅 ${date}</div>` : ""}
+            ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
+            ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
+            ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
+          </div>
         </div>
-      </div>
 
-      ${gameImage ? `
-        <a href="${steam}" target="_blank">
-          <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
-        </a>
-      ` : ""}
-    `;
-    
-    list.appendChild(card);
+        ${gameImage ? `
+          <a href="${steam}" target="_blank">
+            <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
+          </a>
+        ` : ""}
+      `;
+
+      list.appendChild(card);
+    });
+  }
+
+  renderList(allData);
+
+  const buttons = document.querySelectorAll("#date-filter button");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      currentFilter = btn.dataset.date;
+
+      let filtered;
+
+      if (currentFilter === "all") {
+        filtered = allData;
+      } else if (currentFilter === "TBD") {
+        filtered = allData.filter(row =>
+          getValue(row, "Date").includes("未定") ||
+          getValue(row, "Date").includes("TBD")
+        );
+      } else {
+        filtered = allData.filter(row =>
+          getValue(row, "Date").includes(currentFilter)
+        );
+      }
+
+      renderList(filtered);
+    });
   });
-
 })
 .catch(err => {
   console.error("CSV取得失敗:", err);
