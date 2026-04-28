@@ -211,6 +211,12 @@ const getValue = (row, keyword) => {
   return key ? row[key] : "";
 };
 
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+
 const listLoading = document.getElementById("list-loading");
 fetch(csv_url)
 .then(res => res.text())
@@ -254,7 +260,7 @@ fetch(csv_url)
 
       const iconPath = username ? `icons/${username}.png` : "";
       const appId = steam.match(/app\/(\d+)/)?.[1];
-      const gameImage = appId ? `images/${appId}.jpg` : "";
+      const gameImage = appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : "";
 
       let langIcon = "";
       if (language.includes("日本語") || language.includes("Japanese")) langIcon += "JA ";
@@ -271,17 +277,17 @@ fetch(csv_url)
             onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
 
           <div class="info">
-            <div class="row streamer">🎙️<a href="${twitch}" target="_blank">${streamer}</a></div>
-            <div class="row game">🎮 <a href="${steam}" target="_blank">${game}</a></div>
-            ${date ? `<div class="meta">📅 ${date}</div>` : ""}
-            ${time ? `<div class="meta">⏰ ${time}</div>` : ""}
+            <div class="row streamer">🎙️<a href="${safeUrl(twitch)}" target="_blank">${escapeHtml(streamer)}</a></div>
+            <div class="row game">🎮 <a href="${safeUrl(steam)}" target="_blank">${escapeHtml(game)}</a></div>
+            ${date ? `<div class="meta">📅 ${escapeHtml(date)}</div>` : ""}
+            ${time ? `<div class="meta">⏰ ${escapeHtml(time)}</div>` : ""}
             ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
-            ${notes ? `<div class="meta note">💬 ${notes}</div>` : ""}
+            ${notes ? `<div class="meta note">💬 ${escapeHtml(notes)}</div>` : ""}
           </div>
         </div>
 
         ${gameImage ? `
-          <a href="${steam}" target="_blank">
+          <a href="${safeUrl(steam)}" target="_blank">
             <img src="${gameImage}" class="game-img" onerror="this.style.display='none'">
           </a>
         ` : ""}
@@ -383,21 +389,21 @@ function renderCarousel(data) {
 
   data.forEach((item, index) => {
     const appId = getAppId(item.Steam);
-    const img = appId ? `images/${appId}.jpg` : "";
+    const img = appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : "";
 
     const div = document.createElement("div");
     div.className = "carousel-item";
 
     div.innerHTML = `
       <div class="selection-card">
-        <a href="${item.Steam}" target="_blank">
+        <a href="${safeUrl(item.Steam)}" target="_blank">
           <img src="${img}" class="selection-img" onerror="this.style.display='none'">
         </a>
 
         <div class="selection-info">
           <h3>
-            <a href="${item.Steam}" target="_blank">
-              ${item.Title}
+            <a href="${safeUrl(item.Steam)}" target="_blank">
+              ${escapeHtml(item.Title)}
             </a>
           </h3>
         </div>

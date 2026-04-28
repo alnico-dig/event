@@ -105,6 +105,11 @@ const getValue = (row, keyword) => {
   return key ? row[key] : "";
 };
 
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+
 const track = document.getElementById("track");
 const wrapper = document.getElementById("wrapper");
 
@@ -176,18 +181,18 @@ fetch(csv_url)
     const header = `
       <div class="streamer-header">
         <img src="${icon}" onerror="this.src='https://placehold.co/50x50?text=?'">
-        <div class="streamer-name">${user.streamer}</div>
+        <div class="streamer-name">${escapeHtml(user.streamer)}</div>
       </div>
     `;
 
     const gamesHTML = user.games.map(g => {
       const appId = getAppId(g.steam);
-      const img = appId ? `images/${appId}.jpg` : "";
+      const img = appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : "";
 
       return `
         <div class="game-item">
           <img src="${img}" onerror="this.style.display='none'">
-          <div class="game-title">${g.game}</div>
+          <div class="game-title">${escapeHtml(g.game)}</div>
         </div>
       `;
     }).join("");
