@@ -66,20 +66,6 @@
   color: #6c3cff;
   font-weight: 600;
 }
-.logout-btn {
-  font-size: 12px;
-  color: #aaa;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: 0.15s;
-}
-.logout-btn:hover {
-  color: #666;
-  background: #f0f0f0;
-}
 .edit-card {
   display: flex;
   justify-content: space-between;
@@ -148,14 +134,14 @@
   <img src="header.png" class="hero-img">
 </header>
 
-<h2 class="section-title">申請を編集する</h2>
+<h2 class="section-title">申請を編集する / Edit Your Entry</h2>
 
 <div id="app" style="max-width:760px;margin:0 auto;padding:16px 20px 60px;">
 
   <!-- ログイン前 -->
   <div id="view-login" style="display:none;">
     <div class="login-box">
-      <p>申請時に使用したTwitchアカウントでログインすると、<br>申請済みのゲームが表示されます。</p>
+      <p>申請時に使用したTwitchアカウントでログインすると、<br>申請済みのゲームが表示されます。<br><span style="font-size:12px;color:#999;">Log in with the Twitch account you used to register to view your submitted games.</span></p>
       <button id="btn-login" class="twitch-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
           <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
@@ -164,7 +150,8 @@
       </button>
       <p style="margin-top:20px;font-size:12px;color:#bbb;">
         申請内容の確認・変更のためにTwitchアカウントを使用します。<br>
-        メールアドレスの取得や投稿は行いません。
+        メールアドレスの取得や投稿は行いません。<br>
+        Your Twitch account is used only to verify your identity. We do not access your email or post anything.
       </p>
     </div>
     <div style="text-align:center;margin-top:16px;">
@@ -181,10 +168,9 @@
   <div id="view-entries" style="display:none;">
     <div class="user-bar">
       <span class="user-badge">✓ <span id="entry-username"></span></span>
-      <button class="logout-btn" onclick="logout()">ログアウト</button>
     </div>
     <div id="entry-list"></div>
-    <p class="hint">「申請内容を編集」を押すとGoogleフォームの編集画面が開きます</p>
+    <p class="hint">「申請内容を編集」を押すとGoogleフォームの編集画面が開きます<br>Click "Edit Entry" to open the Google Form editing page.</p>
     <div style="text-align:center;margin-top:24px;">
       <a href="index.html" style="font-size:13px;color:#aaa;">← トップページへ戻る</a>
     </div>
@@ -192,23 +178,27 @@
 
   <!-- 申請なし -->
   <div id="view-empty" style="display:none;">
-    <div id="list-loading" style="max-width:500px;">
+    <div class="list-loading" style="max-width:500px;">
       <strong id="empty-username"></strong> の申請が見つかりませんでした。<br>
-      <small style="color:#bbb;">申請に使用したアカウントと異なる可能性があります</small>
+      No applications found for this account.<br>
+      <small style="color:#bbb;">
+        申請に使用したアカウントと異なる可能性があります。別アカウントで試す場合はTwitchからログアウト後に再度お試しください。<br>
+        This may not be the account you used to apply. To try a different account, log out of Twitch first, then log in again.
+      </small>
     </div>
-    <div style="text-align:center;margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="logout()" class="twitch-btn" style="background:#888;box-shadow:none;font-size:13px;padding:10px 18px;">別のアカウントで試す</button>
-      <a href="index.html" class="cta" style="margin:0;padding:10px 18px;font-size:13px;">トップページへ</a>
+    <div style="text-align:center;margin-top:20px;">
+      <a href="index.html" class="cta" style="margin:0;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
     </div>
   </div>
 
   <!-- エラー -->
   <div id="view-error" style="display:none;">
-    <div id="list-loading" style="max-width:500px;">
-      データの取得に失敗しました。時間をおいて再度お試しください。
+    <div class="list-loading" style="max-width:500px;">
+      データの取得に失敗しました。時間をおいて再度お試しください。<br>
+      <small style="color:#bbb;">Failed to load your data. Please try again later.</small>
     </div>
     <div style="text-align:center;margin-top:20px;">
-      <button onclick="logout()" class="twitch-btn" style="background:#888;box-shadow:none;font-size:13px;padding:10px 18px;">ログアウト</button>
+      <a href="index.html" class="cta" style="margin:0;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
     </div>
   </div>
 
@@ -219,13 +209,9 @@
 </footer>
 
 <script>
-// ============================================================
-// 設定（デプロイ後に実際の値へ変更してください）
-// ============================================================
 const TWITCH_CLIENT_ID = 'kp13odpytkan0tqo6xmgj5509h4104';
 const REDIRECT_URI     = 'https://alnico-dig.github.io/event/edit.html';
 const GAS_URL          = 'https://script.google.com/macros/s/AKfycbxAkXEyoXb3eDMUw8vhHI1J0BHbisYbHFDyr252wYMpYZ6-PAGG14KoRKORG1XELfJAtg/exec';
-// ============================================================
 
 const TOKEN_KEY = 'dig_twitch_token';
 
@@ -233,12 +219,6 @@ function showView(id) {
   ['login', 'loading', 'entries', 'empty', 'error'].forEach(v => {
     document.getElementById('view-' + v).style.display = (v === id) ? '' : 'none';
   });
-}
-
-function logout() {
-  sessionStorage.removeItem(TOKEN_KEY);
-  history.replaceState(null, '', location.pathname);
-  showView('login');
 }
 
 document.getElementById('btn-login').addEventListener('click', () => {
@@ -272,7 +252,6 @@ async function fetchEntries(token) {
   const res = await fetch(GAS_URL + '?token=' + encodeURIComponent(token));
   if (!res.ok) throw new Error('gas_api_' + res.status);
   const data = await res.json();
-  console.log('GAS response:', JSON.stringify(data));
   if (data.error === 'token_expired') throw new Error('token_expired');
   if (data.error) throw new Error('gas_error');
   return data;
@@ -312,7 +291,7 @@ function renderEntries(entries, username) {
           <a href="${safeUrl(entry.steam)}" target="_blank">
             <img src="${imgSrc}" class="game-img" style="width:160px;" loading="lazy" onerror="this.style.display='none'">
           </a>` : ''}
-        <a href="${safeUrl(entry.editUrl)}" target="_blank" class="edit-btn">申請内容を編集</a>
+        <a href="${safeUrl(entry.editUrl)}" target="_blank" class="edit-btn">申請内容を編集 / Edit Entry</a>
       </div>
     `;
     list.appendChild(card);

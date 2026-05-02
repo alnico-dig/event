@@ -86,8 +86,22 @@ function onFormSubmit(e) {
 }
 
 // ============================================================
+// 【デバッグ用】UrlFetchApp の認証確認（確認後は削除してOK）
+// ============================================================
+function testUrlFetch() {
+  const res = UrlFetchApp.fetch('https://api.twitch.tv/helix/users', {
+    headers: {
+      'Authorization': 'Bearer test',
+      'Client-Id': CONFIG.twitchClientId
+    },
+    muteHttpExceptions: true
+  });
+  Logger.log(res.getContentText());
+}
+
+// ============================================================
 // Web App エンドポイント（edit.html から fetch で呼ばれる）
-// GET ?twitch=<ユーザー名>
+// GET ?token=<Twitchアクセストークン>
 // ============================================================
 function doGet(e) {
   const token = e.parameter.token || '';
