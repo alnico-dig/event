@@ -272,6 +272,7 @@ async function fetchEntries(token) {
   const res = await fetch(GAS_URL + '?token=' + encodeURIComponent(token));
   if (!res.ok) throw new Error('gas_api_' + res.status);
   const data = await res.json();
+  console.log('GAS response:', JSON.stringify(data));
   if (data.error === 'token_expired') throw new Error('token_expired');
   if (data.error) throw new Error('gas_error');
   return data;
