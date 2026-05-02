@@ -254,6 +254,39 @@ a:hover {
   opacity: 0.9;
 }
 
+.cta-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.cta-row .cta {
+  margin: 0;
+}
+
+.cta-outline {
+  display: block;
+  width: fit-content;
+  padding: 14px 24px;
+  font-size: 15px;
+  background: white;
+  color: #6c3cff;
+  border: 2px solid #6c3cff;
+  border-radius: 12px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.cta-outline:hover {
+  background: #f3f0ff;
+  transform: translateY(-2px);
+  opacity: 1;
+  text-decoration: none;
+}
+
 .footer {
   text-align: center;
   padding: 30px 10px;
