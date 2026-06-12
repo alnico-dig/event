@@ -132,27 +132,33 @@ function setup_resyncFromForms() {
 // ============================================================
 function onFormSubmit(e) {
   const itemResponses = e.response.getItemResponses();
-  const { twitch, game } = extractFields(itemResponses);
-  if (!twitch || !game) return;
+  const { twitch: newTwitch, game: newGame } = extractFields(itemResponses);
+  if (!newTwitch || !newGame) return;
 
-  // EditURLs を更新
-  const sheet = getOrCreateEditSheet();
-  const existingRow = findRowIndex(sheet, twitch, game);
-  if (existingRow > 0) {
-    sheet.getRange(existingRow, 3).setValue(e.response.getEditResponseUrl());
-    sheet.getRange(existingRow, 4).setValue(e.response.getTimestamp());
+  const editUrl   = e.response.getEditResponseUrl();
+  const editSheet = getOrCreateEditSheet();
+  const editRows  = editSheet.getDataRange().getValues();
+
+  // 編集URLで既存エントリを検索（ゲーム名変更に対応）
+  const existingIdx = editRows.findIndex((r, i) => i > 0 && r[2] === editUrl);
+  let oldTwitch = newTwitch;
+  let oldGame   = newGame;
+
+  if (existingIdx > 0) {
+    oldTwitch = editRows[existingIdx][0];
+    oldGame   = editRows[existingIdx][1];
+    editSheet.getRange(existingIdx + 1, 1, 1, 4).setValues([[newTwitch, newGame, editUrl, e.response.getTimestamp()]]);
   } else {
-    sheet.appendRow([twitch, game, e.response.getEditResponseUrl(), e.response.getTimestamp()]);
+    editSheet.appendRow([newTwitch, newGame, editUrl, e.response.getTimestamp()]);
   }
 
-  // 表示用シートをイベントデータで更新（フォーム回答シートは参照しない）
-  syncDisplaySheet(twitch, game, itemResponses, e.response.getTimestamp());
+  syncDisplaySheet(oldTwitch, oldGame, newTwitch, newGame, itemResponses, e.response.getTimestamp());
 }
 
 // ============================================================
 // 表示用シートを更新（イベントデータを直接使用）
 // ============================================================
-function syncDisplaySheet(twitch, game, itemResponses, timestamp) {
+function syncDisplaySheet(oldTwitch, oldGame, newTwitch, newGame, itemResponses, timestamp) {
   const ss        = SpreadsheetApp.openById(CONFIG.spreadsheetId);
   const dispSheet = ss.getSheetByName(CONFIG.displaySheet);
   if (!dispSheet) return;
@@ -165,11 +171,19 @@ function syncDisplaySheet(twitch, game, itemResponses, timestamp) {
 
   const row = buildRow(dispHeader, itemResponses, timestamp);
 
-  const existingIdx = dispData.findIndex((r, i) =>
+  // 変更前のキーで検索、見つからなければ変更後のキーで検索
+  let existingIdx = dispData.findIndex((r, i) =>
     i > 0 &&
-    normalizeTwitch(r[twitchCol]) === twitch &&
-    String(r[gameCol]).trim() === game
+    normalizeTwitch(r[twitchCol]) === oldTwitch &&
+    String(r[gameCol]).trim() === oldGame
   );
+  if (existingIdx < 1) {
+    existingIdx = dispData.findIndex((r, i) =>
+      i > 0 &&
+      normalizeTwitch(r[twitchCol]) === newTwitch &&
+      String(r[gameCol]).trim() === newGame
+    );
+  }
 
   if (existingIdx > 0) {
     dispSheet.getRange(existingIdx + 1, 1, 1, row.length).setValues([row]);
