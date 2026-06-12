@@ -1,16 +1,12 @@
 // ============================================================
 // DIGspotlight 申請編集システム - Google Apps Script
 // ============================================================
-// 【使い方】
-// 1. スプレッドシートを開き「拡張機能 → Apps Script」でこのコードを貼り付け
-// 2. CONFIG の spreadsheetId と formId を設定
-//    - formId はフォームの編集URL https://docs.google.com/forms/d/★ここ★/edit の★部分
-// 3. setup_createTrigger() を1回だけ実行（フォーム送信の自動保存トリガー）
-// 4. setup_backfillEditUrls() を1回だけ実行（既存申請者の編集URLを一括取得）
-// 5. 「デプロイ → 新しいデプロイ」→ 種類: ウェブアプリ
-//    - 次のユーザーとして実行: 自分
-//    - アクセスできるユーザー: 全員（Googleアカウント不要）
-// 6. 表示されたウェブアプリURLを edit.html の GAS_URL に貼り付け
+// 【初回セットアップ手順】
+// 1. setup_createTrigger()       — フォーム送信トリガーを作成（1回のみ）
+// 2. setup_backfillEditUrls()    — 既存申請者の編集URLを一括取得（1回のみ）
+// 3. setup_syncDisplaySheet()    — 表示用シートへ既存データをコピー（1回のみ）
+// 4. setup_resyncFromForms()     — フォームから最新データで表示用を上書き（1回のみ）
+// 5. デプロイ → 新しいデプロイ（ウェブアプリ、全員アクセス可）
 // ============================================================
 
 const CONFIG = {
@@ -18,6 +14,7 @@ const CONFIG = {
   formId: '1qNvS73pHgk32Ivt3e1xSmhJ5euah9MPxKZ4dYYGRqHE',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   editUrlsSheet: 'EditURLs',
+  displaySheet:  '表示用',
   fields: {
     twitch: ['Twitch', 'twitch', 'チャンネル'],
     game:   ['Game', 'ゲーム', 'game', 'タイトル'],
@@ -25,10 +22,9 @@ const CONFIG = {
 };
 
 // ============================================================
-// 【手順3】初回のみ実行：フォーム送信トリガーを作成
+// 【手順1】初回のみ：フォーム送信トリガーを作成
 // ============================================================
 function setup_createTrigger() {
-  // 既存の同名トリガーを削除（重複防止）
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === 'onFormSubmit')
     .forEach(t => ScriptApp.deleteTrigger(t));
@@ -42,7 +38,7 @@ function setup_createTrigger() {
 }
 
 // ============================================================
-// 【手順4】初回のみ実行：既存申請者の編集URLを一括取得して保存
+// 【手順2】初回のみ：既存申請者の編集URLを一括取得して保存
 // ============================================================
 function setup_backfillEditUrls() {
   const sheet = getOrCreateEditSheet();
@@ -56,7 +52,6 @@ function setup_backfillEditUrls() {
 
     const existingRow = findRowIndex(sheet, twitch, game);
     if (existingRow > 0) {
-      // 同じTwitch+Gameの既存行は最新URLで上書き
       sheet.getRange(existingRow, 3).setValue(res.getEditResponseUrl());
     } else {
       sheet.appendRow([twitch, game, res.getEditResponseUrl(), res.getTimestamp()]);
@@ -68,35 +63,119 @@ function setup_backfillEditUrls() {
 }
 
 // ============================================================
-// フォーム送信時の自動保存（トリガーから自動実行）
+// 【手順3】初回のみ：表示用シートへフォーム回答シートをコピー
+// ============================================================
+function setup_syncDisplaySheet() {
+  const ss        = SpreadsheetApp.openById(CONFIG.spreadsheetId);
+  const srcSheet  = ss.getSheets()[0];
+  const dispSheet = ss.getSheetByName(CONFIG.displaySheet);
+  if (!dispSheet) { Logger.log('表示用シートが見つかりません'); return; }
+
+  dispSheet.clearContents();
+  const srcData = srcSheet.getDataRange().getValues();
+  if (srcData.length > 0) {
+    dispSheet.getRange(1, 1, srcData.length, srcData[0].length).setValues(srcData);
+  }
+  Logger.log('コピー完了：' + srcData.length + '行');
+}
+
+// ============================================================
+// 【手順4】初回のみ：Googleフォームの最新回答で表示用を上書き
+// 　　　　 手動ソート順は保持したまま、各行のデータだけ更新される
+// ============================================================
+function setup_resyncFromForms() {
+  const ss        = SpreadsheetApp.openById(CONFIG.spreadsheetId);
+  const dispSheet = ss.getSheetByName(CONFIG.displaySheet);
+  if (!dispSheet) { Logger.log('表示用シートが見つかりません'); return; }
+
+  const dispData   = dispSheet.getDataRange().getValues();
+  const dispHeader = dispData[0];
+  const twitchCol  = dispHeader.findIndex(h => CONFIG.fields.twitch.some(k => String(h).includes(k)));
+  const gameCol    = dispHeader.findIndex(h => CONFIG.fields.game.some(k => String(h).includes(k)));
+  if (twitchCol < 0 || gameCol < 0) { Logger.log('列が見つかりません'); return; }
+
+  // フォームの全回答から twitch+game ごとに最新回答を取得
+  const form = FormApp.openById(CONFIG.formId);
+  const latestMap = {};
+  form.getResponses().forEach(res => {
+    const { twitch, game } = extractFields(res.getItemResponses());
+    if (!twitch || !game) return;
+    const key = twitch + '|' + game;
+    if (!latestMap[key] || res.getTimestamp() > latestMap[key].getTimestamp()) {
+      latestMap[key] = res;
+    }
+  });
+
+  let updated = 0;
+  Object.values(latestMap).forEach(res => {
+    const itemResponses = res.getItemResponses();
+    const { twitch, game } = extractFields(itemResponses);
+
+    const existingIdx = dispData.findIndex((r, i) =>
+      i > 0 &&
+      normalizeTwitch(r[twitchCol]) === twitch &&
+      String(r[gameCol]).trim() === game
+    );
+    if (existingIdx < 1) return;
+
+    const row = buildRow(dispHeader, itemResponses, res.getTimestamp());
+    dispSheet.getRange(existingIdx + 1, 1, 1, row.length).setValues([row]);
+    dispData[existingIdx] = row; // メモリ上も更新して後続の findIndex を正確に保つ
+    updated++;
+  });
+
+  Logger.log('再同期完了：' + updated + '行更新');
+}
+
+// ============================================================
+// フォーム送信・編集時の自動処理（トリガーから自動実行）
 // ============================================================
 function onFormSubmit(e) {
-  const { twitch, game } = extractFields(e.response.getItemResponses());
+  const itemResponses = e.response.getItemResponses();
+  const { twitch, game } = extractFields(itemResponses);
   if (!twitch || !game) return;
 
+  // EditURLs を更新
   const sheet = getOrCreateEditSheet();
   const existingRow = findRowIndex(sheet, twitch, game);
-
   if (existingRow > 0) {
     sheet.getRange(existingRow, 3).setValue(e.response.getEditResponseUrl());
     sheet.getRange(existingRow, 4).setValue(e.response.getTimestamp());
   } else {
     sheet.appendRow([twitch, game, e.response.getEditResponseUrl(), e.response.getTimestamp()]);
   }
+
+  // 表示用シートをイベントデータで更新（フォーム回答シートは参照しない）
+  syncDisplaySheet(twitch, game, itemResponses, e.response.getTimestamp());
 }
 
 // ============================================================
-// 【デバッグ用】UrlFetchApp の認証確認（確認後は削除してOK）
+// 表示用シートを更新（イベントデータを直接使用）
 // ============================================================
-function testUrlFetch() {
-  const res = UrlFetchApp.fetch('https://api.twitch.tv/helix/users', {
-    headers: {
-      'Authorization': 'Bearer test',
-      'Client-Id': CONFIG.twitchClientId
-    },
-    muteHttpExceptions: true
-  });
-  Logger.log(res.getContentText());
+function syncDisplaySheet(twitch, game, itemResponses, timestamp) {
+  const ss        = SpreadsheetApp.openById(CONFIG.spreadsheetId);
+  const dispSheet = ss.getSheetByName(CONFIG.displaySheet);
+  if (!dispSheet) return;
+
+  const dispData   = dispSheet.getDataRange().getValues();
+  const dispHeader = dispData[0];
+  const twitchCol  = dispHeader.findIndex(h => CONFIG.fields.twitch.some(k => String(h).includes(k)));
+  const gameCol    = dispHeader.findIndex(h => CONFIG.fields.game.some(k => String(h).includes(k)));
+  if (twitchCol < 0 || gameCol < 0) return;
+
+  const row = buildRow(dispHeader, itemResponses, timestamp);
+
+  const existingIdx = dispData.findIndex((r, i) =>
+    i > 0 &&
+    normalizeTwitch(r[twitchCol]) === twitch &&
+    String(r[gameCol]).trim() === game
+  );
+
+  if (existingIdx > 0) {
+    dispSheet.getRange(existingIdx + 1, 1, 1, row.length).setValues([row]);
+  } else {
+    dispSheet.appendRow(row);
+  }
 }
 
 // ============================================================
@@ -130,11 +209,10 @@ function doGet(e) {
   const editSheet = ss.getSheetByName(CONFIG.editUrlsSheet);
   if (!editSheet) return respond({ error: 'not initialized - run setup_backfillEditUrls first' });
 
-  const editRows = editSheet.getDataRange().getValues().slice(1); // ヘッダー行を除く
+  const editRows = editSheet.getDataRange().getValues().slice(1);
 
-  // メインシートから表示データを取得
-  const mainSheet = ss.getSheets()[0];
-  const mainRows = mainSheet.getDataRange().getValues();
+  const mainSheet  = ss.getSheetByName(CONFIG.displaySheet) || ss.getSheets()[0];
+  const mainRows   = mainSheet.getDataRange().getValues();
   const mainHeader = mainRows[0];
   const col = kw => mainHeader.findIndex(h => h && h.toString().includes(kw));
   const C = {
@@ -165,6 +243,26 @@ function doGet(e) {
 }
 
 // ── ヘルパー関数 ─────────────────────────────────────────────
+
+// フォームの回答項目をスプレッドシートの列に対応する行配列に変換
+function buildRow(header, itemResponses, timestamp) {
+  const row = new Array(header.length).fill('');
+  itemResponses.forEach(item => {
+    const colIdx = header.findIndex(h => String(h) === item.getItem().getTitle());
+    if (colIdx >= 0) {
+      const res = item.getResponse();
+      row[colIdx] = Array.isArray(res) ? res.join(', ') : res;
+    }
+  });
+  if (timestamp) {
+    const tsCol = header.findIndex(h => {
+      const s = String(h).toLowerCase();
+      return s === 'timestamp' || s === 'タイムスタンプ';
+    });
+    if (tsCol >= 0) row[tsCol] = timestamp;
+  }
+  return row;
+}
 
 function getOrCreateEditSheet() {
   const ss = SpreadsheetApp.openById(CONFIG.spreadsheetId);
