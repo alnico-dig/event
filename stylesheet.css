@@ -56,14 +56,17 @@ a:hover {
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
   
+.left > a {
+  align-self: center;
+  display: flex;
+}
+
 .icon {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 10px;
   background: #ddd;
-  align-self: center;
 }
 
 .streamer {
