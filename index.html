@@ -290,10 +290,12 @@ fetch(csv_url)
 
       card.innerHTML = `
         <div class="left">
-          <img class="icon"
-            src="${iconPath}"
-            loading="lazy"
-            onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+          <a href="${safeUrl(twitch)}" target="_blank">
+            <img class="icon"
+              src="${iconPath}"
+              loading="lazy"
+              onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+          </a>
 
           <div class="info">
             <div class="row streamer">🎙️<a href="${safeUrl(twitch)}" target="_blank">${escapeHtml(streamer)}</a></div>
