@@ -106,6 +106,7 @@ function setup_resyncFromForms() {
     }
   });
 
+  // メモリ上で全更新を行い、最後に1回だけシートへ書き込む
   let updated = 0;
   Object.values(latestMap).forEach(res => {
     const itemResponses = res.getItemResponses();
@@ -118,12 +119,13 @@ function setup_resyncFromForms() {
     );
     if (existingIdx < 1) return;
 
-    const row = buildRow(dispHeader, itemResponses, res.getTimestamp());
-    dispSheet.getRange(existingIdx + 1, 1, 1, row.length).setValues([row]);
-    dispData[existingIdx] = row; // メモリ上も更新して後続の findIndex を正確に保つ
+    dispData[existingIdx] = buildRow(dispHeader, itemResponses, res.getTimestamp());
     updated++;
   });
 
+  if (updated > 0) {
+    dispSheet.getRange(1, 1, dispData.length, dispData[0].length).setValues(dispData);
+  }
   Logger.log('再同期完了：' + updated + '行更新');
 }
 
