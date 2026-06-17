@@ -205,9 +205,6 @@ tabs.forEach(tab => {
 </script>
 
 <h2 class="section-title">DIG Game Streams</h2>
-<div style="text-align:center; margin: 6px 0 0;">
-  <a href="schedule.html" class="schedule-page-link">📅 タイムスケジュールを見る / View Schedule</a>
-</div>
 <div id="count"></div>
 <div class="filter-row">
   <div id="date-filter" class="filter">
@@ -222,6 +219,9 @@ tabs.forEach(tab => {
     <button data-sort="default" class="active">Default</button>
     <button data-sort="title">Title</button>
     <button data-sort="streamer">Streamer</button>
+  </div>
+  <div class="filter sort-filter">
+    <a href="schedule.html" class="schedule-page-link">📅 Schedule</a>
   </div>
 </div>
 <div id="list-loading">Loading...</div>
