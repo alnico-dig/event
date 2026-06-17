@@ -24,8 +24,9 @@ a:hover {
   
 #count {
   text-align: center;
-  font-size: 12px;
-  color: #777;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
   margin: 4px 0 0;
 }
 
@@ -617,6 +618,16 @@ a:hover {
   font-size: 13px;
   color: #6c3cff;
   font-weight: 600;
+}
+
+.schedule-note {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin: 6px auto 16px;
+  max-width: 700px;
+  padding: 0 16px;
+  line-height: 1.6;
 }
 
 .back-link-row {
