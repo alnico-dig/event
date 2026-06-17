@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>#DIGspotlight - Schedule</title>
+<meta name="description" content="#DIGspotlight 配信スケジュール一覧">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="stylesheet" href="stylesheet.css">
+</head>
+
+<body>
+<header class="hero">
+  <img src="header.png" class="hero-img">
+</header>
+
+<div class="back-link-row">
+  <a href="index.html" class="back-link">← トップに戻る / Back to Top</a>
+</div>
+
+<h2 class="section-title">DIG Stream Schedule</h2>
+
+<div id="schedule-loading" class="list-loading">Loading...</div>
+<div class="schedule-wrap">
+  <table class="schedule-table" id="schedule-table"></table>
+</div>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+</footer>
+
+<script>
+const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv&gid=867435769";
+
+const getValue = (row, keyword) => {
+  const key = Object.keys(row).find(k => k && k.includes(keyword));
+  return key ? row[key] : "";
+};
+
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+
+const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+
+const DAYS = [
+  { label: "6/19 (fri)", key: "6/19" },
+  { label: "6/20 (sat)", key: "6/20" },
+  { label: "6/21 (sun)", key: "6/21" },
+  { label: "未定 / TBD",  key: "未定" },
+];
+
+function matchesDay(dateStr, dayKey) {
+  if (dayKey === "未定") return dateStr.includes("未定") || dateStr.includes("TBD");
+  return dateStr.includes(dayKey);
+}
+
+function buildMiniCard(row) {
+  const streamer = getValue(row, "Streamer");
+  const twitch   = getValue(row, "Twitch");
+  const game     = getValue(row, "Game");
+  const steam    = getValue(row, "Steam");
+
+  let username = "";
+  if (twitch) {
+    username = twitch
+      .replace("https://www.twitch.tv/", "")
+      .replace("https://twitch.tv/", "")
+      .split("?")[0]
+      .replace("/", "")
+      .toLowerCase();
+  }
+
+  const iconPath = username ? `icons/${username}.png` : "";
+
+  const card = document.createElement("div");
+  card.className = "sched-card";
+  card.innerHTML = `
+    <a href="${safeUrl(twitch)}" target="_blank">
+      <img class="sched-icon" src="${iconPath}" loading="lazy"
+        onerror="this.onerror=null;this.src='https://placehold.co/32x32?text=?'">
+    </a>
+    <div class="sched-info">
+      <a href="${safeUrl(twitch)}" target="_blank" class="sched-streamer">${escapeHtml(streamer)}</a>
+      <a href="${safeUrl(steam)}" target="_blank" class="sched-game">${escapeHtml(game)}</a>
+    </div>
+  `;
+  return card;
+}
+
+fetch(csv_url)
+.then(res => res.text())
+.then(text => {
+  const parsed = Papa.parse(text, { header: true });
+  const data = parsed.data.filter(row => getValue(row, "Game").trim());
+
+  const timeSet = new Set();
+  data.forEach(row => {
+    const t = getValue(row, "TimeNum").trim();
+    if (t !== "") timeSet.add(parseFloat(t));
+  });
+  const times = [...timeSet].sort((a, b) => a - b);
+
+  const table = document.getElementById("schedule-table");
+
+  // ヘッダー
+  const thead = table.createTHead();
+  const headerRow = thead.insertRow();
+  const thTime = document.createElement("th");
+  thTime.className = "time-col";
+  headerRow.appendChild(thTime);
+  DAYS.forEach(day => {
+    const th = document.createElement("th");
+    th.textContent = day.label;
+    headerRow.appendChild(th);
+  });
+
+  // 時刻行
+  const tbody = table.createTBody();
+  times.forEach(t => {
+    const tr = tbody.insertRow();
+    const h = Math.floor(t);
+    const m = (t % 1 === 0.5) ? "30" : "00";
+    const tdTime = document.createElement("td");
+    tdTime.className = "time-label";
+    tdTime.textContent = `${h}:${m}`;
+    tr.appendChild(tdTime);
+
+    DAYS.forEach(day => {
+      const td = document.createElement("td");
+      data
+        .filter(row => {
+          const tn = getValue(row, "TimeNum").trim();
+          if (parseFloat(tn) !== t) return false;
+          return matchesDay(getValue(row, "Date"), day.key);
+        })
+        .forEach(row => td.appendChild(buildMiniCard(row)));
+      tr.appendChild(td);
+    });
+  });
+
+  // 時刻未定行
+  const trTbd = tbody.insertRow();
+  trTbd.className = "tbd-time-row";
+  const tdTbdLabel = document.createElement("td");
+  tdTbdLabel.className = "time-label";
+  tdTbdLabel.innerHTML = "時刻未定<br><small>TBD</small>";
+  trTbd.appendChild(tdTbdLabel);
+
+  DAYS.forEach(day => {
+    const td = document.createElement("td");
+    data
+      .filter(row => {
+        const tn = getValue(row, "TimeNum").trim();
+        if (tn !== "") return false;
+        return matchesDay(getValue(row, "Date"), day.key);
+      })
+      .forEach(row => td.appendChild(buildMiniCard(row)));
+    trTbd.appendChild(td);
+  });
+
+  document.getElementById("schedule-loading").style.display = "none";
+})
+.catch(err => {
+  console.error("CSV取得失敗:", err);
+  document.getElementById("schedule-loading").innerText = "Failed to load data.";
+});
+</script>
+
+</body>
+</html>

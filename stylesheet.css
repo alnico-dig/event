@@ -612,6 +612,118 @@ a:hover {
   }
 }
 
+/* Schedule page */
+.schedule-page-link {
+  font-size: 13px;
+  color: #6c3cff;
+  font-weight: 600;
+}
+
+.back-link-row {
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+.back-link {
+  font-size: 13px;
+  color: #6c3cff;
+}
+
+.schedule-wrap {
+  overflow-x: auto;
+  padding: 10px 20px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.schedule-table thead th {
+  background: #6c3cff;
+  color: white;
+  padding: 10px 14px;
+  text-align: center;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.schedule-table .time-col {
+  width: 64px;
+}
+
+.schedule-table .time-label {
+  background: #f3f0ff;
+  color: #6c3cff;
+  font-weight: bold;
+  font-size: 13px;
+  text-align: center;
+  white-space: nowrap;
+  padding: 8px 6px;
+  vertical-align: top;
+}
+
+.schedule-table td {
+  border: 1px solid #eee;
+  padding: 6px;
+  vertical-align: top;
+  min-width: 140px;
+}
+
+.tbd-time-row td {
+  border-top: 2px dashed #ccc;
+}
+
+.sched-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.sched-card:last-child {
+  margin-bottom: 0;
+}
+
+.sched-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sched-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sched-streamer {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6c3cff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sched-game {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 640px) {
   #list {
     grid-template-columns: 1fr;
