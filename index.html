@@ -206,18 +206,27 @@ tabs.forEach(tab => {
 
 <h2 class="section-title">DIG Game Streams</h2>
 <div id="count"></div>
-<div id="date-filter" class="filter">
-  <button data-date="all" class="active">ALL</button>
-  <button data-date="6/19">6/19</button>
-  <button data-date="6/20">6/20</button>
-  <button data-date="6/21">6/21</button>
-  <button data-date="TBD">未定</button>
+<div class="filter-row">
+  <div id="date-filter" class="filter">
+    <button data-date="all" class="active">ALL</button>
+    <button data-date="6/19">6/19</button>
+    <button data-date="6/20">6/20</button>
+    <button data-date="6/21">6/21</button>
+    <button data-date="TBD">未定 / TBD</button>
+  </div>
+  <div id="sort-filter" class="filter sort-filter">
+    <span class="sort-label">Sort</span>
+    <button data-sort="default" class="active">Default</button>
+    <button data-sort="title">Title</button>
+    <button data-sort="streamer">Streamer</button>
+  </div>
 </div>
 <div id="list-loading">Loading...</div>
 <div id="list"></div>
 <script>
 let allData = [];
 let currentFilter = "all";
+let currentSort = "default";
 
 const csv_url = "https://docs.google.com/spreadsheets/d/17mMvupAwNM2ssbHjiHhXNRfUujoXQYeXgkSAQjL6G-g/export?format=csv&gid=867435769";
 
@@ -231,6 +240,32 @@ const escapeHtml = str => {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 };
 const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+
+function getFilteredData() {
+  if (currentFilter === "all") return allData;
+  if (currentFilter === "TBD") return allData.filter(row =>
+    getValue(row, "Date").includes("未定") || getValue(row, "Date").includes("TBD")
+  );
+  return allData.filter(row => getValue(row, "Date").includes(currentFilter));
+}
+
+function getSortedData(data) {
+  if (currentSort === "title") {
+    return [...data].sort((a, b) =>
+      getValue(a, "Game").localeCompare(getValue(b, "Game"), "ja")
+    );
+  }
+  if (currentSort === "streamer") {
+    return [...data].sort((a, b) =>
+      getValue(a, "Streamer").localeCompare(getValue(b, "Streamer"), "ja")
+    );
+  }
+  return data;
+}
+
+function applyAndRender() {
+  renderList(getSortedData(getFilteredData()));
+}
 
 const listLoading = document.getElementById("list-loading");
 fetch(csv_url)
@@ -248,7 +283,7 @@ fetch(csv_url)
   allData = validData;
 
   listLoading.style.display = "none";
-    
+
   function renderList(data) {
     const list = document.getElementById("list");
     list.innerHTML = "";
@@ -318,34 +353,23 @@ fetch(csv_url)
     });
   }
 
-  renderList(allData);
+  applyAndRender();
 
-  const buttons = document.querySelectorAll("#date-filter button");
-
-  buttons.forEach(btn => {
+  document.querySelectorAll("#date-filter button").forEach(btn => {
     btn.addEventListener("click", () => {
-
-      buttons.forEach(b => b.classList.remove("active"));
+      document.querySelectorAll("#date-filter button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-
       currentFilter = btn.dataset.date;
+      applyAndRender();
+    });
+  });
 
-      let filtered;
-
-      if (currentFilter === "all") {
-        filtered = allData;
-      } else if (currentFilter === "TBD") {
-        filtered = allData.filter(row =>
-          getValue(row, "Date").includes("未定") ||
-          getValue(row, "Date").includes("TBD")
-        );
-      } else {
-        filtered = allData.filter(row =>
-          getValue(row, "Date").includes(currentFilter)
-        );
-      }
-
-      renderList(filtered);
+  document.querySelectorAll("#sort-filter button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#sort-filter button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentSort = btn.dataset.sort;
+      applyAndRender();
     });
   });
 })
