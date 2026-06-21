@@ -285,6 +285,13 @@ a:hover {
   text-decoration: none;
 }
 
+.cta-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+  filter: grayscale(40%);
+}
+
 .footer {
   text-align: center;
   padding: 30px 10px;
