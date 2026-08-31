@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DIGspotlight Credits</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+#wrapper {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+}
+
+#track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  font-size: 22px;
+}
+
+.credit-block {
+  text-align: center;
+}
+
+.streamer-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.streamer-header img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #222;
+}
+
+.streamer-name {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.game-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 800px;
+}
+
+.game-item {
+  width: 300px;
+}
+
+.game-item img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.game-title {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.scroll {
+  animation: scrollCredits linear;
+}
+
+@keyframes scrollCredits {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-1 * var(--scroll-distance))); }
+}
+</style>
+</head>
+
+<body>
+
+<div id="wrapper">
+  <div id="track"></div>
+</div>
+
+<script>
+const csv_url = "data/participants.csv";
+
+const getValue = (row, keyword) => {
+  const key = Object.keys(row).find(k => k && k.includes(keyword));
+  return key ? row[key] : "";
+};
+
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+
+const track = document.getElementById("track");
+const wrapper = document.getElementById("wrapper");
+
+// Twitchユーザー名抽出
+function getUsername(twitch) {
+  if (!twitch) return "";
+  return twitch
+    .replace("https://www.twitch.tv/", "")
+    .replace("https://twitch.tv/", "")
+    .split("?")[0]
+    .replace("/", "")
+    .toLowerCase();
+}
+
+// AppID
+function getAppId(url) {
+  return url.match(/app\/(\d+)/)?.[1];
+}
+
+fetch(csv_url)
+.then(res => res.text())
+.then(text => {
+
+  const parsed = Papa.parse(text, { header: true });
+  const data = parsed.data;
+
+  const validData = data.filter(row => {
+    const game = getValue(row, "Game");
+    return game && game.trim() !== "";
+  });
+
+  // ===== ストリーマーごとにまとめる =====
+  const map = {};
+
+  validData.forEach(row => {
+    const streamer = getValue(row, "Streamer");
+    const twitch = getValue(row, "Twitch");
+    const game = getValue(row, "Game");
+    const steam = getValue(row, "Steam");
+
+    const username = getUsername(twitch);
+
+    if (!map[username]) {
+      map[username] = {
+        streamer,
+        username,
+        games: []
+      };
+    }
+
+    map[username].games.push({
+      game,
+      steam
+    });
+  });
+
+  const grouped = Object.values(map);
+
+  // ===== 描画 =====
+  grouped.forEach(user => {
+
+    const block = document.createElement("div");
+    block.className = "credit-block";
+
+    const icon = user.username
+      ? `icons/${user.username}.png`
+      : "";
+
+    const header = `
+      <div class="streamer-header">
+        <img src="${icon}" onerror="this.src='https://placehold.co/50x50?text=?'">
+        <div class="streamer-name">${escapeHtml(user.streamer)}</div>
+      </div>
+    `;
+
+    const gamesHTML = user.games.map(g => {
+      const appId = getAppId(g.steam);
+      const img = appId ? `images/${appId}.jpg` : "";
+
+      return `
+        <div class="game-item">
+          <img src="${img}" onerror="this.style.display='none'">
+          <div class="game-title">${escapeHtml(g.game)}</div>
+        </div>
+      `;
+    }).join("");
+
+    block.innerHTML = `
+      ${header}
+      <div class="game-list">${gamesHTML}</div>
+    `;
+
+    track.appendChild(block);
+  });
+
+  // ===== エンディング =====
+  const ending = document.createElement("div");
+  ending.className = "credit-block";
+  ending.style.marginTop = "80px";
+
+  ending.innerHTML = `
+    <div style="font-size:28px; font-weight:bold; margin-bottom:20px;">
+      Thank you for watching & supporting!!<br>
+      and all streamers & developers!!<br><br>
+      Presented by alnico_GameNews
+    </div>
+  `;
+
+  track.appendChild(ending);
+  
+  function waitForImages() {
+    const images = track.querySelectorAll("img");
+    let loaded = 0;
+
+    if (images.length === 0) {
+      startMeasurement();
+      return;
+    }
+
+    images.forEach(img => {
+      if (img.complete) {
+        loaded++;
+      } else {
+        img.onload = img.onerror = () => {
+          loaded++;
+          if (loaded === images.length) {
+            startMeasurement();
+          }
+        };
+      }
+    });
+
+    if (loaded === images.length) {
+      startMeasurement();
+    }
+  }
+
+  function startMeasurement() {
+    const contentHeight = track.scrollHeight;
+    const screenHeight = window.innerHeight;
+
+    const totalDistance = contentHeight + screenHeight;
+
+    const speed = 50; // px/sec
+    const duration = totalDistance / speed;
+
+    wrapper.style.animationDuration = duration + "s";
+    wrapper.style.setProperty("--scroll-distance", totalDistance + "px");
+
+    startScroll();
+  }
+
+  waitForImages();
+
+  function startScroll() {
+    wrapper.classList.remove("scroll");
+
+    // 再スタートのために強制リフロー
+    void wrapper.offsetWidth;
+
+    wrapper.classList.add("scroll");
+  }
+
+  // 1周ごとにリセット
+  wrapper.addEventListener("animationend", () => {
+    setTimeout(startScroll, 1500); // 1.5秒休憩
+  });
+
+})
+.catch(err => {
+  console.error("CSV取得失敗:", err);
+});
+</script>
+
+</body>
+</html>

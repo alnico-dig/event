@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight vol.2 | 未発見ゲームスポットライト</title>
+<meta name="description" content="まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」第2回。Twitchで開催。 / A streaming event to discover lesser-known games on Twitch — vol.2.">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="#DIGspotlight">
+<meta property="og:url" content="https://alnico-dig.github.io/event/vol2/">
+<meta property="og:title" content="#DIGspotlight vol.2 | 未発見ゲームスポットライト">
+<meta property="og:description" content="まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」第2回。Twitchで開催。 / A streaming event to discover lesser-known games on Twitch — vol.2.">
+<meta property="og:image" content="https://alnico-dig.github.io/event/vol2/header.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@alnico_ow">
+<meta name="twitter:title" content="#DIGspotlight vol.2 | 未発見ゲームスポットライト">
+<meta name="twitter:description" content="まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」第2回。Twitchで開催。 / A streaming event to discover lesser-known games on Twitch — vol.2.">
+<meta name="twitter:image" content="https://alnico-dig.github.io/event/vol2/header.png">
+
+<!-- 言語のちらつき防止：スタイル適用前に保存済みの言語を反映 -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="stylesheet" href="stylesheet.css">
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SFHVH7WR23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SFHVH7WR23', {
+    'anonymize_ip': true
+  });
+</script>
+</head>
+
+<body>
+<a id="top"></a>
+
+<!-- ===== ヘッダーナビ（スティッキー固定） ===== -->
+<header class="site-nav">
+  <a class="nav-logo" href="#top">#DIGspotlight</a>
+  <nav class="nav-links">
+    <a href="#about"><span class="ja">概要</span><span class="en">About</span></a>
+    <a href="#rules"><span class="ja">ルール</span><span class="en">Rules</span></a>
+    <a href="#notice"><span class="ja">注意事項</span><span class="en">Notes</span></a>
+    <a href="#streams"><span class="ja">参加者一覧</span><span class="en">Streamers</span></a>
+    <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
+  </nav>
+  <div class="nav-actions">
+    <!-- TODO: register.html 作成後に cta-disabled を外す -->
+    <a href="register.html" class="nav-cta cta-disabled"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  </div>
+</header>
+
+<header class="hero">
+  <img src="header.png" class="hero-img" alt="#DIGspotlight">
+</header>
+
+<!-- ===== 概要 ===== -->
+<section id="about" class="about-section">
+  <h2 class="section-title">#DIGspotlight | 未発見ゲームスポットライト</h2>
+  <p class="summary">
+    <span class="ja">まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」<br>他の配信者とつながりながら、新しいゲームや開発者と出会えるチャンスです</span>
+    <span class="en">A streaming event to discover lesser-known and overlooked games — #DIGspotlight<br>Connect with fellow streamers while discovering new games and developers</span>
+  </p>
+
+  <div class="event-info">
+    <!-- TODO: 第2回の正式な開催日程が決まったら差し替え（メモ: Steam ウインターセール合わせ、12/19頃〜の3日間） -->
+    <div>📍 <span class="ja">開催場所：Twitch配信</span><span class="en">Streaming on Twitch</span></div>
+    <div>📅 <span class="ja">開催期間：12月中旬（予定）</span><span class="en">Mid-December (TBD)</span></div>
+  </div>
+</section>
+
+<!-- ===== 参加ルール ===== -->
+<section id="rules" class="rules">
+  <h2><span class="ja">参加ルール</span><span class="en">Rules</span></h2>
+
+  <ul class="ja">
+    <li>
+      期間内にあなたのTwitchチャンネルでゲームを配信するだけ！
+      <small>※他配信サイトとの同時配信（YouTubeなど）OK / 他配信者様と配信タイトルが重複してもOK</small>
+    </li>
+    <li>
+      Steamレビュー1000件未満のゲームであること（インディーゲームに限りません）<br>
+      <small>
+        ※ストアページのレビュー数で確認（自身の言語のレビュー数でOK）/
+        <a href="https://kenbogames.com/steamdatabase/" target="_blank">こちらでも探せます(J-STEAM DB by kenbo様)</a>
+      </small>
+    </li>
+    <li>
+      配信タイトルにゲーム名を記載
+      <small>※配信中のタイトル変更はOKです（ゲームごとに配信を分ける必要はありません）</small>
+    </li>
+    <li>
+      配信タイトルに「#DIGspotlight」を入れてください
+      <small>※レイド先の検索に使います(「#DIGspotlight」で揃えていただくと、企画参加がより分かりやすくなります)</small>
+    </li>
+    <li>
+      Steam以外（Switch / PS など）でのプレイもOK
+      <small>※Steamに同一のゲームがあれば対象になります</small>
+    </li>
+    <li>
+      他の参加者へのレイドはお気軽に
+      <small>※受ける側のレイド受付設定は任意です</small>
+    </li>
+    <li>
+      複数ゲーム配信OK
+      <small>※ご面倒をおかけしますが、ゲームごとに個別申請をお願いします<br>　お一人が数年がかりで作成されたゲームもございます、○○その他色々といった申請はお控えください</small>
+    </li>
+  </ul>
+
+  <ul class="en">
+    <li>
+      Stream a game on your Twitch channel during the event period
+      <small>*Simulcasting (e.g. YouTube) allowed / Duplicate titles between streamers allowed</small>
+    </li>
+    <li>
+      The game must have under 1000 Steam reviews — it doesn't have to be an indie game<br>
+      <small>
+        *Check the store page (your language reviews are fine) /
+        <a href="https://kenbogames.com/steamdatabase/" target="_blank">You can also search here (J-STEAM DB by kenbo)</a>
+      </small>
+    </li>
+    <li>
+      Include the game title in your stream title
+      <small>*You may change the title during your stream (no need to start a new stream for each game)</small>
+    </li>
+    <li>
+      Include "#DIGspotlight" in your stream title
+      <small>*Used for finding raid targets (using "#DIGspotlight" also makes participation clearer)</small>
+    </li>
+    <li>
+      Non-Steam platforms (Switch / PlayStation, etc.) allowed
+      <small>*If the same game exists on Steam</small>
+    </li>
+    <li>
+      Feel free to raid other participants
+      <small>*Receiving raid settings are up to each streamer</small>
+    </li>
+    <li>
+      Multiple games allowed
+      <small>*Submit each game separately</small>
+    </li>
+  </ul>
+
+  <div class="cta-row">
+    <!-- TODO: register.html / edit.html 作成後に cta-disabled を外す -->
+    <a href="register.html" class="cta cta-disabled"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <a href="edit.html" class="cta-outline cta-disabled"><span class="ja">登録内容を編集する</span><span class="en">Edit Entry</span></a>
+  </div>
+</section>
+
+<!-- ===== 注意事項（ルールから独立） ===== -->
+<section id="notice" class="rules">
+  <h2><span class="ja">注意事項</span><span class="en">Notes</span></h2>
+
+  <ul class="ja">
+    <li>配信するゲームのガイドラインおよび利用規約を遵守してください</li>
+    <li>配信中は当サイトをピン留めして企画に参加していることをお知らせください</li>
+    <li>期間中は主催者が一部配信を紹介・配信する場合があります</li>
+  </ul>
+
+  <ul class="en">
+    <li>Follow each game's official streaming guidelines and terms of service</li>
+    <li>Pin this site during your stream to show that you're taking part</li>
+    <li>The organizer may feature or restream some broadcasts during the event</li>
+  </ul>
+
+  <p class="contact ja">
+    <!-- TODO: 申請期間の日付を第2回の日程に合わせて更新 -->
+    申請期間は開催前日までです。（申請後、画像以外は即サイトへ反映されますのでいつでもご自由に）<br>
+    不明点や予定の削除等あれば、主催者のXまたはTwitchのウィスパー機能でお気軽にご連絡ください。<br>
+    Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
+    X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
+  </p>
+  <p class="contact en">
+    Applications are open until the day before the event — entries go live immediately after submission (except images).<br>
+    For any questions or cancellations, feel free to reach out via X or Twitch whispers.<br>
+    Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
+    X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
+  </p>
+</section>
+
+<!-- ===== 参加者・ゲーム一覧 ===== -->
+<!-- TODO(データ層): 第2回は新スプレッドシート + GAS doPost。CSV スキーマ確定後にカードの表示項目
+     （配信予定日時グリッド / X リンク / 開発者名は非表示 など）とフィルタの日付ラベルを更新する。 -->
+<h2 class="section-title" id="streams">DIG Game Streams</h2>
+<div id="count"></div>
+<div class="filter-row">
+  <div id="date-filter" class="filter">
+    <span class="sort-label">Filter</span>
+    <button data-date="all" class="active">ALL</button>
+    <button data-date="6/19">6/19</button>
+    <button data-date="6/20">6/20</button>
+    <button data-date="6/21">6/21</button>
+    <button data-date="TBD">TBD</button>
+  </div>
+  <div id="sort-filter" class="filter sort-filter">
+    <span class="sort-label">Sort</span>
+    <button data-sort="default" class="active">Date</button>
+    <button data-sort="title">Title</button>
+    <button data-sort="streamer">Streamer</button>
+  </div>
+  <div class="filter sort-filter">
+    <a href="schedule.html" class="schedule-page-link">📅 Schedule</a>
+  </div>
+</div>
+<div id="list-loading">Loading...</div>
+<div id="list"></div>
+<script>
+let allData = [];
+let currentFilter = "all";
+let currentSort = "default";
+
+const csv_url = "data/participants.csv";
+
+const getValue = (row, keyword) => {
+  const key = Object.keys(row).find(k => k && k.includes(keyword));
+  return key ? row[key] : "";
+};
+
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+
+function getFilteredData() {
+  if (currentFilter === "all") return allData;
+  if (currentFilter === "TBD") return allData.filter(row =>
+    getValue(row, "Date").includes("未定") || getValue(row, "Date").includes("TBD")
+  );
+  return allData.filter(row => getValue(row, "Date").includes(currentFilter));
+}
+
+function getSortedData(data) {
+  if (currentSort === "title") {
+    return [...data].sort((a, b) =>
+      getValue(a, "Game").localeCompare(getValue(b, "Game"), "ja")
+    );
+  }
+  if (currentSort === "streamer") {
+    return [...data].sort((a, b) =>
+      getValue(a, "Streamer").localeCompare(getValue(b, "Streamer"), "ja")
+    );
+  }
+  return data;
+}
+
+function renderList(data) {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  const uniqueCount = new Set(data.map(row => getValue(row, "Game").trim()).filter(Boolean)).size;
+  document.getElementById("count").textContent = `${uniqueCount} titles`;
+
+  data.forEach(row => {
+    const streamer = getValue(row, "Streamer");
+    const twitch = getValue(row, "Twitch");
+    const game = getValue(row, "Game");
+    const steam = getValue(row, "Steam");
+    const date = getValue(row, "Date");
+    const time = getValue(row, "Time");
+    const language = getValue(row, "Language");
+    const notes = getValue(row, "Notes");
+
+    let username = "";
+    if (twitch) {
+      username = twitch
+        .replace("https://www.twitch.tv/", "")
+        .replace("https://twitch.tv/", "")
+        .split("?")[0]
+        .replace("/", "")
+        .toLowerCase();
+    }
+
+    const iconPath = username ? `icons/${username}.png` : "";
+    const appId = steam.match(/app\/(\d+)/)?.[1];
+    const gameImage = appId ? `images/${appId}.jpg` : "";
+
+    let langIcon = "";
+    if (language.includes("日本語") || language.includes("Japanese")) langIcon += "JA ";
+    if (language.includes("英語") || language.includes("English")) langIcon += "EN ";
+    if (language.includes("その他") || language.includes("Other")) langIcon += "etc. ";
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="left">
+        <a href="${safeUrl(twitch)}" target="_blank">
+          <img class="icon"
+            src="${iconPath}"
+            loading="lazy"
+            onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
+        </a>
+
+        <div class="info">
+          <div class="row streamer">🎙️<a href="${safeUrl(twitch)}" target="_blank">${escapeHtml(streamer)}</a></div>
+          <div class="row game">🎮 <a href="${safeUrl(steam)}" target="_blank">${escapeHtml(game)}</a></div>
+          ${date ? `<div class="meta">📅 ${escapeHtml(date)}</div>` : ""}
+          ${time ? `<div class="meta">⏰ ${escapeHtml(time)}</div>` : ""}
+          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
+          ${notes ? `<div class="meta note">💬 ${escapeHtml(notes)}</div>` : ""}
+        </div>
+      </div>
+
+      ${gameImage ? `
+        <a href="${safeUrl(steam)}" target="_blank">
+          <img src="${gameImage}" class="game-img" loading="lazy" onerror="this.style.display='none'">
+        </a>
+      ` : ""}
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+function applyAndRender() {
+  renderList(getSortedData(getFilteredData()));
+}
+
+const listLoading = document.getElementById("list-loading");
+fetch(csv_url)
+.then(res => res.text())
+.then(text => {
+
+  const parsed = Papa.parse(text, { header: true });
+  const data = parsed.data;
+
+  const validData = data.filter(row => {
+    const game = getValue(row, "Game");
+    return game && game.trim() !== "";
+  });
+
+  allData = validData;
+
+  listLoading.style.display = "none";
+
+  applyAndRender();
+
+  document.querySelectorAll("#date-filter button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#date-filter button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.date;
+      applyAndRender();
+    });
+  });
+
+  document.querySelectorAll("#sort-filter button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#sort-filter button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentSort = btn.dataset.sort;
+      applyAndRender();
+    });
+  });
+})
+.catch(err => {
+  console.error("CSV取得失敗:", err);
+  listLoading.innerText = "Failed to load data.";
+});
+</script>
+
+<h2 class="section-title">DIG Selection</h2>
+<p class="selection-note">
+  どのゲームを遊ぶか迷ったら、ここからどうぞ。<br>
+  <span class="sub">Not sure what to play? Start here.</span>
+</p>
+
+<section class="dig-selection">
+  <div class="carousel">
+    <button class="nav prev">‹</button>
+    <div id="carousel-index"></div>
+    <div id="selection-loading">Loading...</div>
+    <div class="carousel-track" id="carousel-track">
+      <!-- JS生成 -->
+    </div>
+    <button class="nav next">›</button>
+  </div>
+</section>
+
+<script>
+const SELECTION_CSV = "data/selection.csv";
+
+const track = document.getElementById("carousel-track");
+const indexEl = document.getElementById("carousel-index");
+
+let items = [];
+let current = 0;
+let interval;
+
+// AppID取得
+function getAppId(url) {
+  return url.match(/app\/(\d+)/)?.[1];
+}
+
+// CSV読み込み
+Papa.parse(SELECTION_CSV, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    const selectionLoading = document.getElementById("selection-loading");
+    const data = results.data.filter(d => d.Title && d.Steam);
+
+    if (data.length === 0) {
+      selectionLoading.textContent = "";
+      return;
+    }
+
+    renderCarousel(data);
+    initCarousel();
+    selectionLoading.style.display = "none";
+  }
+});
+
+// DOM生成
+function renderCarousel(data) {
+  track.innerHTML = "";
+
+  data.forEach((item, index) => {
+    const appId = getAppId(item.Steam);
+    const img = appId ? `images/${appId}.jpg` : "";
+
+    const div = document.createElement("div");
+    div.className = "carousel-item";
+
+    div.innerHTML = `
+      <div class="selection-card">
+        <a href="${safeUrl(item.Steam)}" target="_blank">
+          <img src="${img}" class="selection-img" loading="lazy" onerror="this.style.display='none'">
+        </a>
+
+        <div class="selection-info">
+          <h3>
+            <a href="${safeUrl(item.Steam)}" target="_blank">
+              ${escapeHtml(item.Title)}
+            </a>
+          </h3>
+        </div>
+      </div>
+    `;
+
+    track.appendChild(div);
+  });
+
+  items = document.querySelectorAll('.carousel-item');
+}
+
+// インデックス件数表示
+function updateIndex() {
+  indexEl.textContent = `${current + 1} / ${items.length}`;
+}
+
+// 表示切替
+function show(index) {
+  items[current].classList.remove('active');
+  current = (index + items.length) % items.length;
+  items[current].classList.add('active');
+  updateIndex();
+}
+
+// 自動再生
+function startAutoSlide() {
+  interval = setInterval(() => {
+    show(current + 1);
+  }, 7000);
+}
+
+// リセット
+function resetAutoSlide() {
+  clearInterval(interval);
+  startAutoSlide();
+}
+
+// 初期化
+function initCarousel() {
+  current = Math.floor(Math.random() * items.length);
+  items[current].classList.add('active');
+  updateIndex();
+
+  const prev = document.querySelector('.prev');
+  const next = document.querySelector('.next');
+
+  prev.addEventListener('click', () => {
+    show(current - 1);
+    resetAutoSlide();
+  });
+
+  next.addEventListener('click', () => {
+    show(current + 1);
+    resetAutoSlide();
+  });
+
+  // ホバー停止
+  track.addEventListener("mouseenter", () => clearInterval(interval));
+  track.addEventListener("mouseleave", startAutoSlide);
+
+  startAutoSlide();
+}
+</script>
+
+<section class="assets">
+  <h3 class="assets-title">DIG Stream Assets</h3>
+  <div class="banner-row">
+    <img src="dig_banner.png" class="banner" loading="lazy">
+    <div class="banner-actions">
+      <a href="dig_banner.png" download class="download-btn">
+        ダウンロード<br><small>Download</small>
+      </a>
+      <div class="banner-note">
+        ご自由にお使いください<br>
+        <small>Free to use on your stream</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+</footer>
+
+<script>
+/* ===== 言語切替（html[lang] を切り替えるだけ。CSSで .ja / .en を出し分け） ===== */
+(function () {
+  const KEY = 'digspotlight-lang';
+  const btn = document.getElementById('lang-toggle');
+
+  function apply(lang) {
+    document.documentElement.lang = lang;
+    btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+  }
+
+  let saved = 'ja';
+  try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+  apply(saved);
+
+  btn.addEventListener('click', function () {
+    const next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+    apply(next);
+    try { localStorage.setItem(KEY, next); } catch (e) {}
+  });
+})();
+</script>
+
+</body>
+</html>

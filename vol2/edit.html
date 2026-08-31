@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight - 申請を編集する</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="stylesheet.css">
+<style>
+.login-box {
+  max-width: 480px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 16px;
+  padding: 36px 28px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  border: 1px solid #eee;
+}
+.login-box p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.twitch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: #9147ff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(145,71,255,0.35);
+  transition: 0.2s;
+  text-decoration: none;
+}
+.twitch-btn:hover {
+  background: #7d3be0;
+  transform: translateY(-2px);
+  opacity: 1;
+}
+.twitch-btn svg {
+  flex-shrink: 0;
+}
+.user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f3f0ff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #6c3cff;
+  font-weight: 600;
+}
+.edit-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+  margin-bottom: 16px;
+  transition: 0.2s;
+}
+.edit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+.edit-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.edit-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(108,60,255,0.25);
+  text-decoration: none;
+  transition: 0.2s;
+}
+.edit-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.hint {
+  text-align: center;
+  font-size: 12px;
+  color: #bbb;
+  margin-top: 8px;
+}
+@media (max-width: 640px) {
+  .edit-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .edit-card-right {
+    align-items: stretch;
+    width: 100%;
+  }
+  .edit-btn {
+    text-align: center;
+  }
+}
+</style>
+</head>
+
+<body>
+<header class="hero">
+  <img src="header.png" class="hero-img">
+</header>
+
+<h2 class="section-title">申請を編集する / Edit Your Entry</h2>
+
+<div id="app" style="max-width:760px;margin:0 auto;padding:16px 20px 60px;">
+
+  <!-- ログイン前 -->
+  <div id="view-login" style="display:none;">
+    <div class="login-box">
+      <p>申請時に使用したTwitchアカウントでログインすると、<br>申請済みのゲームが表示されます。<br><span style="font-size:12px;color:#999;">Log in with the Twitch account you used to register to view your submitted games.</span></p>
+      <button id="btn-login" class="twitch-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+        </svg>
+        Twitchでログイン
+      </button>
+      <p style="margin-top:20px;font-size:12px;color:#bbb;">
+        申請内容の確認・変更のためにTwitchアカウントを使用します。<br>
+        メールアドレスの取得や投稿は行いません。<br>
+        Your Twitch account is used only to verify your identity. We do not access your email or post anything.
+      </p>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <a href="index.html" style="font-size:13px;color:#aaa;">← トップページへ戻る / Back to Top</a>
+    </div>
+  </div>
+
+  <!-- ローディング -->
+  <div id="view-loading" style="display:none;">
+    <div id="list-loading">Loading...</div>
+  </div>
+
+  <!-- 申請一覧 -->
+  <div id="view-entries" style="display:none;">
+    <div class="user-bar">
+      <span class="user-badge">✓ <span id="entry-username"></span></span>
+    </div>
+    <div id="entry-list"></div>
+    <p class="hint">「申請内容を編集」を押すとGoogleフォームの編集画面が開きます<br>Click "Edit Entry" to open the Google Form editing page.</p>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="index.html" style="font-size:13px;color:#aaa;">← トップページへ戻る / Back to Top</a>
+    </div>
+  </div>
+
+  <!-- 申請なし -->
+  <div id="view-empty" style="display:none;">
+    <div class="list-loading" style="max-width:500px;text-align:center;">
+      <strong id="empty-username"></strong> の申請が見つかりませんでした。<br>
+      No applications found for this account.<br><br>
+      <small style="color:#bbb;">
+        申請に使用したアカウントと異なる可能性があります。<br>
+        別アカウントで試す場合はTwitchからログアウト後に再度お試しください。<br>
+        This may not be the account you used to apply.<br>
+        To try a different account, log out of Twitch first, then log in again.
+      </small>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <a href="index.html" class="cta" style="margin:0 auto;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
+    </div>
+  </div>
+
+  <!-- エラー -->
+  <div id="view-error" style="display:none;">
+    <div class="list-loading" style="max-width:500px;">
+      データの取得に失敗しました。時間をおいて再度お試しください。<br>
+      <small style="color:#bbb;">Failed to load your data. Please try again later.</small>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <a href="index.html" class="cta" style="margin:0 auto;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+</footer>
+
+<script>
+const TWITCH_CLIENT_ID = 'kp13odpytkan0tqo6xmgj5509h4104';
+const REDIRECT_URI     = 'https://alnico-dig.github.io/event/edit.html';
+const GAS_URL          = 'https://script.google.com/macros/s/AKfycbxAkXEyoXb3eDMUw8vhHI1J0BHbisYbHFDyr252wYMpYZ6-PAGG14KoRKORG1XELfJAtg/exec';
+
+const TOKEN_KEY = 'dig_twitch_token';
+
+function showView(id) {
+  ['login', 'loading', 'entries', 'empty', 'error'].forEach(v => {
+    document.getElementById('view-' + v).style.display = (v === id) ? '' : 'none';
+  });
+}
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  const url = new URL('https://id.twitch.tv/oauth2/authorize');
+  url.searchParams.set('client_id', TWITCH_CLIENT_ID);
+  url.searchParams.set('redirect_uri', REDIRECT_URI);
+  url.searchParams.set('response_type', 'token');
+  url.searchParams.set('scope', '');
+  location.href = url.toString();
+});
+
+function extractTokenFromHash() {
+  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+  return params.get('access_token') || null;
+}
+
+async function fetchTwitchUser(token) {
+  const res = await fetch('https://api.twitch.tv/helix/users', {
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Client-Id': TWITCH_CLIENT_ID
+    }
+  });
+  if (res.status === 401) throw new Error('token_expired');
+  if (!res.ok) throw new Error('twitch_api_' + res.status);
+  const json = await res.json();
+  return json.data?.[0]?.login ?? null;
+}
+
+async function fetchEntries(token) {
+  const res = await fetch(GAS_URL + '?token=' + encodeURIComponent(token));
+  if (!res.ok) throw new Error('gas_api_' + res.status);
+  const data = await res.json();
+  if (data.error === 'token_expired') throw new Error('token_expired');
+  if (data.error) throw new Error('gas_error');
+  return data;
+}
+
+function renderEntries(entries, username) {
+  document.getElementById('entry-username').textContent = username;
+  const list = document.getElementById('entry-list');
+  list.innerHTML = '';
+
+  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const safeUrl = u => /^https?:\/\//.test(u) ? u : '#';
+
+  entries.forEach(entry => {
+    const appId = (entry.steam || '').match(/app\/(\d+)/)?.[1];
+    const imgSrc = appId ? 'images/' + appId + '.jpg' : '';
+
+    let langText = '';
+    const lang = entry.language || '';
+    if (lang.includes('日本語') || lang.includes('Japanese')) langText += 'JA ';
+    if (lang.includes('英語') || lang.includes('English')) langText += 'EN ';
+    if (lang.includes('その他') || lang.includes('Other')) langText += 'etc.';
+    langText = langText.trim();
+
+    const card = document.createElement('div');
+    card.className = 'edit-card';
+    card.innerHTML = `
+      <div class="info" style="flex:1;min-width:0;">
+        <div class="row game">🎮 <a href="${safeUrl(entry.steam)}" target="_blank">${esc(entry.game)}</a></div>
+        ${entry.date   ? `<div class="meta">📅 ${esc(entry.date)}</div>` : ''}
+        ${entry.time   ? `<div class="meta">⏰ ${esc(entry.time)}</div>` : ''}
+        ${langText     ? `<div class="meta">🌐 ${langText}</div>` : ''}
+        ${entry.notes  ? `<div class="meta note">💬 ${esc(entry.notes)}</div>` : ''}
+      </div>
+      <div class="edit-card-right">
+        ${imgSrc ? `
+          <a href="${safeUrl(entry.steam)}" target="_blank">
+            <img src="${imgSrc}" class="game-img" style="width:160px;" loading="lazy" onerror="this.style.display='none'">
+          </a>` : ''}
+        <a href="${safeUrl(entry.editUrl)}" target="_blank" class="edit-btn">申請内容を編集 / Edit Entry</a>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+async function init() {
+  const hashToken = extractTokenFromHash();
+  if (hashToken) {
+    sessionStorage.setItem(TOKEN_KEY, hashToken);
+    history.replaceState(null, '', location.pathname);
+  }
+
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  if (!token) { showView('login'); return; }
+
+  showView('loading');
+
+  try {
+    const username = await fetchTwitchUser(token);
+    if (!username) throw new Error('no_username');
+
+    const entries = await fetchEntries(token);
+
+    if (!Array.isArray(entries) || entries.length === 0) {
+      document.getElementById('empty-username').textContent = username;
+      showView('empty');
+      return;
+    }
+
+    renderEntries(entries, username);
+    showView('entries');
+
+  } catch (err) {
+    console.error(err);
+    sessionStorage.removeItem(TOKEN_KEY);
+    // トークン切れはログイン画面へ、それ以外はエラー画面へ
+    showView(err.message === 'token_expired' ? 'login' : 'error');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
