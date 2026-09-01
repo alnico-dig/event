@@ -300,6 +300,63 @@
 }
 .done-box p { font-size: 14px; color: #555; line-height: 1.8; }
 
+.done-title { font-size: 16px; margin: 4px 0 2px; }
+.done-updated {
+  display: inline-block;
+  font-size: 12px;
+  color: #6c3cff;
+  background: #f3f0ff;
+  border-radius: 999px;
+  padding: 3px 12px;
+  margin-bottom: 14px;
+}
+.done-updated[hidden] { display: none; }
+
+.done-card {
+  text-align: left;
+  border: 1px solid #e5dcff;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #faf8ff;
+  margin: 8px 0 18px;
+}
+.done-card img {
+  width: 100%;
+  aspect-ratio: 460 / 215;
+  object-fit: cover;
+  display: block;
+  background: #e5dcff;
+}
+.done-card-body { padding: 12px 14px; }
+.done-game-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #4b2ec7;
+  display: inline-block;
+}
+.done-dev { font-size: 12px; color: #999; margin-top: 2px; }
+.done-sched { font-size: 13px; color: #555; margin-top: 8px; }
+.done-comment {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.done-note { font-size: 12px; color: #999; margin: 0 0 16px; line-height: 1.6; }
+.done-actions { display: flex; flex-direction: column; gap: 10px; }
+.done-view-site {
+  display: block;
+  padding: 12px;
+  border: 2px solid #6c3cff;
+  border-radius: 12px;
+  color: #6c3cff;
+  font-weight: bold;
+  font-size: 14px;
+  text-decoration: none;
+}
+.done-view-site:hover { background: #f3f0ff; text-decoration: none; opacity: 1; }
+
 @media (max-width: 520px) {
   .time-grid { grid-template-columns: 48px repeat(5, 1fr); font-size: 11px; }
   .reg-wrap { padding: 8px 14px 80px; }
@@ -378,18 +435,14 @@
         <label class="field-label" for="in-game">配信するゲーム / Game<span class="req">必須</span></label>
         <p class="field-hint">
           ルール: Steamレビュー1000件未満のゲーム。<br>
-          名前で検索して選ぶか、Steamストアページの URL を貼り付けてください。<br>
-          Search by name, or paste the game's Steam store page URL.
+          ゲーム名で検索して候補から選ぶか、Steamストアページの URL をそのまま貼り付けてください。<br>
+          Search by name and pick from the list, or just paste the game's Steam store URL.
         </p>
 
         <div class="game-search">
-          <input type="text" id="in-game" autocomplete="off" placeholder="ゲーム名で検索 / Search by name">
+          <input type="text" id="in-game" autocomplete="off"
+            placeholder="ゲーム名で検索 / Steam URL を貼り付け">
           <div class="suggest-list" id="suggest-list"></div>
-        </div>
-        <button type="button" class="link-btn" id="toggle-url">Steam URL を直接貼り付ける / Paste URL instead</button>
-
-        <div id="url-input-wrap" style="display:none;margin-top:8px;">
-          <input type="text" id="in-game-url" autocomplete="off" placeholder="https://store.steampowered.com/app/......">
         </div>
 
         <div class="game-preview" id="game-preview">
@@ -441,13 +494,28 @@
   <div id="view-done" style="display:none;">
     <div class="done-box">
       <div class="check">✓</div>
-      <p>
-        応募を受け付けました！<br>
-        <span id="done-game" style="font-weight:700;color:#6c3cff;"></span><br><br>
-        続けて別のゲームを応募する場合は下のボタンから。<br>
-        <span style="font-size:12px;color:#999;">Your entry has been received. To submit another game, use the button below.</span>
+      <h3 class="done-title">応募を受け付けました！ / Entry received</h3>
+      <div class="done-updated" id="done-updated" hidden>既存の応募を更新しました / Updated your existing entry</div>
+
+      <div class="done-card">
+        <img id="done-img" src="" alt="">
+        <div class="done-card-body">
+          <a id="done-game-link" href="#" target="_blank" rel="noopener" class="done-game-name"></a>
+          <div class="done-dev" id="done-dev"></div>
+          <div class="done-sched" id="done-sched"></div>
+          <div class="done-comment" id="done-comment"></div>
+        </div>
+      </div>
+
+      <p class="done-note">
+        画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更・削除できます。<br>
+        <span style="color:#bbb;">Live on the site now (except images). Edit or remove it anytime from the edit page.</span>
       </p>
-      <button type="button" class="submit-btn" id="btn-again" style="margin-top:8px;">別のゲームを応募する / Submit another</button>
+
+      <div class="done-actions">
+        <button type="button" class="submit-btn" id="btn-again">別のゲームを応募する / Submit another</button>
+        <a class="done-view-site" id="done-view-site" href="index.html#streams">サイトで確認する / View on site</a>
+      </div>
       <div class="back-row"><a href="index.html">トップページへ / Top Page</a></div>
     </div>
   </div>
@@ -547,7 +615,10 @@
     return 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg';
   }
   function parseAppId(url) {
-    var m = String(url || '').match(/(?:store\.steampowered\.com\/app|steamcommunity\.com\/app|\/app)\/(\d+)/);
+    var s = String(url || '');
+    var m = s.match(/store\.steampowered\.com\/app\/(\d+)/i)
+         || s.match(/steampowered\.com\/agecheck\/app\/(\d+)/i)
+         || s.match(/steamcommunity\.com\/app\/(\d+)/i);
     return m ? m[1] : null;
   }
   function parseSteamName(url) {
@@ -568,11 +639,16 @@
       $('gp-name').textContent = g.name || ('App ' + g.appId);
       $('gp-appid').textContent = 'Steam App ID: ' + g.appId;
       $('game-preview').classList.add('show');
-      $('in-game').value = g.name || '';
+      $('in-game').value = g.name || ('App ' + g.appId);
       clearError('f-game');
     } else {
       $('game-preview').classList.remove('show');
     }
+  }
+
+  // 入力文字列が「Steam の URL っぽい」か（名前検索と貼り付けを1つの欄で見分ける）
+  function looksLikeUrl(s) {
+    return /^https?:\/\//i.test(s) || /steam(?:powered|community)\.com/i.test(s);
   }
 
   // ---- Steam 検索（オートコンプリート） -----------------
@@ -627,14 +703,38 @@
       });
   }
 
+  // ゲーム欄：1つの入力で「名前検索」と「URL貼り付け」の両方を受ける
   $('in-game').addEventListener('input', function () {
-    var term = this.value.trim();
-    // 手入力を始めたら選択済みゲームは解除
-    if (selectedGame && term !== (selectedGame.name || '')) setSelectedGame(null);
-    lastTerm = term;
+    var val = this.value.trim();
+
+    // 何か打ち直したら選択済みは一旦解除（プログラムからの .value 代入では発火しない）
+    if (selectedGame) setSelectedGame(null);
+
+    // --- URL として貼られた場合 ---
+    if (looksLikeUrl(val)) {
+      clearTimeout(searchTimer);
+      closeSuggest();
+      var appId = parseAppId(val);
+      if (appId) {
+        setSelectedGame({
+          appId: appId,
+          name: parseSteamName(val),
+          steamUrl: 'https://store.steampowered.com/app/' + appId + '/', // クエリ等は捨てて正規化
+          headerImage: steamHeaderUrl(appId)
+        });
+      } else {
+        // Steam の URL だがゲームページ（/app/…）ではない
+        markError('f-game');
+      }
+      return;
+    }
+
+    // --- 名前検索 ---
+    clearError('f-game');
+    lastTerm = val;
     clearTimeout(searchTimer);
-    if (term.length < 2) { closeSuggest(); return; }
-    searchTimer = setTimeout(function () { doSearch(term); }, 250);
+    if (val.length < 2) { closeSuggest(); return; }
+    searchTimer = setTimeout(function () { doSearch(val); }, 250);
   });
   $('in-game').addEventListener('focus', function () {
     if (suggestBox.innerHTML) suggestBox.classList.add('open');
@@ -643,33 +743,10 @@
     if (!e.target.closest('.game-search')) closeSuggest();
   });
 
-  // URL 直接入力
-  $('toggle-url').addEventListener('click', function () {
-    var w = $('url-input-wrap');
-    var open = w.style.display === 'none';
-    w.style.display = open ? 'block' : 'none';
-    if (open) $('in-game-url').focus();
-  });
-  function applyUrlInput() {
-    var appId = parseAppId($('in-game-url').value);
-    if (!appId) return false;
-    setSelectedGame({
-      appId: appId,
-      name: parseSteamName($('in-game-url').value),
-      steamUrl: $('in-game-url').value.trim(),
-      headerImage: steamHeaderUrl(appId)
-    });
-    return true;
-  }
-  $('in-game-url').addEventListener('blur', applyUrlInput);
-  $('in-game-url').addEventListener('input', function () {
-    if (selectedGame && parseAppId(this.value) !== selectedGame.appId) setSelectedGame(null);
-  });
-
   $('gp-clear').addEventListener('click', function () {
     setSelectedGame(null);
     $('in-game').value = '';
-    $('in-game-url').value = '';
+    clearError('f-game');
     $('in-game').focus();
   });
 
@@ -699,6 +776,40 @@
     return out;
   }
 
+  function scheduleSummary(sched) {
+    var parts = [];
+    DAYS.forEach(function (d, i) {
+      var v = sched[d];
+      if (v && v !== '未定') parts.push((i + 1) + '日目 ' + v);
+    });
+    return parts.length ? '📅 ' + parts.join(' ／ ') : '📅 配信予定：未定';
+  }
+
+  // ---- 完了画面の描画 -----------------------------------
+  function renderDone(info) {
+    var appId = parseAppId(info.steamUrl) || '';
+    var img = $('done-img');
+    img.onerror = function () {
+      this.onerror = null;
+      this.src = appId
+        ? 'https://cdn.cloudflare.steamstatic.com/steam/apps/' + appId + '/header.jpg'
+        : 'https://placehold.co/460x215?text=%23DIGspotlight';
+    };
+    img.src = info.headerImage || (appId ? steamHeaderUrl(appId) : '');
+
+    var link = $('done-game-link');
+    link.textContent = info.game;
+    link.href = /^https?:\/\//.test(info.steamUrl || '') ? info.steamUrl : '#';
+
+    $('done-dev').textContent = info.developer ? '開発 / Dev: ' + info.developer : '';
+    $('done-sched').textContent = scheduleSummary(info.schedule);
+    $('done-comment').textContent = info.comment ? '💬 ' + info.comment : '';
+    $('done-updated').hidden = !info.updated;
+
+    showView('done');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   // ---- バリデーション ------------------------------------
   function markError(fid) { $(fid).classList.add('invalid'); }
   function clearError(fid) { $(fid).classList.remove('invalid'); }
@@ -709,8 +820,19 @@
 
     if (!$('in-name').value.trim()) { markError('f-name'); ok = false; }
 
-    // URL 入力欄に何か入っていれば拾う
-    if (!selectedGame && $('in-game-url').value.trim()) applyUrlInput();
+    // ゲーム欄に URL を貼ったまま input が拾えていないケースの保険
+    if (!selectedGame) {
+      var raw = $('in-game').value.trim();
+      var appId = looksLikeUrl(raw) ? parseAppId(raw) : null;
+      if (appId) {
+        setSelectedGame({
+          appId: appId,
+          name: parseSteamName(raw),
+          steamUrl: 'https://store.steampowered.com/app/' + appId + '/',
+          headerImage: steamHeaderUrl(appId)
+        });
+      }
+    }
     if (!selectedGame || !selectedGame.appId) { markError('f-game'); ok = false; }
 
     return ok;
@@ -747,22 +869,33 @@
       x: $('in-x').value.trim()
     };
 
-    var done = function (gameLabel) {
-      $('done-game').textContent = gameLabel;
-      showView('done');
+    var resetBtn = function () {
       btn.disabled = false;
       btn.textContent = '応募する / Submit';
+    };
+    // res: GAS レスポンス（無い場合はクライアント値でフォールバック）
+    var done = function (res) {
+      res = res || {};
+      renderDone({
+        game:        res.game || payload.gameName || ('App ' + payload.appId),
+        steamUrl:    res.steamUrl || payload.steamUrl,
+        headerImage: res.headerImage || payload.headerImage,
+        developer:   res.developer || '',
+        schedule:    payload.schedule,
+        comment:     payload.comment,
+        updated:     !!res.updated
+      });
+      resetBtn();
     };
     var fail = function (msg) {
       if (msg) $('error-msg').innerHTML = esc(msg) + '<br><span style="font-size:12px;color:#999;">Please try again.</span>';
       showView('error');
-      btn.disabled = false;
-      btn.textContent = '応募する / Submit';
+      resetBtn();
     };
 
     if (DEV_MOCK) {
       console.log('[DEV_MOCK] payload:', payload);
-      setTimeout(function () { done(payload.gameName || ('App ' + payload.appId)); }, 500);
+      setTimeout(function () { done({ updated: false }); }, 500);
       return;
     }
 
@@ -775,7 +908,7 @@
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res && res.ok) {
-          done(res.game || payload.gameName || ('App ' + payload.appId));
+          done(res);
         } else if (res && res.error === 'token_expired') {
           sessionStorage.removeItem(TOKEN_KEY);
           fail('ログインの有効期限が切れました。ページを再読み込みしてログインし直してください。');
@@ -797,8 +930,9 @@
   $('btn-again').addEventListener('click', function () {
     // ゲーム / 予定 / コメント / X をリセット（名前とログインは維持）
     setSelectedGame(null);
-    $('in-game').value = ''; $('in-game-url').value = '';
+    $('in-game').value = '';
     $('in-comment').value = ''; $('in-x').value = '';
+    clearError('f-game'); clearError('f-name');
     document.querySelectorAll('.time-grid input[value="未定"]').forEach(function (el) { el.checked = true; });
     showView('form');
     window.scrollTo({ top: 0, behavior: 'smooth' });

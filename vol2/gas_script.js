@@ -62,6 +62,32 @@ function doGet(e) {
   return respond({ error: 'no_params' });
 }
 
+// storesearch はサントラ・DLC・体験版・開発ツールも同じ type("app") で返してくる
+// （type フィールドで判別できない）。ゲーム本体が埋もれるので名前で除外する。
+const SEARCH_NOISE = /(soundtrack|サウンドトラック|\bOST\b|artbook|art book|アートブック|wallpaper|\bDLC\b|season pass|supporter|\bdonation\b| demo$|体験版|redkit|redmod|dedicated server|bonus content|upgrade (pack|dlc)|prologue soundtrack)/i;
+
+// Steam の生の結果を「ゲーム本体が上に来る」よう並べ替え、ノイズを落として最大8件返す
+function rankSearchItems(rawItems, term) {
+  const q = term.trim().toLowerCase();
+  return rawItems
+    .filter(function (it) { return it && it.name && !SEARCH_NOISE.test(it.name); })
+    .map(function (it) {
+      const n = String(it.name).toLowerCase();
+      let score = 0;
+      if (n === q) score = 3;                 // 完全一致
+      else if (n.indexOf(q) === 0) score = 2; // 前方一致
+      else if (n.indexOf(q) >= 0) score = 1;  // 部分一致
+      return { it: it, score: score };
+    })
+    .sort(function (a, b) {
+      return b.score - a.score || String(a.it.name).length - String(b.it.name).length;
+    })
+    .slice(0, 8)
+    .map(function (x) {
+      return { id: x.it.id, name: x.it.name, tiny_image: x.it.tiny_image || '' };
+    });
+}
+
 // ---- Steam ゲーム検索の中継 --------------------------------
 // ブラウザからは store.steampowered.com が CORS を返さないため、
 // サーバ側（GAS）で叩いて結果だけ返す。
@@ -90,9 +116,13 @@ function handleSearch(term) {
       const j = JSON.parse(res.getContentText());
       const list = (j && j.items) || [];
       if (list.length === 0) break; // 200 かつ 0 件＝本当に該当なし。リトライ不要
-      items = list.slice(0, 8).map(function (it) {
-        return { id: it.id, name: it.name, tiny_image: it.tiny_image || '' };
-      });
+      items = rankSearchItems(list, term);
+      // ノイズ除外で 0 件になったら、素の結果（サントラ等含む）にフォールバック
+      if (items.length === 0) {
+        items = list.slice(0, 8).map(function (it) {
+          return { id: it.id, name: it.name, tiny_image: it.tiny_image || '' };
+        });
+      }
       break;
     } catch (err) {
       // JSON パース失敗等 → 次の試行へ
@@ -184,7 +214,8 @@ function handleUpsert(body, mustExist) {
       IconUrl: user.icon,                       // ログインのたび最新アイコンで上書きされる
       AppId: appId,
       Game: details.game || String(body.gameName || '').trim() || ('App ' + appId),
-      SteamUrl: sanitizeUrl(body.steamUrl) || ('https://store.steampowered.com/app/' + appId + '/'),
+      // クライアントの貼り付けURL（クエリ等）は使わず appId から正規化して生成
+      SteamUrl: 'https://store.steampowered.com/app/' + appId + '/',
       HeaderImage: details.header || sanitizeUrl(body.headerImage) ||
                    ('https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg'),
       Developer: details.developer || '',
@@ -204,7 +235,14 @@ function handleUpsert(body, mustExist) {
     } else {
       sheet.appendRow(rowArr);
     }
-    return respond({ ok: true, game: rowObj.Game, updated: foundRow > 0 });
+    return respond({
+      ok: true,
+      updated: foundRow > 0,
+      game: rowObj.Game,
+      steamUrl: rowObj.SteamUrl,
+      headerImage: rowObj.HeaderImage,
+      developer: rowObj.Developer,
+    });
   } finally {
     lock.releaseLock();
   }
