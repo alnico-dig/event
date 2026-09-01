@@ -181,6 +181,18 @@ a:hover {
   font-weight: 600;
 }
 
+.x-link {
+  display: inline-flex;
+  align-items: center;
+  color: #999;
+  margin-left: 3px;
+}
+.x-link:hover {
+  color: #000;
+  opacity: 1;
+  text-decoration: none;
+}
+
 .game {
   display: flex;
   align-items: center;

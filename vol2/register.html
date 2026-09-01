@@ -5,14 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>#DIGspotlight vol.2 - 応募する / Apply</title>
 <meta name="robots" content="noindex">
+
+<!-- 言語のちらつき防止：スタイル適用前に保存済みの言語を反映（index.html と共有） -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
 <link rel="stylesheet" href="stylesheet.css">
 <style>
 /* ===== register.html 専用スタイル ===== */
+.reg-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
 .reg-wrap {
   max-width: 620px;
   margin: 0 auto;
   padding: 8px 20px 80px;
 }
+
+/* 日英の並記ブロックは行単位で切り替える（余白のズレ防止） */
+.field-hint > .ja,
+.field-hint > .en,
+.done-note > .ja,
+.done-note > .en { display: block; }
 
 .login-box {
   max-width: 480px;
@@ -217,7 +241,7 @@
 /* 配信予定日時グリッド */
 .time-grid {
   display: grid;
-  grid-template-columns: 64px repeat(5, 1fr);
+  grid-template-columns: 78px repeat(5, 1fr);
   gap: 4px;
   font-size: 12px;
 }
@@ -232,8 +256,10 @@
   display: flex;
   align-items: center;
   font-weight: 700;
+  font-size: 11px;
   color: #555;
   padding: 0 4px;
+  line-height: 1.2;
 }
 .time-grid label.tg-cell {
   display: flex;
@@ -358,7 +384,8 @@
 .done-view-site:hover { background: #f3f0ff; text-decoration: none; opacity: 1; }
 
 @media (max-width: 520px) {
-  .time-grid { grid-template-columns: 48px repeat(5, 1fr); font-size: 11px; }
+  .time-grid { grid-template-columns: 62px repeat(5, 1fr); font-size: 11px; }
+  .time-grid .tg-day { font-size: 10px; }
   .reg-wrap { padding: 8px 14px 80px; }
 }
 </style>
@@ -373,11 +400,19 @@
 </head>
 
 <body>
+<header class="reg-topbar">
+  <a class="nav-logo" href="index.html">#DIGspotlight</a>
+  <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+</header>
+
 <header class="hero">
   <img src="header.png" class="hero-img" alt="#DIGspotlight vol.2">
 </header>
 
-<h2 class="section-title">応募する / Apply — #DIGspotlight vol.2</h2>
+<h2 class="section-title">
+  <span class="ja">応募する — #DIGspotlight vol.2</span>
+  <span class="en">Apply — #DIGspotlight vol.2</span>
+</h2>
 
 <div class="reg-wrap">
 
@@ -385,28 +420,28 @@
   <div id="view-login" style="display:none;">
     <div class="login-box">
       <p>
-        Twitchアカウントでログインして応募します。<br>
-        アイコン・チャンネルURLは自動で取得されます。<br>
-        <span style="font-size:12px;color:#999;">Log in with Twitch to apply. Your icon and channel URL are fetched automatically.</span>
+        <span class="ja">Twitchアカウントでログインして応募します。<br>アイコン・チャンネルURLは自動で取得されます。</span>
+        <span class="en">Log in with Twitch to apply.<br>Your icon and channel URL are fetched automatically.</span>
       </p>
       <button id="btn-login" class="twitch-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
           <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
         </svg>
-        Twitchでログイン / Log in
+        <span class="ja">Twitchでログイン</span><span class="en">Log in with Twitch</span>
       </button>
       <p style="margin-top:20px;font-size:12px;color:#bbb;">
-        本人確認とアイコン取得のためにTwitchアカウントを使用します。<br>
-        メールアドレスの取得や投稿は行いません。<br>
-        Used only to verify your identity and fetch your icon. We never access your email or post anything.
+        <span class="ja">本人確認とアイコン取得のためにTwitchアカウントを使用します。メールアドレスの取得や投稿は行いません。</span>
+        <span class="en">Used only to verify your identity and fetch your icon. We never read your email or post anything.</span>
       </p>
     </div>
-    <div class="back-row"><a href="index.html">← トップページへ戻る / Back to Top</a></div>
+    <div class="back-row">
+      <a href="index.html"><span class="ja">← トップページへ戻る</span><span class="en">← Back to top</span></a>
+    </div>
   </div>
 
   <!-- ===== ローディング ===== -->
   <div id="view-loading" style="display:none;">
-    <div id="list-loading">Loading...</div>
+    <div id="list-loading">Loading…</div>
   </div>
 
   <!-- ===== フォーム ===== -->
@@ -424,24 +459,34 @@
 
       <!-- 名前 -->
       <div class="field" id="f-name">
-        <label class="field-label" for="in-name">配信者名 / Name<span class="req">必須</span></label>
-        <p class="field-hint">サイトに表示される名前です（Twitch表示名を初期値にしています。変更可）<br>Shown on the site. Pre-filled with your Twitch display name; editable.</p>
+        <label class="field-label" for="in-name">
+          <span class="ja">配信者名</span><span class="en">Name</span>
+          <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
+        </label>
+        <p class="field-hint">
+          <span class="ja">サイトに表示される名前です。Twitch表示名を初期値にしています（変更可）。</span>
+          <span class="en">Shown on the site. Pre-filled with your Twitch display name — you can change it.</span>
+        </p>
         <input type="text" id="in-name" maxlength="60" autocomplete="off">
-        <div class="field-error">名前を入力してください / Please enter a name.</div>
+        <div class="field-error">
+          <span class="ja">名前を入力してください。</span><span class="en">Please enter a name.</span>
+        </div>
       </div>
 
       <!-- ゲーム -->
       <div class="field" id="f-game">
-        <label class="field-label" for="in-game">配信するゲーム / Game<span class="req">必須</span></label>
+        <label class="field-label" for="in-game">
+          <span class="ja">配信するゲーム</span><span class="en">Game</span>
+          <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
+        </label>
         <p class="field-hint">
-          ルール: Steamレビュー1000件未満のゲーム。<br>
-          ゲーム名で検索して候補から選ぶか、Steamストアページの URL をそのまま貼り付けてください。<br>
-          Search by name and pick from the list, or just paste the game's Steam store URL.
+          <span class="ja">ルール: Steamレビュー1000件未満のゲーム。<br>ゲーム名で検索して候補から選ぶか、Steamストアページの URL をそのまま貼り付けてください。</span>
+          <span class="en">Rule: a game with fewer than 1,000 Steam reviews.<br>Search by name and pick from the list, or just paste the game's Steam store URL.</span>
         </p>
 
         <div class="game-search">
           <input type="text" id="in-game" autocomplete="off"
-            placeholder="ゲーム名で検索 / Steam URL を貼り付け">
+            placeholder="Search by name / paste Steam URL">
           <div class="suggest-list" id="suggest-list"></div>
         </div>
 
@@ -452,50 +497,81 @@
               <div class="gp-name" id="gp-name"></div>
               <div class="gp-appid" id="gp-appid"></div>
             </div>
-            <button type="button" class="link-btn" id="gp-clear" style="margin-top:0;">変更 / Change</button>
+            <button type="button" class="link-btn" id="gp-clear" style="margin-top:0;">
+              <span class="ja">変更</span><span class="en">Change</span>
+            </button>
           </div>
         </div>
 
-        <div class="field-error">ゲームを選択するか、有効な Steam ストアURL を入力してください / Select a game or enter a valid Steam store URL.</div>
+        <div class="field-error">
+          <span class="ja">ゲームを候補から選ぶか、有効な Steam ストアページの URL を貼り付けてください。</span>
+          <span class="en">Pick a game from the list, or paste a valid Steam store page URL.</span>
+        </div>
       </div>
 
       <!-- 配信予定日時 -->
       <div class="field" id="f-time">
-        <label class="field-label">配信予定 / Planned schedule<span class="opt">だいたいでOK・未定可</span></label>
-        <p class="field-hint">各日でおおよその時間帯を選んでください。決まっていなければ「未定」のままで大丈夫です。<br>Pick a rough time slot per day. Leave "TBD" if undecided.</p>
+        <label class="field-label">
+          <span class="ja">配信予定</span><span class="en">Planned schedule</span>
+          <span class="opt"><span class="ja">だいたいでOK・未定可</span><span class="en">rough is fine</span></span>
+        </label>
+        <p class="field-hint">
+          <span class="ja">各日でおおよその時間帯を選んでください。決まっていなければ「未定」のままで大丈夫です。<br>時間はすべて日本時間（JST / UTC+9）です。</span>
+          <span class="en">Pick a rough time slot for each day. Leave it on "TBD" if you're not sure yet.<br>All times are Japan time (JST / UTC+9).</span>
+        </p>
         <div class="time-grid" id="time-grid"><!-- JS生成 --></div>
       </div>
 
       <!-- 一言コメント -->
       <div class="field" id="f-comment">
-        <label class="field-label" for="in-comment">一言コメント / Comment<span class="opt">任意</span></label>
-        <p class="field-hint">意気込みやゲームの紹介など（サイトに表示されます）<br>Shown on the site — a note about your pick, etc.</p>
+        <label class="field-label" for="in-comment">
+          <span class="ja">一言コメント</span><span class="en">Comment</span>
+          <span class="opt"><span class="ja">任意</span><span class="en">optional</span></span>
+        </label>
+        <p class="field-hint">
+          <span class="ja">意気込みやゲームの紹介など（サイトに表示されます）。</span>
+          <span class="en">A note about your pick, your enthusiasm, etc. Shown on the site.</span>
+        </p>
         <textarea id="in-comment" maxlength="140"></textarea>
       </div>
 
       <!-- X -->
       <div class="field" id="f-x">
-        <label class="field-label" for="in-x">X (Twitter)<span class="opt">任意</span></label>
-        <p class="field-hint">@ユーザー名 または プロフィールURL<br>@handle or profile URL</p>
+        <label class="field-label" for="in-x">
+          X (Twitter)
+          <span class="opt"><span class="ja">任意</span><span class="en">optional</span></span>
+        </label>
+        <p class="field-hint">
+          <span class="ja">@ユーザー名 または プロフィールURL</span>
+          <span class="en">@handle or profile URL</span>
+        </p>
         <input type="text" id="in-x" maxlength="120" autocomplete="off" placeholder="@yourname">
       </div>
 
-      <button type="submit" class="submit-btn" id="btn-submit">応募する / Submit</button>
+      <button type="submit" class="submit-btn" id="btn-submit">
+        <span class="ja">応募する</span><span class="en">Submit</span>
+      </button>
       <p class="form-note">
-        送信後、画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更できます。<br>
-        Entries go live immediately (except images). You can edit later from the edit page.
+        <span class="ja">送信後、画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更できます。</span>
+        <span class="en">Everything except images goes live on the site immediately. You can change it later from the <a href="edit.html">edit page</a>.</span>
       </p>
     </form>
 
-    <div class="back-row"><a href="index.html">← トップページへ戻る / Back to Top</a></div>
+    <div class="back-row">
+      <a href="index.html"><span class="ja">← トップページへ戻る</span><span class="en">← Back to top</span></a>
+    </div>
   </div>
 
   <!-- ===== 完了 ===== -->
   <div id="view-done" style="display:none;">
     <div class="done-box">
       <div class="check">✓</div>
-      <h3 class="done-title">応募を受け付けました！ / Entry received</h3>
-      <div class="done-updated" id="done-updated" hidden>既存の応募を更新しました / Updated your existing entry</div>
+      <h3 class="done-title">
+        <span class="ja">応募を受け付けました！</span><span class="en">Entry received!</span>
+      </h3>
+      <div class="done-updated" id="done-updated" hidden>
+        <span class="ja">既存の応募を更新しました</span><span class="en">Updated your existing entry</span>
+      </div>
 
       <div class="done-card">
         <img id="done-img" src="" alt="">
@@ -508,15 +584,21 @@
       </div>
 
       <p class="done-note">
-        画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更・削除できます。<br>
-        <span style="color:#bbb;">Live on the site now (except images). Edit or remove it anytime from the edit page.</span>
+        <span class="ja">画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更・削除できます。</span>
+        <span class="en">Everything except images is live on the site now. You can change or remove it anytime from the <a href="edit.html">edit page</a>.</span>
       </p>
 
       <div class="done-actions">
-        <button type="button" class="submit-btn" id="btn-again">別のゲームを応募する / Submit another</button>
-        <a class="done-view-site" id="done-view-site" href="index.html#streams">サイトで確認する / View on site</a>
+        <button type="button" class="submit-btn" id="btn-again">
+          <span class="ja">別のゲームを応募する</span><span class="en">Submit another game</span>
+        </button>
+        <a class="done-view-site" id="done-view-site" href="index.html#streams">
+          <span class="ja">サイトで確認する</span><span class="en">View on the site</span>
+        </a>
       </div>
-      <div class="back-row"><a href="index.html">トップページへ / Top Page</a></div>
+      <div class="back-row">
+        <a href="index.html"><span class="ja">トップページへ</span><span class="en">Back to top</span></a>
+      </div>
     </div>
   </div>
 
@@ -524,11 +606,15 @@
   <div id="view-error" style="display:none;">
     <div class="done-box">
       <p id="error-msg">
-        送信に失敗しました。時間をおいて再度お試しください。<br>
-        <span style="font-size:12px;color:#999;">Failed to submit. Please try again later.</span>
+        <span class="ja">送信に失敗しました。時間をおいて再度お試しください。</span>
+        <span class="en">Something went wrong. Please try again in a bit.</span>
       </p>
-      <button type="button" class="submit-btn" id="btn-retry" style="margin-top:8px;">フォームに戻る / Back to form</button>
-      <div class="back-row"><a href="index.html">トップページへ / Top Page</a></div>
+      <button type="button" class="submit-btn" id="btn-retry" style="margin-top:8px;">
+        <span class="ja">フォームに戻る</span><span class="en">Back to the form</span>
+      </button>
+      <div class="back-row">
+        <a href="index.html"><span class="ja">トップページへ</span><span class="en">Back to top</span></a>
+      </div>
     </div>
   </div>
 
@@ -586,7 +672,12 @@
   var DEV_MOCK         = false;
 
   var TOKEN_KEY = 'dig_twitch_token';           // edit.html と共有
-  var DAYS = ['day1', 'day2', 'day3'];
+  var DAYS = ['day1', 'day2', 'day3'];          // シートの列キー（固定）
+  var DAY_LABELS = [                             // 表示用（開催日 = 2026/12/18-20）
+    { ja: '12/18(金)', en: 'Fri 12/18' },
+    { ja: '12/19(土)', en: 'Sat 12/19' },
+    { ja: '12/20(日)', en: 'Sun 12/20' }
+  ];
   var SLOTS = [
     { v: '朝',   en: 'Morning',   hint: '6–11' },
     { v: '昼',   en: 'Daytime',   hint: '11–17' },
@@ -606,6 +697,14 @@
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  // 日英を並記（CSS の html[lang] で一方だけ表示）
+  function bi(ja, en) {
+    return '<span class="ja">' + esc(ja) + '</span><span class="en">' + esc(en) + '</span>';
+  }
+  function slotEn(v) {
+    for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].en; }
+    return v;
   }
 
   // ---- 選択中のゲーム状態 --------------------------------
@@ -660,7 +759,9 @@
 
   function renderSuggest(list) {
     if (!list.length) {
-      suggestBox.innerHTML = '<div class="suggest-empty">該当なし。URL を直接貼り付けてください / No match — paste the URL instead.</div>';
+      suggestBox.innerHTML = '<div class="suggest-empty">' +
+        bi('候補が見つかりません。Steam ストアページの URL を貼り付けてください。',
+           'No matches. Paste the game’s Steam store URL instead.') + '</div>';
       suggestBox.classList.add('open');
       return;
     }
@@ -698,7 +799,9 @@
       })
       .catch(function () {
         if (term !== lastTerm) return;
-        suggestBox.innerHTML = '<div class="suggest-empty">検索できませんでした。URL を貼り付けてください / Search unavailable — paste the URL.</div>';
+        suggestBox.innerHTML = '<div class="suggest-empty">' +
+          bi('検索できませんでした。Steam ストアページの URL を貼り付けてください。',
+             'Search failed. Paste the game’s Steam store URL instead.') + '</div>';
         suggestBox.classList.add('open');
       });
   }
@@ -755,13 +858,15 @@
     var g = $('time-grid');
     var html = '<div class="tg-head"></div>';
     SLOTS.forEach(function (s) {
-      html += '<div class="tg-head">' + s.v + (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
+      html += '<div class="tg-head">' + bi(s.v, s.en) +
+        (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
     });
     DAYS.forEach(function (d, di) {
-      html += '<div class="tg-day">' + (di + 1) + '日目</div>';
+      html += '<div class="tg-day">' + bi(DAY_LABELS[di].ja, DAY_LABELS[di].en) + '</div>';
       SLOTS.forEach(function (s) {
         var checked = s.v === '未定' ? ' checked' : '';
-        html += '<label class="tg-cell" title="' + s.v + '"><input type="radio" name="' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
+        html += '<label class="tg-cell" title="' + esc(s.v + ' / ' + s.en) + '">' +
+          '<input type="radio" name="' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
       });
     });
     g.innerHTML = html;
@@ -777,12 +882,18 @@
   }
 
   function scheduleSummary(sched) {
-    var parts = [];
+    var pj = [], pe = [];
     DAYS.forEach(function (d, i) {
       var v = sched[d];
-      if (v && v !== '未定') parts.push((i + 1) + '日目 ' + v);
+      if (v && v !== '未定') {
+        pj.push(DAY_LABELS[i].ja + ' ' + v);
+        pe.push(DAY_LABELS[i].en + ' ' + slotEn(v));
+      }
     });
-    return parts.length ? '📅 ' + parts.join(' ／ ') : '📅 配信予定：未定';
+    return {
+      ja: pj.length ? '📅 ' + pj.join(' ／ ') : '📅 配信予定：未定',
+      en: pe.length ? '📅 ' + pe.join('  ·  ') : '📅 Schedule: TBD'
+    };
   }
 
   // ---- 完了画面の描画 -----------------------------------
@@ -801,8 +912,11 @@
     link.textContent = info.game;
     link.href = /^https?:\/\//.test(info.steamUrl || '') ? info.steamUrl : '#';
 
-    $('done-dev').textContent = info.developer ? '開発 / Dev: ' + info.developer : '';
-    $('done-sched').textContent = scheduleSummary(info.schedule);
+    $('done-dev').innerHTML = info.developer
+      ? bi('開発: ' + info.developer, 'Developer: ' + info.developer)
+      : '';
+    var sum = scheduleSummary(info.schedule);
+    $('done-sched').innerHTML = bi(sum.ja, sum.en);
     $('done-comment').textContent = info.comment ? '💬 ' + info.comment : '';
     $('done-updated').hidden = !info.updated;
 
@@ -854,7 +968,7 @@
     }
     var btn = $('btn-submit');
     btn.disabled = true;
-    btn.textContent = '送信中… / Submitting…';
+    btn.innerHTML = bi('送信中…', 'Submitting…');
 
     var payload = {
       action: 'register',
@@ -871,7 +985,7 @@
 
     var resetBtn = function () {
       btn.disabled = false;
-      btn.textContent = '応募する / Submit';
+      btn.innerHTML = bi('応募する', 'Submit');
     };
     // res: GAS レスポンス（無い場合はクライアント値でフォールバック）
     var done = function (res) {
@@ -887,8 +1001,8 @@
       });
       resetBtn();
     };
-    var fail = function (msg) {
-      if (msg) $('error-msg').innerHTML = esc(msg) + '<br><span style="font-size:12px;color:#999;">Please try again.</span>';
+    var fail = function (ja, en) {
+      if (ja) $('error-msg').innerHTML = bi(ja, en || ja);
       showView('error');
       resetBtn();
     };
@@ -911,7 +1025,8 @@
           done(res);
         } else if (res && res.error === 'token_expired') {
           sessionStorage.removeItem(TOKEN_KEY);
-          fail('ログインの有効期限が切れました。ページを再読み込みしてログインし直してください。');
+          fail('ログインの有効期限が切れました。ページを再読み込みしてログインし直してください。',
+               'Your login has expired. Please reload the page and log in again.');
         } else {
           fail(res && res.message ? res.message : null);
         }
@@ -975,6 +1090,27 @@
     $('in-name').value = user.display_name || user.login;
     showView('form');
   }
+
+  // ---- 言語切替（index.html と同じ html[lang] 方式・localStorage 共有） ----
+  (function () {
+    var KEY = 'digspotlight-lang';
+    var btn = $('lang-toggle');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+      $('in-game').placeholder = lang === 'ja'
+        ? 'ゲーム名で検索 / Steam URL を貼り付け'
+        : 'Search by name / paste Steam URL';
+    }
+    var saved = 'ja';
+    try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', function () {
+      var next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+    });
+  })();
 
   function boot() {
     var hashToken = extractTokenFromHash();

@@ -16,6 +16,7 @@
 // 【エンドポイント】
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
+//   GET  ?list=1              → 参加者一覧（index.html #streams・公開情報のみ） { entries:[...] }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
 //   POST {action:"delete"}    → 応募の削除（edit.html）
@@ -59,7 +60,40 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.q !== undefined) return handleSearch(p.q);
   if (p.token) return handleMyEntries(p.token);
+  if (p.list) return handlePublicList();
   return respond({ error: 'no_params' });
+}
+
+// ---- 参加者一覧（index.html の #streams 用・公開情報のみ） ----
+// 60秒キャッシュ。登録/編集/削除時に doPost 側でキャッシュを破棄するので反映は速い。
+const PUBLIC_COLS = [
+  'TwitchLogin', 'Streamer', 'TwitchUrl', 'IconUrl',
+  'AppId', 'Game', 'SteamUrl', 'HeaderImage',
+  'Day1', 'Day2', 'Day3', 'Comment', 'X'
+]; // Developer / TwitchId / Timestamp は返さない
+
+function handlePublicList() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('public_list');
+  if (hit) return respond(JSON.parse(hit));
+
+  const sheet = getEntriesSheet();
+  const data = sheet.getDataRange().getValues();
+  const header = data[0];
+  const idx = {};
+  PUBLIC_COLS.forEach(function (k) { idx[k] = header.indexOf(k); });
+  const appCol = header.indexOf('AppId');
+
+  const rows = [];
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][appCol]) continue;
+    const o = {};
+    PUBLIC_COLS.forEach(function (k) { o[k] = data[i][idx[k]]; });
+    rows.push(o);
+  }
+  const out = { entries: rows };
+  cache.put('public_list', JSON.stringify(out), 60);
+  return respond(out);
 }
 
 // storesearch はサントラ・DLC・体験版・開発ツールも同じ type("app") で返してくる
@@ -235,6 +269,7 @@ function handleUpsert(body, mustExist) {
     } else {
       sheet.appendRow(rowArr);
     }
+    CacheService.getScriptCache().remove('public_list'); // 一覧を即時反映
     return respond({
       ok: true,
       updated: foundRow > 0,
@@ -274,6 +309,7 @@ function handleDelete(body) {
         if (appId) break;
       }
     }
+    if (deleted > 0) CacheService.getScriptCache().remove('public_list');
     return respond({ ok: true, deleted: deleted });
   } finally {
     lock.releaseLock();

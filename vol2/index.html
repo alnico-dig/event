@@ -50,8 +50,7 @@
     <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
   </nav>
   <div class="nav-actions">
-    <!-- TODO: register.html 作成後に cta-disabled を外す -->
-    <a href="register.html" class="nav-cta cta-disabled"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <a href="register.html" class="nav-cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
     <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
   </div>
 </header>
@@ -69,9 +68,9 @@
   </p>
 
   <div class="event-info">
-    <!-- TODO: 第2回の正式な開催日程が決まったら差し替え（メモ: Steam ウインターセール合わせ、12/19頃〜の3日間） -->
     <div>📍 <span class="ja">開催場所：Twitch配信</span><span class="en">Streaming on Twitch</span></div>
-    <div>📅 <span class="ja">開催期間：12月中旬（予定）</span><span class="en">Mid-December (TBD)</span></div>
+    <div>📅 <span class="ja">開催期間：2026年12月18日（金）〜20日（日）（日本時間 / JST）</span><span class="en">Dec 18–20, 2026 (Fri–Sun) — all times JST (UTC+9)</span></div>
+    <div>🏷️ <span class="ja">Steam ウインターセール期間中</span><span class="en">During the Steam Winter Sale</span></div>
   </div>
 </section>
 
@@ -148,9 +147,9 @@
   </ul>
 
   <div class="cta-row">
-    <!-- TODO: register.html / edit.html 作成後に cta-disabled を外す -->
-    <a href="register.html" class="cta cta-disabled"><span class="ja">応募する</span><span class="en">Apply</span></a>
-    <a href="edit.html" class="cta-outline cta-disabled"><span class="ja">登録内容を編集する</span><span class="en">Edit Entry</span></a>
+    <a href="register.html" class="cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <!-- TODO(⑥): edit.html を doPost 対応にしたら cta-disabled を外す -->
+    <a href="edit.html" class="cta-outline cta-disabled"><span class="ja">登録内容を編集する</span><span class="en">Edit / Remove</span></a>
   </div>
 </section>
 
@@ -171,14 +170,15 @@
   </ul>
 
   <p class="contact ja">
-    <!-- TODO: 申請期間の日付を第2回の日程に合わせて更新 -->
-    申請期間は開催前日までです。（申請後、画像以外は即サイトへ反映されますのでいつでもご自由に）<br>
+    申請はイベント終了（2026年12月20日 日本時間）まで受け付けます。開催中の飛び入り参加も歓迎です。<br>
+    申請後、画像以外はすぐにサイトへ反映されます。内容の変更・削除は編集ページからいつでも可能です。<br>
     不明点や予定の削除等あれば、主催者のXまたはTwitchのウィスパー機能でお気軽にご連絡ください。<br>
     Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
     X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
   </p>
   <p class="contact en">
-    Applications are open until the day before the event — entries go live immediately after submission (except images).<br>
+    Applications stay open until the event ends (Dec 20, 2026, JST) — mid-event sign-ups are welcome too.<br>
+    Entries go live on the site immediately (except images); change or remove yours anytime from the edit page.<br>
     For any questions or cancellations, feel free to reach out via X or Twitch whispers.<br>
     Twitch: <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a><br>
     X: <a href="https://x.com/alnico_ow" target="_blank">@alnico_ow</a>
@@ -186,204 +186,215 @@
 </section>
 
 <!-- ===== 参加者・ゲーム一覧 ===== -->
-<!-- TODO(データ層): 第2回は新スプレッドシート + GAS doPost。CSV スキーマ確定後にカードの表示項目
-     （配信予定日時グリッド / X リンク / 開発者名は非表示 など）とフィルタの日付ラベルを更新する。 -->
 <h2 class="section-title" id="streams">DIG Game Streams</h2>
 <div id="count"></div>
 <div class="filter-row">
   <div id="date-filter" class="filter">
-    <span class="sort-label">Filter</span>
-    <button data-date="all" class="active">ALL</button>
-    <button data-date="6/19">6/19</button>
-    <button data-date="6/20">6/20</button>
-    <button data-date="6/21">6/21</button>
-    <button data-date="TBD">TBD</button>
+    <span class="sort-label"><span class="ja">絞り込み</span><span class="en">Filter</span></span>
+    <button data-day="all" class="active">ALL</button>
+    <button data-day="day1">12/18</button>
+    <button data-day="day2">12/19</button>
+    <button data-day="day3">12/20</button>
+    <button data-day="tbd"><span class="ja">未定</span><span class="en">TBD</span></button>
   </div>
   <div id="sort-filter" class="filter sort-filter">
-    <span class="sort-label">Sort</span>
-    <button data-sort="default" class="active">Date</button>
-    <button data-sort="title">Title</button>
-    <button data-sort="streamer">Streamer</button>
-  </div>
-  <div class="filter sort-filter">
-    <a href="schedule.html" class="schedule-page-link">📅 Schedule</a>
+    <span class="sort-label"><span class="ja">並び順</span><span class="en">Sort</span></span>
+    <button data-sort="default" class="active"><span class="ja">配信予定順</span><span class="en">Schedule</span></button>
+    <button data-sort="title"><span class="ja">タイトル</span><span class="en">Title</span></button>
+    <button data-sort="streamer"><span class="ja">配信者</span><span class="en">Streamer</span></button>
   </div>
 </div>
-<div id="list-loading">Loading...</div>
+<div id="list-loading">Loading…</div>
 <div id="list"></div>
 <script>
+/* ===== #streams：参加者一覧（entries スキーマ・GAS ?list=1 から取得） ===== */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
+
+const DAYS = ['Day1', 'Day2', 'Day3'];
+const DAY_LABELS = [
+  { ja: '12/18(金)', en: 'Fri 12/18' },
+  { ja: '12/19(土)', en: 'Sat 12/19' },
+  { ja: '12/20(日)', en: 'Sun 12/20' }
+];
+const SLOT_RANK = { '朝': 0, '昼': 1, '夜': 2, '深夜': 3, '未定': 4, '': 4 };
+const SLOT_EN = { '朝': 'Morning', '昼': 'Daytime', '夜': 'Evening', '深夜': 'Late night', '未定': 'TBD' };
+
 let allData = [];
-let currentFilter = "all";
-let currentSort = "default";
-
-const csv_url = "data/participants.csv";
-
-const getValue = (row, keyword) => {
-  const key = Object.keys(row).find(k => k && k.includes(keyword));
-  return key ? row[key] : "";
-};
+let currentFilter = 'all';
+let currentSort = 'default';
 
 const escapeHtml = str => {
-  if (!str) return "";
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  if (str == null) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
-const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+const safeUrl = url => /^https?:\/\//.test(url || '') ? url : '#';
+const bi = (ja, en) => `<span class="ja">${escapeHtml(ja)}</span><span class="en">${escapeHtml(en)}</span>`;
+
+// その参加者が「配信予定あり」の日か（未定/空でなければ true）
+const streamsOn = (row, dayKey) => {
+  const v = row[dayKey === 'day1' ? 'Day1' : dayKey === 'day2' ? 'Day2' : 'Day3'];
+  return v && v !== '未定';
+};
+const allTBD = row => DAYS.every(d => !row[d] || row[d] === '未定');
+
+// 配信予定サマリー（日本語 / 英語）
+function scheduleParts(row) {
+  const pj = [], pe = [];
+  DAYS.forEach((d, i) => {
+    const v = row[d];
+    if (v && v !== '未定') {
+      pj.push(`${DAY_LABELS[i].ja} ${v}`);
+      pe.push(`${DAY_LABELS[i].en} ${SLOT_EN[v] || v}`);
+    }
+  });
+  return pj.length
+    ? { ja: '📅 ' + pj.join(' ／ '), en: '📅 ' + pe.join('  ·  ') }
+    : { ja: '📅 配信予定：未定', en: '📅 Schedule: TBD' };
+}
+
+// 「配信予定順」用のソートキー（早い枠ほど小さい・全未定は最後）
+function scheduleKey(row) {
+  let best = 9999;
+  DAYS.forEach((d, i) => {
+    const v = row[d];
+    if (v && v !== '未定') best = Math.min(best, i * 10 + (SLOT_RANK[v] ?? 4));
+  });
+  return best;
+}
 
 function getFilteredData() {
-  if (currentFilter === "all") return allData;
-  if (currentFilter === "TBD") return allData.filter(row =>
-    getValue(row, "Date").includes("未定") || getValue(row, "Date").includes("TBD")
-  );
-  return allData.filter(row => getValue(row, "Date").includes(currentFilter));
+  if (currentFilter === 'all') return allData;
+  if (currentFilter === 'tbd') return allData.filter(allTBD);
+  return allData.filter(row => streamsOn(row, currentFilter));
 }
 
 function getSortedData(data) {
-  if (currentSort === "title") {
-    return [...data].sort((a, b) =>
-      getValue(a, "Game").localeCompare(getValue(b, "Game"), "ja")
-    );
+  const copy = [...data];
+  if (currentSort === 'title') {
+    return copy.sort((a, b) => String(a.Game).localeCompare(String(b.Game), 'ja'));
   }
-  if (currentSort === "streamer") {
-    return [...data].sort((a, b) =>
-      getValue(a, "Streamer").localeCompare(getValue(b, "Streamer"), "ja")
-    );
+  if (currentSort === 'streamer') {
+    return copy.sort((a, b) => String(a.Streamer).localeCompare(String(b.Streamer), 'ja'));
   }
-  return data;
+  // default: 配信予定順 → 同点は配信者名
+  return copy.sort((a, b) =>
+    scheduleKey(a) - scheduleKey(b) ||
+    String(a.Streamer).localeCompare(String(b.Streamer), 'ja')
+  );
+}
+
+const X_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
+
+function cardHtml(row) {
+  const icon = safeUrl(row.IconUrl);
+  const twitch = safeUrl(row.TwitchUrl);
+  const steam = safeUrl(row.SteamUrl);
+  const header = row.HeaderImage || (row.AppId ? `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${row.AppId}/header.jpg` : '');
+  const sched = scheduleParts(row);
+
+  return `
+    <div class="left">
+      <a href="${twitch}" target="_blank" rel="noopener">
+        <img class="icon" src="${escapeHtml(icon)}" loading="lazy"
+          onerror="this.onerror=null;this.src='https://placehold.co/56x56?text=%3F'">
+      </a>
+      <div class="info">
+        <div class="row streamer">🎙️<a href="${twitch}" target="_blank" rel="noopener">${escapeHtml(row.Streamer)}</a>${
+          row.X ? ` <a class="x-link" href="${safeUrl(row.X)}" target="_blank" rel="noopener" aria-label="X">${X_SVG}</a>` : ''
+        }</div>
+        <div class="row game">🎮 <a href="${steam}" target="_blank" rel="noopener">${escapeHtml(row.Game)}</a></div>
+        <div class="meta">${bi(sched.ja, sched.en)}</div>
+        ${row.Comment ? `<div class="meta note">💬 ${escapeHtml(row.Comment)}</div>` : ''}
+      </div>
+    </div>
+    ${header ? `
+      <a href="${steam}" target="_blank" rel="noopener">
+        <img src="${escapeHtml(header)}" class="game-img" loading="lazy"
+          onerror="this.onerror=null;this.src='https://placehold.co/460x215?text=%23DIGspotlight'">
+      </a>` : ''}
+  `;
 }
 
 function renderList(data) {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+  const list = document.getElementById('list');
+  list.innerHTML = '';
 
-  const uniqueCount = new Set(data.map(row => getValue(row, "Game").trim()).filter(Boolean)).size;
-  document.getElementById("count").textContent = `${uniqueCount} titles`;
+  const titles = new Set(data.map(r => String(r.Game || '').trim()).filter(Boolean)).size;
+  const streamers = new Set(data.map(r => String(r.TwitchLogin || r.Streamer || '').trim()).filter(Boolean)).size;
+  document.getElementById('count').innerHTML =
+    bi(`${titles}タイトル ・ ${streamers}人`, `${titles} titles · ${streamers} streamers`);
 
   data.forEach(row => {
-    const streamer = getValue(row, "Streamer");
-    const twitch = getValue(row, "Twitch");
-    const game = getValue(row, "Game");
-    const steam = getValue(row, "Steam");
-    const date = getValue(row, "Date");
-    const time = getValue(row, "Time");
-    const language = getValue(row, "Language");
-    const notes = getValue(row, "Notes");
-
-    let username = "";
-    if (twitch) {
-      username = twitch
-        .replace("https://www.twitch.tv/", "")
-        .replace("https://twitch.tv/", "")
-        .split("?")[0]
-        .replace("/", "")
-        .toLowerCase();
-    }
-
-    const iconPath = username ? `icons/${username}.png` : "";
-    const appId = steam.match(/app\/(\d+)/)?.[1];
-    const gameImage = appId ? `images/${appId}.jpg` : "";
-
-    let langIcon = "";
-    if (language.includes("日本語") || language.includes("Japanese")) langIcon += "JA ";
-    if (language.includes("英語") || language.includes("English")) langIcon += "EN ";
-    if (language.includes("その他") || language.includes("Other")) langIcon += "etc. ";
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <div class="left">
-        <a href="${safeUrl(twitch)}" target="_blank">
-          <img class="icon"
-            src="${iconPath}"
-            loading="lazy"
-            onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=?'">
-        </a>
-
-        <div class="info">
-          <div class="row streamer">🎙️<a href="${safeUrl(twitch)}" target="_blank">${escapeHtml(streamer)}</a></div>
-          <div class="row game">🎮 <a href="${safeUrl(steam)}" target="_blank">${escapeHtml(game)}</a></div>
-          ${date ? `<div class="meta">📅 ${escapeHtml(date)}</div>` : ""}
-          ${time ? `<div class="meta">⏰ ${escapeHtml(time)}</div>` : ""}
-          ${language ? `<div class="meta">🌐 ${langIcon}</div>` : ""}
-          ${notes ? `<div class="meta note">💬 ${escapeHtml(notes)}</div>` : ""}
-        </div>
-      </div>
-
-      ${gameImage ? `
-        <a href="${safeUrl(steam)}" target="_blank">
-          <img src="${gameImage}" class="game-img" loading="lazy" onerror="this.style.display='none'">
-        </a>
-      ` : ""}
-    `;
-
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = cardHtml(row);
     list.appendChild(card);
   });
+
+  if (data.length === 0) {
+    const msg = allData.length === 0
+      ? bi('まだ応募がありません。第一号になりませんか？', 'No entries yet — be the first!')
+      : bi('この条件に合う参加者はいません。', 'No streamers match this filter.');
+    list.innerHTML = `<div class="list-loading">${msg}</div>`;
+  }
 }
 
 function applyAndRender() {
   renderList(getSortedData(getFilteredData()));
 }
 
-const listLoading = document.getElementById("list-loading");
-fetch(csv_url)
-.then(res => res.text())
-.then(text => {
+const listLoading = document.getElementById('list-loading');
+fetch(GAS_URL + '?list=1')
+  .then(res => res.json())
+  .then(json => {
+    allData = (json.entries || []).filter(r => r && String(r.Game || '').trim() !== '');
+    listLoading.style.display = 'none';
+    applyAndRender();
 
-  const parsed = Papa.parse(text, { header: true });
-  const data = parsed.data;
-
-  const validData = data.filter(row => {
-    const game = getValue(row, "Game");
-    return game && game.trim() !== "";
-  });
-
-  allData = validData;
-
-  listLoading.style.display = "none";
-
-  applyAndRender();
-
-  document.querySelectorAll("#date-filter button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll("#date-filter button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentFilter = btn.dataset.date;
-      applyAndRender();
+    document.querySelectorAll('#date-filter button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#date-filter button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.day;
+        applyAndRender();
+      });
     });
-  });
-
-  document.querySelectorAll("#sort-filter button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll("#sort-filter button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentSort = btn.dataset.sort;
-      applyAndRender();
+    document.querySelectorAll('#sort-filter button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#sort-filter button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSort = btn.dataset.sort;
+        applyAndRender();
+      });
     });
+  })
+  .catch(err => {
+    console.error('一覧の取得に失敗:', err);
+    listLoading.innerHTML = bi('一覧の読み込みに失敗しました。時間をおいて再読み込みしてください。', 'Failed to load the list. Please reload in a bit.');
   });
-})
-.catch(err => {
-  console.error("CSV取得失敗:", err);
-  listLoading.innerText = "Failed to load data.";
-});
 </script>
 
-<h2 class="section-title">DIG Selection</h2>
-<p class="selection-note">
-  どのゲームを遊ぶか迷ったら、ここからどうぞ。<br>
-  <span class="sub">Not sure what to play? Start here.</span>
-</p>
+<!-- DIG Selection：主催者キュレーションのおすすめ枠。データソース未設定のうちは丸ごと非表示。
+     TODO(⑤+): selection のデータソース（シートのタブ or 別 GAS エンドポイント）を決めて差し替え。 -->
+<div id="dig-selection-block" hidden>
+  <h2 class="section-title">DIG Selection</h2>
+  <p class="selection-note">
+    <span class="ja">どのゲームを遊ぶか迷ったら、ここからどうぞ。</span>
+    <span class="en">Not sure what to play? Start here.</span>
+  </p>
 
-<section class="dig-selection">
-  <div class="carousel">
-    <button class="nav prev">‹</button>
-    <div id="carousel-index"></div>
-    <div id="selection-loading">Loading...</div>
-    <div class="carousel-track" id="carousel-track">
-      <!-- JS生成 -->
+  <section class="dig-selection">
+    <div class="carousel">
+      <button class="nav prev">‹</button>
+      <div id="carousel-index"></div>
+      <div id="selection-loading">Loading…</div>
+      <div class="carousel-track" id="carousel-track">
+        <!-- JS生成 -->
+      </div>
+      <button class="nav next">›</button>
     </div>
-    <button class="nav next">›</button>
-  </div>
-</section>
+  </section>
+</div>
 
 <script>
 const SELECTION_CSV = "data/selection.csv";
@@ -400,23 +411,20 @@ function getAppId(url) {
   return url.match(/app\/(\d+)/)?.[1];
 }
 
-// CSV読み込み
+// CSV読み込み。データが無ければ DIG Selection ブロックごと非表示のまま。
 Papa.parse(SELECTION_CSV, {
   download: true,
   header: true,
   complete: function(results) {
-    const selectionLoading = document.getElementById("selection-loading");
-    const data = results.data.filter(d => d.Title && d.Steam);
-
-    if (data.length === 0) {
-      selectionLoading.textContent = "";
-      return;
-    }
+    const data = (results.data || []).filter(d => d.Title && d.Steam);
+    if (data.length === 0) return;
 
     renderCarousel(data);
     initCarousel();
-    selectionLoading.style.display = "none";
-  }
+    document.getElementById("selection-loading").style.display = "none";
+    document.getElementById("dig-selection-block").hidden = false;
+  },
+  error: function() { /* 取得失敗時もブロックは非表示のまま */ }
 });
 
 // DOM生成
