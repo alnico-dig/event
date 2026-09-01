@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight vol.2 - 応募する / Apply</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="stylesheet.css">
+<style>
+/* ===== register.html 専用スタイル ===== */
+.reg-wrap {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 8px 20px 80px;
+}
+
+.login-box {
+  max-width: 480px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 16px;
+  padding: 36px 28px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  border: 1px solid #eee;
+}
+.login-box p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.twitch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: #9147ff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(145,71,255,0.35);
+  transition: 0.2s;
+  text-decoration: none;
+}
+.twitch-btn:hover {
+  background: #7d3be0;
+  transform: translateY(-2px);
+  opacity: 1;
+}
+.twitch-btn svg { flex-shrink: 0; }
+
+/* ユーザーバッジ（OAuth 取得内容） */
+.reg-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f0ff;
+  border: 1px solid #e5dcff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+.reg-user img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ddd;
+  flex-shrink: 0;
+}
+.reg-user .name { font-weight: 700; color: #4b2ec7; font-size: 15px; }
+.reg-user .sub  { font-size: 12px; color: #8a7fc0; }
+
+/* フォーム部品 */
+.field { margin-bottom: 22px; }
+.field > label.field-label {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #333;
+}
+.field-label .req {
+  color: #e0245e;
+  font-size: 12px;
+  margin-left: 4px;
+}
+.field-label .opt {
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+.field-hint {
+  font-size: 12px;
+  color: #999;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.field input[type="text"],
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+}
+.field input[type="text"]:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #6c3cff;
+  box-shadow: 0 0 0 3px rgba(108,60,255,0.12);
+}
+.field textarea { resize: vertical; min-height: 64px; }
+.field.invalid input[type="text"],
+.field.invalid textarea { border-color: #e0245e; }
+.field-error {
+  display: none;
+  color: #e0245e;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.field.invalid .field-error { display: block; }
+
+/* ゲーム検索 */
+.game-search { position: relative; }
+.suggest-list {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+}
+.suggest-list.open { display: block; }
+.suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.suggest-item:hover,
+.suggest-item.active { background: #f3f0ff; }
+.suggest-item img {
+  width: 92px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #eee;
+  flex-shrink: 0;
+}
+.suggest-item .t {
+  font-size: 13px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.suggest-empty {
+  padding: 10px;
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #6c3cff;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 6px;
+  text-decoration: underline;
+}
+
+/* 選択済みゲームのプレビュー */
+.game-preview {
+  display: none;
+  margin-top: 10px;
+  border: 1px solid #e5dcff;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #faf8ff;
+}
+.game-preview.show { display: block; }
+.game-preview img {
+  width: 100%;
+  aspect-ratio: 460 / 215;
+  object-fit: cover;
+  display: block;
+  background: #e5dcff;
+}
+.game-preview .gp-body {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.game-preview .gp-name { font-weight: 700; font-size: 14px; }
+.game-preview .gp-appid { font-size: 11px; color: #999; }
+
+/* 配信予定日時グリッド */
+.time-grid {
+  display: grid;
+  grid-template-columns: 64px repeat(5, 1fr);
+  gap: 4px;
+  font-size: 12px;
+}
+.time-grid .tg-head {
+  text-align: center;
+  font-weight: 700;
+  color: #6c3cff;
+  padding: 4px 2px;
+  line-height: 1.3;
+}
+.time-grid .tg-day {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: #555;
+  padding: 0 4px;
+}
+.time-grid label.tg-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 2px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+  transition: 0.12s;
+  user-select: none;
+}
+.time-grid label.tg-cell:hover { border-color: #b9a5ff; }
+.time-grid input[type="radio"] { display: none; }
+.time-grid label.tg-cell span { color: #cfcfcf; font-size: 13px; line-height: 1; }
+.time-grid label.tg-cell:has(input:checked) {
+  background: #6c3cff;
+  border-color: #6c3cff;
+}
+.time-grid label.tg-cell:has(input:checked) span { color: #fff; }
+
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(108,60,255,0.3);
+  transition: 0.2s;
+}
+.submit-btn:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.92; }
+.submit-btn:disabled { opacity: 0.5; cursor: default; }
+
+.form-note {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.back-row { text-align: center; margin-top: 20px; }
+.back-row a { font-size: 13px; color: #aaa; }
+
+.done-box {
+  max-width: 480px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 16px;
+  padding: 36px 28px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  border: 1px solid #eee;
+}
+.done-box .check {
+  font-size: 40px;
+  color: #6c3cff;
+}
+.done-box p { font-size: 14px; color: #555; line-height: 1.8; }
+
+@media (max-width: 520px) {
+  .time-grid { grid-template-columns: 48px repeat(5, 1fr); font-size: 11px; }
+  .reg-wrap { padding: 8px 14px 80px; }
+}
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SFHVH7WR23"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SFHVH7WR23', { 'anonymize_ip': true });
+</script>
+</head>
+
+<body>
+<header class="hero">
+  <img src="header.png" class="hero-img" alt="#DIGspotlight vol.2">
+</header>
+
+<h2 class="section-title">応募する / Apply — #DIGspotlight vol.2</h2>
+
+<div class="reg-wrap">
+
+  <!-- ===== ログイン前 ===== -->
+  <div id="view-login" style="display:none;">
+    <div class="login-box">
+      <p>
+        Twitchアカウントでログインして応募します。<br>
+        アイコン・チャンネルURLは自動で取得されます。<br>
+        <span style="font-size:12px;color:#999;">Log in with Twitch to apply. Your icon and channel URL are fetched automatically.</span>
+      </p>
+      <button id="btn-login" class="twitch-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+        </svg>
+        Twitchでログイン / Log in
+      </button>
+      <p style="margin-top:20px;font-size:12px;color:#bbb;">
+        本人確認とアイコン取得のためにTwitchアカウントを使用します。<br>
+        メールアドレスの取得や投稿は行いません。<br>
+        Used only to verify your identity and fetch your icon. We never access your email or post anything.
+      </p>
+    </div>
+    <div class="back-row"><a href="index.html">← トップページへ戻る / Back to Top</a></div>
+  </div>
+
+  <!-- ===== ローディング ===== -->
+  <div id="view-loading" style="display:none;">
+    <div id="list-loading">Loading...</div>
+  </div>
+
+  <!-- ===== フォーム ===== -->
+  <div id="view-form" style="display:none;">
+
+    <div class="reg-user">
+      <img id="u-icon" src="" alt="">
+      <div>
+        <div class="name" id="u-name"></div>
+        <div class="sub" id="u-login"></div>
+      </div>
+    </div>
+
+    <form id="reg-form" novalidate>
+
+      <!-- 名前 -->
+      <div class="field" id="f-name">
+        <label class="field-label" for="in-name">配信者名 / Name<span class="req">必須</span></label>
+        <p class="field-hint">サイトに表示される名前です（Twitch表示名を初期値にしています。変更可）<br>Shown on the site. Pre-filled with your Twitch display name; editable.</p>
+        <input type="text" id="in-name" maxlength="60" autocomplete="off">
+        <div class="field-error">名前を入力してください / Please enter a name.</div>
+      </div>
+
+      <!-- ゲーム -->
+      <div class="field" id="f-game">
+        <label class="field-label" for="in-game">配信するゲーム / Game<span class="req">必須</span></label>
+        <p class="field-hint">
+          ルール: Steamレビュー1000件未満のゲーム。<br>
+          名前で検索して選ぶか、Steamストアページの URL を貼り付けてください。<br>
+          Search by name, or paste the game's Steam store page URL.
+        </p>
+
+        <div class="game-search">
+          <input type="text" id="in-game" autocomplete="off" placeholder="ゲーム名で検索 / Search by name">
+          <div class="suggest-list" id="suggest-list"></div>
+        </div>
+        <button type="button" class="link-btn" id="toggle-url">Steam URL を直接貼り付ける / Paste URL instead</button>
+
+        <div id="url-input-wrap" style="display:none;margin-top:8px;">
+          <input type="text" id="in-game-url" autocomplete="off" placeholder="https://store.steampowered.com/app/......">
+        </div>
+
+        <div class="game-preview" id="game-preview">
+          <img id="gp-img" src="" alt="">
+          <div class="gp-body">
+            <div>
+              <div class="gp-name" id="gp-name"></div>
+              <div class="gp-appid" id="gp-appid"></div>
+            </div>
+            <button type="button" class="link-btn" id="gp-clear" style="margin-top:0;">変更 / Change</button>
+          </div>
+        </div>
+
+        <div class="field-error">ゲームを選択するか、有効な Steam ストアURL を入力してください / Select a game or enter a valid Steam store URL.</div>
+      </div>
+
+      <!-- 配信予定日時 -->
+      <div class="field" id="f-time">
+        <label class="field-label">配信予定 / Planned schedule<span class="opt">だいたいでOK・未定可</span></label>
+        <p class="field-hint">各日でおおよその時間帯を選んでください。決まっていなければ「未定」のままで大丈夫です。<br>Pick a rough time slot per day. Leave "TBD" if undecided.</p>
+        <div class="time-grid" id="time-grid"><!-- JS生成 --></div>
+      </div>
+
+      <!-- 一言コメント -->
+      <div class="field" id="f-comment">
+        <label class="field-label" for="in-comment">一言コメント / Comment<span class="opt">任意</span></label>
+        <p class="field-hint">意気込みやゲームの紹介など（サイトに表示されます）<br>Shown on the site — a note about your pick, etc.</p>
+        <textarea id="in-comment" maxlength="140"></textarea>
+      </div>
+
+      <!-- X -->
+      <div class="field" id="f-x">
+        <label class="field-label" for="in-x">X (Twitter)<span class="opt">任意</span></label>
+        <p class="field-hint">@ユーザー名 または プロフィールURL<br>@handle or profile URL</p>
+        <input type="text" id="in-x" maxlength="120" autocomplete="off" placeholder="@yourname">
+      </div>
+
+      <button type="submit" class="submit-btn" id="btn-submit">応募する / Submit</button>
+      <p class="form-note">
+        送信後、画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更できます。<br>
+        Entries go live immediately (except images). You can edit later from the edit page.
+      </p>
+    </form>
+
+    <div class="back-row"><a href="index.html">← トップページへ戻る / Back to Top</a></div>
+  </div>
+
+  <!-- ===== 完了 ===== -->
+  <div id="view-done" style="display:none;">
+    <div class="done-box">
+      <div class="check">✓</div>
+      <p>
+        応募を受け付けました！<br>
+        <span id="done-game" style="font-weight:700;color:#6c3cff;"></span><br><br>
+        続けて別のゲームを応募する場合は下のボタンから。<br>
+        <span style="font-size:12px;color:#999;">Your entry has been received. To submit another game, use the button below.</span>
+      </p>
+      <button type="button" class="submit-btn" id="btn-again" style="margin-top:8px;">別のゲームを応募する / Submit another</button>
+      <div class="back-row"><a href="index.html">トップページへ / Top Page</a></div>
+    </div>
+  </div>
+
+  <!-- ===== エラー ===== -->
+  <div id="view-error" style="display:none;">
+    <div class="done-box">
+      <p id="error-msg">
+        送信に失敗しました。時間をおいて再度お試しください。<br>
+        <span style="font-size:12px;color:#999;">Failed to submit. Please try again later.</span>
+      </p>
+      <button type="button" class="submit-btn" id="btn-retry" style="margin-top:8px;">フォームに戻る / Back to form</button>
+      <div class="back-row"><a href="index.html">トップページへ / Top Page</a></div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+</footer>
+
+<script>
+/* ============================================================
+   #DIGspotlight vol.2 — 応募フォーム (register.html)
+   ------------------------------------------------------------
+   ■ 必要な外部設定
+   - Twitch Developer Console の OAuth Redirect URLs に
+     REDIRECT_URI を追加すること（edit.html とは別URL）
+   - GAS_URL は第2回用の新しい Web アプリ URL に差し替えること
+     （doPost 未実装のうちは DEV_MOCK = true でフロントの動作確認が可能）
+
+   ■ ゲーム検索（GET・シンプルリクエストなのでプリフライトなし）
+     GAS_URL + "?q=<term>" → { items: [ { id, name, tiny_image }, ... ] }
+     GAS が Steam storesearch をサーバ側で叩いて中継する（ブラウザからは CORS で直接不可）
+
+   ■ 応募送信（GAS doPost へ POST・Content-Type: text/plain でプリフライト回避）
+   {
+     action: "register",
+     token:  "<Twitch アクセストークン>",   // ← GASが検証し、本人情報はサーバ側で再取得する
+     name:   "<配信者名>",
+     appId:  "<Steam App ID>",               // 数値文字列
+     steamUrl: "<ストアページURL>",
+     gameName: "<検索/URLで得たゲーム名（GAS側で appdetails により正規化）>",
+     headerImage: "<推定ヘッダー画像URL（GAS側で appdetails により上書き）>",
+     schedule: { day1:"朝|昼|夜|深夜|未定", day2:"...", day3:"..." },
+     comment: "<一言コメント>",
+     x: "<X ハンドル or URL>"
+   }
+   GAS 側の責務:
+   - token 検証 → login / display_name / profile_image_url を取得（クライアント値は信用しない）
+   - appId から appdetails を取得し gameName / headerImage / 開発者名 を確定
+   - LockService.getScriptLock() で直列化し、twitch+appId をキーに upsert
+   - レスポンス: { ok: true, game: "<確定ゲーム名>" } / { error: "..." }
+
+   → GAS 側の実装は vol2/gas_script.js を参照
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  // ---- 設定 -------------------------------------------------
+  var TWITCH_CLIENT_ID = 'kp13odpytkan0tqo6xmgj5509h4104';
+  var REDIRECT_URI     = 'https://alnico-dig.github.io/event/vol2/register.html';
+  // TODO(②): 第2回用の新しい GAS Web アプリ URL に差し替える
+  var GAS_URL          = 'https://script.google.com/macros/s/REPLACE_WITH_VOL2_DEPLOYMENT_ID/exec';
+  // GAS 未デプロイの間フロントだけ検証したいときは true（送信を擬似的に成功させる）
+  var DEV_MOCK         = false;
+
+  var TOKEN_KEY = 'dig_twitch_token';           // edit.html と共有
+  var DAYS = ['day1', 'day2', 'day3'];
+  var SLOTS = [
+    { v: '朝',   en: 'Morning',   hint: '6–11' },
+    { v: '昼',   en: 'Daytime',   hint: '11–17' },
+    { v: '夜',   en: 'Evening',   hint: '17–23' },
+    { v: '深夜', en: 'Late night', hint: '23–6' },
+    { v: '未定', en: 'TBD',        hint: '' }
+  ];
+
+  // ---- DOM ヘルパー ---------------------------------------
+  var $ = function (id) { return document.getElementById(id); };
+  function showView(id) {
+    ['login', 'loading', 'form', 'done', 'error'].forEach(function (v) {
+      $('view-' + v).style.display = (v === id) ? '' : 'none';
+    });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // ---- 選択中のゲーム状態 --------------------------------
+  var selectedGame = null; // { appId, name, steamUrl, headerImage }
+
+  function steamHeaderUrl(appId) {
+    return 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg';
+  }
+  function parseAppId(url) {
+    var m = String(url || '').match(/(?:store\.steampowered\.com\/app|steamcommunity\.com\/app|\/app)\/(\d+)/);
+    return m ? m[1] : null;
+  }
+  function parseSteamName(url) {
+    // /app/1145360/Hades/ → "Hades"（暫定表示用。正規名は GAS が appdetails で確定）
+    var m = String(url || '').match(/\/app\/\d+\/([^/?#]+)/);
+    if (!m) return '';
+    try { return decodeURIComponent(m[1]).replace(/[_+]/g, ' ').trim(); } catch (e) { return ''; }
+  }
+
+  function setSelectedGame(g) {
+    selectedGame = g;
+    if (g) {
+      $('gp-img').src = g.headerImage;
+      $('gp-img').onerror = function () {
+        this.onerror = null;
+        this.src = 'https://cdn.cloudflare.steamstatic.com/steam/apps/' + g.appId + '/header.jpg';
+      };
+      $('gp-name').textContent = g.name || ('App ' + g.appId);
+      $('gp-appid').textContent = 'Steam App ID: ' + g.appId;
+      $('game-preview').classList.add('show');
+      $('in-game').value = g.name || '';
+      clearError('f-game');
+    } else {
+      $('game-preview').classList.remove('show');
+    }
+  }
+
+  // ---- Steam 検索（オートコンプリート） -----------------
+  var suggestBox = $('suggest-list');
+  var searchTimer = null;
+  var lastTerm = '';
+
+  function closeSuggest() { suggestBox.classList.remove('open'); suggestBox.innerHTML = ''; }
+
+  function renderSuggest(list) {
+    if (!list.length) {
+      suggestBox.innerHTML = '<div class="suggest-empty">該当なし。URL を直接貼り付けてください / No match — paste the URL instead.</div>';
+      suggestBox.classList.add('open');
+      return;
+    }
+    suggestBox.innerHTML = list.map(function (it) {
+      return '<div class="suggest-item" data-appid="' + esc(it.id) + '" data-name="' + esc(it.name) + '">' +
+        '<img src="' + esc(it.tiny_image || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+        '<span class="t">' + esc(it.name) + '</span></div>';
+    }).join('');
+    suggestBox.classList.add('open');
+    Array.prototype.forEach.call(suggestBox.querySelectorAll('.suggest-item'), function (el) {
+      el.addEventListener('click', function () {
+        var appId = el.getAttribute('data-appid');
+        var name = el.getAttribute('data-name');
+        setSelectedGame({
+          appId: appId,
+          name: name,
+          steamUrl: 'https://store.steampowered.com/app/' + appId + '/',
+          headerImage: steamHeaderUrl(appId)
+        });
+        closeSuggest();
+      });
+    });
+  }
+
+  function doSearch(term) {
+    // Steam storesearch はブラウザから直接叩けない（CORS 不許可）ので GAS 経由で中継する。
+    // GET のシンプルリクエストなのでプリフライトは発生しない。
+    var url = GAS_URL + '?q=' + encodeURIComponent(term);
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        if (term !== lastTerm) return; // 古いレスポンスは破棄
+        var items = (json && json.items) ? json.items.slice(0, 8) : [];
+        renderSuggest(items);
+      })
+      .catch(function () {
+        if (term !== lastTerm) return;
+        suggestBox.innerHTML = '<div class="suggest-empty">検索できませんでした。URL を貼り付けてください / Search unavailable — paste the URL.</div>';
+        suggestBox.classList.add('open');
+      });
+  }
+
+  $('in-game').addEventListener('input', function () {
+    var term = this.value.trim();
+    // 手入力を始めたら選択済みゲームは解除
+    if (selectedGame && term !== (selectedGame.name || '')) setSelectedGame(null);
+    lastTerm = term;
+    clearTimeout(searchTimer);
+    if (term.length < 2) { closeSuggest(); return; }
+    searchTimer = setTimeout(function () { doSearch(term); }, 250);
+  });
+  $('in-game').addEventListener('focus', function () {
+    if (suggestBox.innerHTML) suggestBox.classList.add('open');
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.game-search')) closeSuggest();
+  });
+
+  // URL 直接入力
+  $('toggle-url').addEventListener('click', function () {
+    var w = $('url-input-wrap');
+    var open = w.style.display === 'none';
+    w.style.display = open ? 'block' : 'none';
+    if (open) $('in-game-url').focus();
+  });
+  function applyUrlInput() {
+    var appId = parseAppId($('in-game-url').value);
+    if (!appId) return false;
+    setSelectedGame({
+      appId: appId,
+      name: parseSteamName($('in-game-url').value),
+      steamUrl: $('in-game-url').value.trim(),
+      headerImage: steamHeaderUrl(appId)
+    });
+    return true;
+  }
+  $('in-game-url').addEventListener('blur', applyUrlInput);
+  $('in-game-url').addEventListener('input', function () {
+    if (selectedGame && parseAppId(this.value) !== selectedGame.appId) setSelectedGame(null);
+  });
+
+  $('gp-clear').addEventListener('click', function () {
+    setSelectedGame(null);
+    $('in-game').value = '';
+    $('in-game-url').value = '';
+    $('in-game').focus();
+  });
+
+  // ---- 配信予定グリッド生成 ------------------------------
+  (function buildGrid() {
+    var g = $('time-grid');
+    var html = '<div class="tg-head"></div>';
+    SLOTS.forEach(function (s) {
+      html += '<div class="tg-head">' + s.v + (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
+    });
+    DAYS.forEach(function (d, di) {
+      html += '<div class="tg-day">' + (di + 1) + '日目</div>';
+      SLOTS.forEach(function (s) {
+        var checked = s.v === '未定' ? ' checked' : '';
+        html += '<label class="tg-cell" title="' + s.v + '"><input type="radio" name="' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
+      });
+    });
+    g.innerHTML = html;
+  })();
+
+  function getSchedule() {
+    var out = {};
+    DAYS.forEach(function (d) {
+      var el = document.querySelector('input[name="' + d + '"]:checked');
+      out[d] = el ? el.value : '未定';
+    });
+    return out;
+  }
+
+  // ---- バリデーション ------------------------------------
+  function markError(fid) { $(fid).classList.add('invalid'); }
+  function clearError(fid) { $(fid).classList.remove('invalid'); }
+
+  function validate() {
+    var ok = true;
+    clearError('f-name'); clearError('f-game');
+
+    if (!$('in-name').value.trim()) { markError('f-name'); ok = false; }
+
+    // URL 入力欄に何か入っていれば拾う
+    if (!selectedGame && $('in-game-url').value.trim()) applyUrlInput();
+    if (!selectedGame || !selectedGame.appId) { markError('f-game'); ok = false; }
+
+    return ok;
+  }
+
+  ['in-name'].forEach(function (id) {
+    $(id).addEventListener('input', function () { clearError('f-' + id.replace('in-', '')); });
+  });
+
+  // ---- 送信 ---------------------------------------------
+  var token = null;
+  var twitchUser = null; // { id, login, display_name, profile_image_url }
+
+  function submitForm() {
+    if (!validate()) {
+      var first = document.querySelector('.field.invalid');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var btn = $('btn-submit');
+    btn.disabled = true;
+    btn.textContent = '送信中… / Submitting…';
+
+    var payload = {
+      action: 'register',
+      token: token,
+      name: $('in-name').value.trim(),
+      appId: selectedGame.appId,
+      steamUrl: selectedGame.steamUrl || ('https://store.steampowered.com/app/' + selectedGame.appId + '/'),
+      gameName: selectedGame.name || '',
+      headerImage: selectedGame.headerImage || steamHeaderUrl(selectedGame.appId),
+      schedule: getSchedule(),
+      comment: $('in-comment').value.trim(),
+      x: $('in-x').value.trim()
+    };
+
+    var done = function (gameLabel) {
+      $('done-game').textContent = gameLabel;
+      showView('done');
+      btn.disabled = false;
+      btn.textContent = '応募する / Submit';
+    };
+    var fail = function (msg) {
+      if (msg) $('error-msg').innerHTML = esc(msg) + '<br><span style="font-size:12px;color:#999;">Please try again.</span>';
+      showView('error');
+      btn.disabled = false;
+      btn.textContent = '応募する / Submit';
+    };
+
+    if (DEV_MOCK) {
+      console.log('[DEV_MOCK] payload:', payload);
+      setTimeout(function () { done(payload.gameName || ('App ' + payload.appId)); }, 500);
+      return;
+    }
+
+    fetch(GAS_URL, {
+      method: 'POST',
+      // text/plain にすることで CORS プリフライトを避ける（GAS は OPTIONS を返せない）
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.ok) {
+          done(res.game || payload.gameName || ('App ' + payload.appId));
+        } else if (res && res.error === 'token_expired') {
+          sessionStorage.removeItem(TOKEN_KEY);
+          fail('ログインの有効期限が切れました。ページを再読み込みしてログインし直してください。');
+        } else {
+          fail(res && res.message ? res.message : null);
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        fail(null);
+      });
+  }
+
+  $('reg-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    submitForm();
+  });
+
+  $('btn-again').addEventListener('click', function () {
+    // ゲーム / 予定 / コメント / X をリセット（名前とログインは維持）
+    setSelectedGame(null);
+    $('in-game').value = ''; $('in-game-url').value = '';
+    $('in-comment').value = ''; $('in-x').value = '';
+    document.querySelectorAll('.time-grid input[value="未定"]').forEach(function (el) { el.checked = true; });
+    showView('form');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  $('btn-retry').addEventListener('click', function () { showView('form'); });
+
+  // ---- Twitch OAuth -------------------------------------
+  $('btn-login').addEventListener('click', function () {
+    var url = new URL('https://id.twitch.tv/oauth2/authorize');
+    url.searchParams.set('client_id', TWITCH_CLIENT_ID);
+    url.searchParams.set('redirect_uri', REDIRECT_URI);
+    url.searchParams.set('response_type', 'token');
+    url.searchParams.set('scope', '');
+    location.href = url.toString();
+  });
+
+  function extractTokenFromHash() {
+    var params = new URLSearchParams(location.hash.replace(/^#/, ''));
+    return params.get('access_token') || null;
+  }
+
+  function fetchTwitchUser(tk) {
+    return fetch('https://api.twitch.tv/helix/users', {
+      headers: { 'Authorization': 'Bearer ' + tk, 'Client-Id': TWITCH_CLIENT_ID }
+    }).then(function (res) {
+      if (res.status === 401) throw new Error('token_expired');
+      if (!res.ok) throw new Error('twitch_api_' + res.status);
+      return res.json();
+    }).then(function (json) {
+      return (json.data && json.data[0]) ? json.data[0] : null;
+    });
+  }
+
+  function initForm(user) {
+    twitchUser = user;
+    $('u-icon').src = user.profile_image_url || 'https://placehold.co/44x44?text=?';
+    $('u-icon').onerror = function () { this.onerror = null; this.src = 'https://placehold.co/44x44?text=?'; };
+    $('u-name').textContent = user.display_name || user.login;
+    $('u-login').textContent = 'twitch.tv/' + user.login;
+    $('in-name').value = user.display_name || user.login;
+    showView('form');
+  }
+
+  function boot() {
+    var hashToken = extractTokenFromHash();
+    if (hashToken) {
+      sessionStorage.setItem(TOKEN_KEY, hashToken);
+      history.replaceState(null, '', location.pathname);
+    }
+    token = sessionStorage.getItem(TOKEN_KEY);
+
+    if (DEV_MOCK && !token) {
+      // モック時はログインを飛ばしてダミーユーザーでフォーム表示
+      token = 'DEV_MOCK_TOKEN';
+      initForm({ id: '0', login: 'dev_user', display_name: 'Dev User', profile_image_url: '' });
+      return;
+    }
+    if (!token) { showView('login'); return; }
+
+    showView('loading');
+    fetchTwitchUser(token).then(function (user) {
+      if (!user) throw new Error('no_user');
+      initForm(user);
+    }).catch(function (err) {
+      console.error(err);
+      sessionStorage.removeItem(TOKEN_KEY);
+      showView('login');
+    });
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
