@@ -23,8 +23,8 @@
 // ============================================================
 
 const CONFIG = {
-  // TODO: 第2回用に新規作成したスプレッドシートの ID を入れる
-  spreadsheetId: 'REPLACE_WITH_VOL2_SPREADSHEET_ID',
+  // 第2回用スプレッドシート（2026-09-01 作成）
+  spreadsheetId: '17ja0sEc8tH8My5Mwtraq5yZH8ryrtjG8-RUOQvL7G5I',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   entriesSheet: 'entries',
 };
