@@ -64,7 +64,10 @@ function doGet(e) {
 
 // ---- Steam ゲーム検索の中継 --------------------------------
 // ブラウザからは store.steampowered.com が CORS を返さないため、
-// サーバ側（GAS）で叩いて結果だけ返す。CacheService で数分キャッシュ。
+// サーバ側（GAS）で叩いて結果だけ返す。
+// キャッシュは「結果が1件以上取れたときだけ」保存する。
+// Steam の一時的な失敗（429 等）で空をキャッシュすると 5 分間ずっと
+// 「該当なし」になってしまうため。
 function handleSearch(term) {
   term = String(term || '').trim();
   if (term.length < 2) return respond({ items: [] });
@@ -74,23 +77,32 @@ function handleSearch(term) {
   const hit = cache.get(key);
   if (hit) return respond(JSON.parse(hit));
 
-  const out = { items: [] };
-  try {
-    const res = UrlFetchApp.fetch(
-      'https://store.steampowered.com/api/storesearch/?term=' +
-        encodeURIComponent(term) + '&cc=jp&l=japanese',
-      { muteHttpExceptions: true }
-    );
-    if (res.getResponseCode() === 200) {
+  const url = 'https://store.steampowered.com/api/storesearch/?term=' +
+    encodeURIComponent(term) + '&cc=jp&l=japanese';
+
+  let items = [];
+  // 最大2回試行（Steam の瞬間的な失敗をリカバリ）
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) Utilities.sleep(600);
+    try {
+      const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      if (res.getResponseCode() !== 200) continue;
       const j = JSON.parse(res.getContentText());
-      out.items = (j.items || []).slice(0, 8).map(function (it) {
+      const list = (j && j.items) || [];
+      if (list.length === 0) break; // 200 かつ 0 件＝本当に該当なし。リトライ不要
+      items = list.slice(0, 8).map(function (it) {
         return { id: it.id, name: it.name, tiny_image: it.tiny_image || '' };
       });
+      break;
+    } catch (err) {
+      // JSON パース失敗等 → 次の試行へ
     }
-  } catch (err) {
-    // 失敗時は空配列（フロント側で「URLを貼り付けて」に誘導）
   }
-  cache.put(key, JSON.stringify(out), 300); // 5分
+
+  const out = { items: items };
+  if (items.length > 0) {
+    cache.put(key, JSON.stringify(out), 300); // 取れたものだけ 5 分キャッシュ
+  }
   return respond(out);
 }
 
