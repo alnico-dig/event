@@ -2,30 +2,56 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>#DIGspotlight - Schedule</title>
-<meta name="description" content="#DIGspotlight 配信スケジュール一覧">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight vol.2 - Schedule</title>
+<meta name="description" content="#DIGspotlight vol.2 配信スケジュール一覧">
+
+<!-- 言語のちらつき防止：スタイル適用前に保存済みの言語を反映（index.html と共有） -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
 <link rel="stylesheet" href="stylesheet.css">
+<style>
+.sched-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+</style>
 </head>
 
 <body>
-<header class="hero">
-  <img src="header.png" class="hero-img">
+<header class="sched-topbar">
+  <a class="nav-logo" href="index.html">#DIGspotlight</a>
+  <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
 </header>
 
-<div class="back-link-row">
-  <a href="index.html" class="back-link">← トップに戻る / Back to Top</a>
-</div>
+<header class="hero">
+  <img src="header.png" class="hero-img" alt="#DIGspotlight vol.2">
+</header>
 
-<h2 class="section-title">DIG Stream Schedule</h2>
+<h2 class="section-title">
+  <span class="ja">配信スケジュール</span><span class="en">Stream Schedule</span>
+</h2>
 <p class="schedule-note">
-  配信時間は参加者の申請を元に大まかな情報から作成しているため、実際の開始時刻と異なる場合があります。<br>
-  <span class="sub">Stream times are based on self-reported information and may be approximate. Actual start times may differ.</span>
+  <span class="ja">各日・時間帯ごとの配信予定です。だいたいの目安として、参加者の申請時の入力をそのまま表示しています。</span><br>
+  <span class="en">Planned streams by day and time slot, shown as entered at signup — treat times as rough estimates.</span>
 </p>
 
-<div id="schedule-loading" class="list-loading">Loading...</div>
-<div class="schedule-wrap">
-  <table class="schedule-table" id="schedule-table"></table>
+<div id="schedule-loading" class="list-loading">Loading…</div>
+<div class="schedule-wrap" id="schedule-wrap" style="display:none;">
+  <div class="schedule-grid" id="schedule-grid"><!-- JS生成 --></div>
+</div>
+
+<div class="back-link-row">
+  <a href="index.html#streams" class="back-link"><span class="ja">← 参加者一覧へ戻る</span><span class="en">← Back to the streamer list</span></a>
 </div>
 
 <footer class="footer">
@@ -33,143 +59,101 @@
 </footer>
 
 <script>
-const csv_url = "data/participants.csv";
+(function () {
+  'use strict';
 
-const getValue = (row, keyword) => {
-  const key = Object.keys(row).find(k => k && k.includes(keyword));
-  return key ? row[key] : "";
-};
+  var GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
 
-const escapeHtml = str => {
-  if (!str) return "";
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-};
+  var DAYS = ['Day1', 'Day2', 'Day3'];
+  var DAY_LABELS = [
+    { ja: '12/18(金)', en: 'Fri 12/18' },
+    { ja: '12/19(土)', en: 'Sat 12/19' },
+    { ja: '12/20(日)', en: 'Sun 12/20' }
+  ];
+  // 表示順は 朝→昼→夜→深夜→未定 で固定（未定は深夜の後でよい、とユーザー確認済み）
+  var SLOTS = [
+    { v: '朝',   en: 'Morning',   hint: '6–11' },
+    { v: '昼',   en: 'Daytime',   hint: '11–17' },
+    { v: '夜',   en: 'Evening',   hint: '17–23' },
+    { v: '深夜', en: 'Late night', hint: '23–6' },
+    { v: '未定', en: 'TBD',        hint: '' }
+  ];
 
-const safeUrl = url => /^https?:\/\//.test(url) ? url : "#";
+  var esc = function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+  var safeUrl = function (u) { return /^https?:\/\//.test(u || '') ? u : '#'; };
+  var bi = function (ja, en) { return '<span class="ja">' + esc(ja) + '</span><span class="en">' + esc(en) + '</span>'; };
 
-const DAYS = [
-  { label: "6/19 (fri)", key: "6/19" },
-  { label: "6/20 (sat)", key: "6/20" },
-  { label: "6/21 (sun)", key: "6/21" },
-  { label: "未定 / TBD",  key: "未定" },
-];
-
-function matchesDay(dateStr, dayKey) {
-  if (dayKey === "未定") return dateStr.includes("未定") || dateStr.includes("TBD");
-  return dateStr.includes(dayKey);
-}
-
-function buildMiniCard(row) {
-  const streamer = getValue(row, "Streamer");
-  const twitch   = getValue(row, "Twitch");
-  const game     = getValue(row, "Game");
-  const steam    = getValue(row, "Steam");
-
-  let username = "";
-  if (twitch) {
-    username = twitch
-      .replace("https://www.twitch.tv/", "")
-      .replace("https://twitch.tv/", "")
-      .split("?")[0]
-      .replace("/", "")
-      .toLowerCase();
+  function cardHtml(row) {
+    var icon = safeUrl(row.IconUrl);
+    var twitch = safeUrl(row.TwitchUrl);
+    var steam = safeUrl(row.SteamUrl);
+    return '' +
+      '<div class="sg-card">' +
+        '<a href="' + twitch + '" target="_blank" rel="noopener">' +
+          '<img class="sg-icon" src="' + esc(icon) + '" loading="lazy" ' +
+          'onerror="this.onerror=null;this.src=\'https://placehold.co/36x36?text=%3F\'"></a>' +
+        '<div class="sg-info">' +
+          '<a class="sg-streamer" href="' + twitch + '" target="_blank" rel="noopener">' + esc(row.Streamer) + '</a>' +
+          '<a class="sg-game" href="' + steam + '" target="_blank" rel="noopener">' + esc(row.Game) + '</a>' +
+        '</div>' +
+      '</div>';
   }
 
-  const iconPath = username ? `icons/${username}.png` : "";
-
-  const card = document.createElement("div");
-  card.className = "sched-card";
-  card.innerHTML = `
-    <a href="${safeUrl(twitch)}" target="_blank">
-      <img class="sched-icon" src="${iconPath}" loading="lazy"
-        onerror="this.onerror=null;this.src='https://placehold.co/32x32?text=?'">
-    </a>
-    <div class="sched-info">
-      <a href="${safeUrl(twitch)}" target="_blank" class="sched-streamer">${escapeHtml(streamer)}</a>
-      <a href="${safeUrl(steam)}" target="_blank" class="sched-game">${escapeHtml(game)}</a>
-    </div>
-  `;
-  return card;
-}
-
-fetch(csv_url)
-.then(res => res.text())
-.then(text => {
-  const parsed = Papa.parse(text, { header: true });
-  const data = parsed.data.filter(row => getValue(row, "Game").trim());
-
-  const timeSet = new Set();
-  data.forEach(row => {
-    const t = getValue(row, "TimeNum").trim();
-    if (t !== "") timeSet.add(parseFloat(t));
-  });
-  const times = [...timeSet].sort((a, b) => a - b);
-
-  const table = document.getElementById("schedule-table");
-
-  // ヘッダー
-  const thead = table.createTHead();
-  const headerRow = thead.insertRow();
-  const thTime = document.createElement("th");
-  thTime.className = "time-col";
-  headerRow.appendChild(thTime);
-  DAYS.forEach(day => {
-    const th = document.createElement("th");
-    th.textContent = day.label;
-    headerRow.appendChild(th);
-  });
-
-  // 時刻行
-  const tbody = table.createTBody();
-  times.forEach(t => {
-    const tr = tbody.insertRow();
-    const h = Math.floor(t);
-    const m = (t % 1 === 0.5) ? "30" : "00";
-    const tdTime = document.createElement("td");
-    tdTime.className = "time-label";
-    tdTime.textContent = `${h}:${m}`;
-    tr.appendChild(tdTime);
-
-    DAYS.forEach(day => {
-      const td = document.createElement("td");
-      data
-        .filter(row => {
-          const tn = getValue(row, "TimeNum").trim();
-          if (parseFloat(tn) !== t) return false;
-          return matchesDay(getValue(row, "Date"), day.key);
-        })
-        .forEach(row => td.appendChild(buildMiniCard(row)));
-      tr.appendChild(td);
+  function buildGrid(entries) {
+    var html = '';
+    html += '<div class="sg-corner"></div>';
+    DAY_LABELS.forEach(function (d) {
+      html += '<div class="sg-head">' + bi(d.ja, d.en) + '</div>';
     });
-  });
 
-  // 時刻未定行
-  const trTbd = tbody.insertRow();
-  trTbd.className = "tbd-time-row";
-  const tdTbdLabel = document.createElement("td");
-  tdTbdLabel.className = "time-label";
-  tdTbdLabel.innerHTML = "夜・時刻未定<br><small>Night / TBD</small>";
-  trTbd.appendChild(tdTbdLabel);
+    SLOTS.forEach(function (slot) {
+      html += '<div class="sg-slot">' + bi(slot.v, slot.en) +
+        (slot.hint ? '<span class="hint">' + esc(slot.hint) + '</span>' : '') + '</div>';
 
-  DAYS.forEach(day => {
-    const td = document.createElement("td");
-    data
-      .filter(row => {
-        const tn = getValue(row, "TimeNum").trim();
-        if (tn !== "") return false;
-        return matchesDay(getValue(row, "Date"), day.key);
-      })
-      .forEach(row => td.appendChild(buildMiniCard(row)));
-    trTbd.appendChild(td);
-  });
+      DAYS.forEach(function (dayKey) {
+        var matches = entries.filter(function (row) { return row[dayKey] === slot.v; });
+        html += '<div class="sg-cell">' + matches.map(cardHtml).join('') + '</div>';
+      });
+    });
 
-  document.getElementById("schedule-loading").style.display = "none";
-})
-.catch(err => {
-  console.error("CSV取得失敗:", err);
-  document.getElementById("schedule-loading").innerText = "Failed to load data.";
-});
+    return html;
+  }
+
+  fetch(GAS_URL + '?list=1')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+      document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
+      document.getElementById('schedule-loading').style.display = 'none';
+      document.getElementById('schedule-wrap').style.display = '';
+    })
+    .catch(function (err) {
+      console.error('スケジュールの取得に失敗:', err);
+      document.getElementById('schedule-loading').innerHTML =
+        bi('スケジュールの読み込みに失敗しました。時間をおいて再読み込みしてください。', 'Failed to load the schedule. Please reload in a bit.');
+    });
+
+  // ---- 言語切替（index.html と同じ方式・localStorage共有） ----
+  (function () {
+    var KEY = 'digspotlight-lang';
+    var btn = document.getElementById('lang-toggle');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+    }
+    var saved = 'ja';
+    try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', function () {
+      var next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+    });
+  })();
+})();
 </script>
-
 </body>
 </html>
