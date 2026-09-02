@@ -3,10 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>#DIGspotlight - 申請を編集する</title>
+<title>#DIGspotlight vol.2 - 登録内容を編集する / Edit Your Entries</title>
 <meta name="robots" content="noindex">
+
+<!-- 言語のちらつき防止：スタイル適用前に保存済みの言語を反映（index.html / register.html と共有） -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
 <link rel="stylesheet" href="stylesheet.css">
 <style>
+/* ===== edit.html 専用スタイル ===== */
+.edit-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.edit-wrap { max-width: 800px; margin: 0 auto; padding: 8px 20px 60px; }
+
 .login-box {
   max-width: 480px;
   margin: 40px auto;
@@ -17,12 +38,7 @@
   text-align: center;
   border: 1px solid #eee;
 }
-.login-box p {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 24px;
-}
+.login-box p { font-size: 14px; color: #666; line-height: 1.7; margin-bottom: 24px; }
 .twitch-btn {
   display: inline-flex;
   align-items: center;
@@ -39,14 +55,9 @@
   transition: 0.2s;
   text-decoration: none;
 }
-.twitch-btn:hover {
-  background: #7d3be0;
-  transform: translateY(-2px);
-  opacity: 1;
-}
-.twitch-btn svg {
-  flex-shrink: 0;
-}
+.twitch-btn:hover { background: #7d3be0; transform: translateY(-2px); opacity: 1; }
+.twitch-btn svg { flex-shrink: 0; }
+
 .user-bar {
   display: flex;
   align-items: center;
@@ -66,141 +77,249 @@
   color: #6c3cff;
   font-weight: 600;
 }
-.edit-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  background: white;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  border: 1px solid #eee;
-  margin-bottom: 16px;
-  transition: 0.2s;
-}
-.edit-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-.edit-card-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.edit-btn {
+
+.add-row { text-align: center; margin-bottom: 18px; }
+.add-row a {
   display: inline-block;
-  padding: 10px 18px;
-  background: linear-gradient(135deg, #6c3cff, #8f6bff);
-  color: white;
-  border-radius: 10px;
-  font-weight: bold;
+  padding: 10px 20px;
+  border: 2px dashed #b9a5ff;
+  border-radius: 999px;
+  color: #6c3cff;
+  font-weight: 700;
   font-size: 13px;
+}
+.add-row a:hover { background: #f3f0ff; text-decoration: none; }
+
+/* 一覧カード（stylesheet.css の .card を流用しつつ縦積みに） */
+.entry-card { flex-direction: column; align-items: stretch; gap: 14px; }
+.entry-view { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.entry-view .left { flex: 1; min-width: 220px; }
+.entry-view .game-img { width: 180px; }
+.entry-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.entry-actions button {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(108,60,255,0.25);
-  text-decoration: none;
+}
+.btn-edit-toggle { background: #f3f0ff; color: #6c3cff; }
+.btn-edit-toggle:hover { background: #e5dcff; }
+.btn-delete-toggle { background: #fdecef; color: #e0245e; }
+.btn-delete-toggle:hover { background: #fbd7dd; }
+
+/* 削除確認（インライン。ネイティブconfirmは使わない） */
+.confirm-box {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #fdecef;
+  border: 1px solid #f6c6d0;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.confirm-box.open { display: flex; }
+.confirm-box p { margin: 0; font-size: 13px; color: #b3123a; font-weight: 600; }
+.confirm-actions { display: flex; gap: 8px; }
+.btn-confirm-delete { background: #e0245e; color: #fff; }
+.btn-confirm-delete:hover { background: #c71f51; }
+.btn-cancel-delete { background: #fff; color: #666; border: 1px solid #ddd; }
+
+/* 編集フォーム */
+.edit-form { display: none; border-top: 1px solid #eee; padding-top: 14px; }
+.edit-form.open { display: block; }
+.ef-field { margin-bottom: 16px; }
+.ef-field label {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #333;
+}
+.ef-field input[type="text"],
+.ef-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+}
+.ef-field input[type="text"]:focus,
+.ef-field textarea:focus {
+  outline: none;
+  border-color: #6c3cff;
+  box-shadow: 0 0 0 3px rgba(108,60,255,0.12);
+}
+.ef-field textarea { resize: vertical; min-height: 56px; }
+.ef-hint { font-size: 12px; color: #999; margin: 4px 0 0; line-height: 1.5; }
+
+.time-grid {
+  display: grid;
+  grid-template-columns: 78px repeat(5, 1fr);
+  gap: 4px;
+  font-size: 12px;
+}
+.time-grid .tg-head { text-align: center; font-weight: 700; color: #6c3cff; padding: 4px 2px; line-height: 1.3; }
+.time-grid .tg-day { display: flex; align-items: center; font-weight: 700; font-size: 11px; color: #555; padding: 0 4px; line-height: 1.2; }
+.time-grid label.tg-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 2px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+  transition: 0.12s;
+  user-select: none;
+}
+.time-grid label.tg-cell:hover { border-color: #b9a5ff; }
+.time-grid input[type="radio"] { display: none; }
+.time-grid label.tg-cell span { color: #cfcfcf; font-size: 13px; line-height: 1; }
+.time-grid label.tg-cell:has(input:checked) { background: #6c3cff; border-color: #6c3cff; }
+.time-grid label.tg-cell:has(input:checked) span { color: #fff; }
+
+.ef-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn-save {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
   transition: 0.2s;
 }
-.edit-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.btn-save:hover:not(:disabled) { opacity: 0.92; }
+.btn-save:disabled { opacity: 0.5; cursor: default; }
+.btn-cancel {
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #666;
+  background: #f2f2f2;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
-.hint {
-  text-align: center;
+.saved-badge {
+  display: inline-block;
   font-size: 12px;
-  color: #bbb;
-  margin-top: 8px;
+  color: #2a9d5c;
+  background: #e6f7ee;
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-left: 8px;
 }
+
+.hint { text-align: center; font-size: 12px; color: #bbb; margin-top: 8px; }
+.back-row { text-align: center; margin-top: 24px; }
+.back-row a { font-size: 13px; color: #aaa; }
+
 @media (max-width: 640px) {
-  .edit-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .edit-card-right {
-    align-items: stretch;
-    width: 100%;
-  }
-  .edit-btn {
-    text-align: center;
-  }
+  .time-grid { grid-template-columns: 62px repeat(5, 1fr); font-size: 11px; }
+  .time-grid .tg-day { font-size: 10px; }
+  .entry-view { flex-direction: column; align-items: stretch; }
+  .entry-view .game-img { width: 100%; }
+  .entry-actions { width: 100%; }
+  .entry-actions button { flex: 1; }
 }
 </style>
 </head>
 
 <body>
-<header class="hero">
-  <img src="header.png" class="hero-img">
+<header class="edit-topbar">
+  <a class="nav-logo" href="index.html">#DIGspotlight</a>
+  <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
 </header>
 
-<h2 class="section-title">申請を編集する / Edit Your Entry</h2>
+<header class="hero">
+  <img src="header.png" class="hero-img" alt="#DIGspotlight vol.2">
+</header>
 
-<div id="app" style="max-width:760px;margin:0 auto;padding:16px 20px 60px;">
+<h2 class="section-title">
+  <span class="ja">登録内容を編集する</span><span class="en">Edit Your Entries</span>
+</h2>
 
-  <!-- ログイン前 -->
+<div class="edit-wrap">
+
+  <!-- ===== ログイン前 ===== -->
   <div id="view-login" style="display:none;">
     <div class="login-box">
-      <p>申請時に使用したTwitchアカウントでログインすると、<br>申請済みのゲームが表示されます。<br><span style="font-size:12px;color:#999;">Log in with the Twitch account you used to register to view your submitted games.</span></p>
+      <p>
+        <span class="ja">申請時に使用したTwitchアカウントでログインすると、申請済みのゲームが表示されます。</span>
+        <span class="en">Log in with the Twitch account you used to apply to see your submitted games.</span>
+      </p>
       <button id="btn-login" class="twitch-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
           <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
         </svg>
-        Twitchでログイン
+        <span class="ja">Twitchでログイン</span><span class="en">Log in with Twitch</span>
       </button>
       <p style="margin-top:20px;font-size:12px;color:#bbb;">
-        申請内容の確認・変更のためにTwitchアカウントを使用します。<br>
-        メールアドレスの取得や投稿は行いません。<br>
-        Your Twitch account is used only to verify your identity. We do not access your email or post anything.
+        <span class="ja">本人確認のためにTwitchアカウントを使用します。メールアドレスの取得や投稿は行いません。</span>
+        <span class="en">Used only to verify your identity. We never read your email or post anything.</span>
       </p>
     </div>
-    <div style="text-align:center;margin-top:16px;">
-      <a href="index.html" style="font-size:13px;color:#aaa;">← トップページへ戻る / Back to Top</a>
+    <div class="back-row">
+      <a href="index.html"><span class="ja">← トップページへ戻る</span><span class="en">← Back to top</span></a>
     </div>
   </div>
 
-  <!-- ローディング -->
+  <!-- ===== ローディング ===== -->
   <div id="view-loading" style="display:none;">
-    <div id="list-loading">Loading...</div>
+    <div id="list-loading">Loading…</div>
   </div>
 
-  <!-- 申請一覧 -->
+  <!-- ===== 一覧 ===== -->
   <div id="view-entries" style="display:none;">
     <div class="user-bar">
       <span class="user-badge">✓ <span id="entry-username"></span></span>
     </div>
+    <div class="add-row">
+      <a href="register.html">
+        <span class="ja">＋ 別のゲームを応募する</span><span class="en">＋ Submit another game</span>
+      </a>
+    </div>
     <div id="entry-list"></div>
-    <p class="hint">「申請内容を編集」を押すとGoogleフォームの編集画面が開きます<br>Click "Edit Entry" to open the Google Form editing page.</p>
-    <div style="text-align:center;margin-top:24px;">
-      <a href="index.html" style="font-size:13px;color:#aaa;">← トップページへ戻る / Back to Top</a>
+    <div class="back-row">
+      <a href="index.html"><span class="ja">← トップページへ戻る</span><span class="en">← Back to top</span></a>
     </div>
   </div>
 
-  <!-- 申請なし -->
+  <!-- ===== 申請なし ===== -->
   <div id="view-empty" style="display:none;">
-    <div class="list-loading" style="max-width:500px;text-align:center;">
-      <strong id="empty-username"></strong> の申請が見つかりませんでした。<br>
-      No applications found for this account.<br><br>
+    <div class="list-loading" style="max-width:520px;text-align:center;margin:0 auto;">
+      <strong id="empty-username"></strong>
+      <span class="ja">の申請が見つかりませんでした。</span><span class="en">No applications found for this account.</span><br><br>
       <small style="color:#bbb;">
-        申請に使用したアカウントと異なる可能性があります。<br>
-        別アカウントで試す場合はTwitchからログアウト後に再度お試しください。<br>
-        This may not be the account you used to apply.<br>
-        To try a different account, log out of Twitch first, then log in again.
+        <span class="ja">申請に使用したアカウントと異なる可能性があります。別アカウントで試す場合はTwitchからログアウト後に再度お試しください。</span>
+        <span class="en">This may not be the account you used to apply. To try a different account, log out of Twitch first, then log in again.</span>
       </small>
     </div>
-    <div style="text-align:center;margin-top:20px;">
-      <a href="index.html" class="cta" style="margin:0 auto;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
+    <div class="cta-row">
+      <a href="register.html" class="cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
+      <a href="index.html" class="cta-outline"><span class="ja">トップページへ</span><span class="en">Back to top</span></a>
     </div>
   </div>
 
-  <!-- エラー -->
+  <!-- ===== エラー ===== -->
   <div id="view-error" style="display:none;">
-    <div class="list-loading" style="max-width:500px;">
-      データの取得に失敗しました。時間をおいて再度お試しください。<br>
-      <small style="color:#bbb;">Failed to load your data. Please try again later.</small>
+    <div class="list-loading" style="max-width:520px;margin:0 auto;">
+      <span class="ja">データの取得に失敗しました。時間をおいて再度お試しください。</span>
+      <span class="en">Failed to load your data. Please try again later.</span>
     </div>
-    <div style="text-align:center;margin-top:20px;">
-      <a href="index.html" class="cta" style="margin:0 auto;padding:10px 18px;font-size:13px;">トップページへ / Top Page</a>
+    <div class="back-row">
+      <a href="index.html"><span class="ja">トップページへ</span><span class="en">Back to top</span></a>
     </div>
   </div>
 
@@ -211,131 +330,467 @@
 </footer>
 
 <script>
-const TWITCH_CLIENT_ID = 'kp13odpytkan0tqo6xmgj5509h4104';
-const REDIRECT_URI     = 'https://alnico-dig.github.io/event/edit.html';
-const GAS_URL          = 'https://script.google.com/macros/s/AKfycbxAkXEyoXb3eDMUw8vhHI1J0BHbisYbHFDyr252wYMpYZ6-PAGG14KoRKORG1XELfJAtg/exec';
+/* ============================================================
+   #DIGspotlight vol.2 — 登録内容の編集 (edit.html)
+   ------------------------------------------------------------
+   一覧: GET  GAS_URL + "?token=<twitchToken>" → { ok, login, entries:[...] }
+   保存: POST { action:"update", token, appId, name, schedule, comment, x }
+   削除: POST { action:"delete", token, appId }
+   → GAS 側の実装は vol2/gas_script.js（handleMyEntries / handleUpsert / handleDelete）
+   ============================================================ */
+(function () {
+  'use strict';
 
-const TOKEN_KEY = 'dig_twitch_token';
+  var TWITCH_CLIENT_ID = 'kp13odpytkan0tqo6xmgj5509h4104';
+  var REDIRECT_URI     = 'https://alnico-dig.github.io/event/vol2/edit.html';
+  var GAS_URL           = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
+  // GAS を叩かずフロント単体で確認したいときだけ true にする（本番は必ず false）
+  var DEV_MOCK = false;
 
-function showView(id) {
-  ['login', 'loading', 'entries', 'empty', 'error'].forEach(v => {
-    document.getElementById('view-' + v).style.display = (v === id) ? '' : 'none';
-  });
-}
+  var TOKEN_KEY = 'dig_twitch_token'; // register.html と共有
+  var DAYS = ['day1', 'day2', 'day3'];
+  var DAY_LABELS = [
+    { ja: '12/18(金)', en: 'Fri 12/18' },
+    { ja: '12/19(土)', en: 'Sat 12/19' },
+    { ja: '12/20(日)', en: 'Sun 12/20' }
+  ];
+  var SLOTS = [
+    { v: '朝',   en: 'Morning',   hint: '6–11' },
+    { v: '昼',   en: 'Daytime',   hint: '11–17' },
+    { v: '夜',   en: 'Evening',   hint: '17–23' },
+    { v: '深夜', en: 'Late night', hint: '23–6' },
+    { v: '未定', en: 'TBD',        hint: '' }
+  ];
 
-document.getElementById('btn-login').addEventListener('click', () => {
-  const url = new URL('https://id.twitch.tv/oauth2/authorize');
-  url.searchParams.set('client_id', TWITCH_CLIENT_ID);
-  url.searchParams.set('redirect_uri', REDIRECT_URI);
-  url.searchParams.set('response_type', 'token');
-  url.searchParams.set('scope', '');
-  location.href = url.toString();
-});
-
-function extractTokenFromHash() {
-  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
-  return params.get('access_token') || null;
-}
-
-async function fetchTwitchUser(token) {
-  const res = await fetch('https://api.twitch.tv/helix/users', {
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Client-Id': TWITCH_CLIENT_ID
-    }
-  });
-  if (res.status === 401) throw new Error('token_expired');
-  if (!res.ok) throw new Error('twitch_api_' + res.status);
-  const json = await res.json();
-  return json.data?.[0]?.login ?? null;
-}
-
-async function fetchEntries(token) {
-  const res = await fetch(GAS_URL + '?token=' + encodeURIComponent(token));
-  if (!res.ok) throw new Error('gas_api_' + res.status);
-  const data = await res.json();
-  if (data.error === 'token_expired') throw new Error('token_expired');
-  if (data.error) throw new Error('gas_error');
-  return data;
-}
-
-function renderEntries(entries, username) {
-  document.getElementById('entry-username').textContent = username;
-  const list = document.getElementById('entry-list');
-  list.innerHTML = '';
-
-  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const safeUrl = u => /^https?:\/\//.test(u) ? u : '#';
-
-  entries.forEach(entry => {
-    const appId = (entry.steam || '').match(/app\/(\d+)/)?.[1];
-    const imgSrc = appId ? 'images/' + appId + '.jpg' : '';
-
-    let langText = '';
-    const lang = entry.language || '';
-    if (lang.includes('日本語') || lang.includes('Japanese')) langText += 'JA ';
-    if (lang.includes('英語') || lang.includes('English')) langText += 'EN ';
-    if (lang.includes('その他') || lang.includes('Other')) langText += 'etc.';
-    langText = langText.trim();
-
-    const card = document.createElement('div');
-    card.className = 'edit-card';
-    card.innerHTML = `
-      <div class="info" style="flex:1;min-width:0;">
-        <div class="row game">🎮 <a href="${safeUrl(entry.steam)}" target="_blank">${esc(entry.game)}</a></div>
-        ${entry.date   ? `<div class="meta">📅 ${esc(entry.date)}</div>` : ''}
-        ${entry.time   ? `<div class="meta">⏰ ${esc(entry.time)}</div>` : ''}
-        ${langText     ? `<div class="meta">🌐 ${langText}</div>` : ''}
-        ${entry.notes  ? `<div class="meta note">💬 ${esc(entry.notes)}</div>` : ''}
-      </div>
-      <div class="edit-card-right">
-        ${imgSrc ? `
-          <a href="${safeUrl(entry.steam)}" target="_blank">
-            <img src="${imgSrc}" class="game-img" style="width:160px;" loading="lazy" onerror="this.style.display='none'">
-          </a>` : ''}
-        <a href="${safeUrl(entry.editUrl)}" target="_blank" class="edit-btn">申請内容を編集 / Edit Entry</a>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
-
-async function init() {
-  const hashToken = extractTokenFromHash();
-  if (hashToken) {
-    sessionStorage.setItem(TOKEN_KEY, hashToken);
-    history.replaceState(null, '', location.pathname);
+  var $ = function (id) { return document.getElementById(id); };
+  function showView(id) {
+    ['login', 'loading', 'entries', 'empty', 'error'].forEach(function (v) {
+      $('view-' + v).style.display = (v === id) ? '' : 'none';
+    });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function bi(ja, en) {
+    return '<span class="ja">' + esc(ja) + '</span><span class="en">' + esc(en) + '</span>';
+  }
+  function slotEn(v) {
+    for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].en; }
+    return v;
+  }
+  function safeUrl(u) { return /^https?:\/\//.test(u || '') ? u : '#'; }
+  function steamHeaderUrl(appId) {
+    return 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg';
   }
 
-  const token = sessionStorage.getItem(TOKEN_KEY);
-  if (!token) { showView('login'); return; }
+  function scheduleSummary(entry) {
+    var pj = [], pe = [];
+    DAYS.forEach(function (d, i) {
+      var v = entry['Day' + (i + 1)];
+      if (v && v !== '未定') {
+        pj.push(DAY_LABELS[i].ja + ' ' + v);
+        pe.push(DAY_LABELS[i].en + ' ' + slotEn(v));
+      }
+    });
+    return {
+      ja: pj.length ? '📅 ' + pj.join(' ／ ') : '📅 配信予定：未定',
+      en: pe.length ? '📅 ' + pe.join('  ·  ') : '📅 Schedule: TBD'
+    };
+  }
 
-  showView('loading');
+  var X_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
 
-  try {
-    const username = await fetchTwitchUser(token);
-    if (!username) throw new Error('no_username');
+  function timeGridHtml(appId, entry) {
+    var html = '<div class="time-grid">';
+    html += '<div class="tg-head"></div>';
+    SLOTS.forEach(function (s) {
+      html += '<div class="tg-head">' + bi(s.v, s.en) +
+        (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
+    });
+    DAYS.forEach(function (d, di) {
+      var current = entry['Day' + (di + 1)] || '未定';
+      html += '<div class="tg-day">' + bi(DAY_LABELS[di].ja, DAY_LABELS[di].en) + '</div>';
+      SLOTS.forEach(function (s) {
+        var checked = s.v === current ? ' checked' : '';
+        html += '<label class="tg-cell" title="' + esc(s.v + ' / ' + s.en) + '">' +
+          '<input type="radio" name="sched-' + appId + '-' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
+      });
+    });
+    html += '</div>';
+    return html;
+  }
 
-    const entries = await fetchEntries(token);
+  function getSchedule(appId) {
+    var out = {};
+    DAYS.forEach(function (d) {
+      var el = document.querySelector('input[name="sched-' + appId + '-' + d + '"]:checked');
+      out[d] = el ? el.value : '未定';
+    });
+    return out;
+  }
 
-    if (!Array.isArray(entries) || entries.length === 0) {
-      document.getElementById('empty-username').textContent = username;
-      showView('empty');
+  function entryCardHtml(entry) {
+    var appId = entry.AppId;
+    var steam = safeUrl(entry.SteamUrl);
+    var header = entry.HeaderImage || (appId ? steamHeaderUrl(appId) : '');
+    var sched = scheduleSummary(entry);
+
+    return '' +
+      '<div class="entry-view" id="ev-' + appId + '">' +
+        '<div class="left">' +
+          (header ? '<a href="' + steam + '" target="_blank" rel="noopener">' +
+            '<img src="' + esc(header) + '" class="game-img" loading="lazy" ' +
+            'onerror="this.onerror=null;this.src=\'https://placehold.co/460x215?text=%23DIGspotlight\'"></a>' : '') +
+          '<div class="info">' +
+            '<div class="row game">🎮 <a href="' + steam + '" target="_blank" rel="noopener">' + esc(entry.Game) + '</a></div>' +
+            '<div class="meta">' + bi(sched.ja, sched.en) + '</div>' +
+            (entry.Comment ? '<div class="meta note">💬 ' + esc(entry.Comment) + '</div>' : '') +
+            (entry.X ? '<div class="meta"><a class="x-link" href="' + safeUrl(entry.X) + '" target="_blank" rel="noopener" aria-label="X">' + X_SVG + '</a></div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="entry-actions">' +
+          '<button type="button" class="btn-edit-toggle" data-appid="' + appId + '">✏️ ' + bi('編集', 'Edit') + '</button>' +
+          '<button type="button" class="btn-delete-toggle" data-appid="' + appId + '">🗑️ ' + bi('削除', 'Delete') + '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="confirm-box" id="confirm-' + appId + '">' +
+        '<p>' + bi('この応募を削除しますか？ この操作は取り消せません。', 'Delete this entry? This cannot be undone.') + '</p>' +
+        '<div class="confirm-actions">' +
+          '<button type="button" class="btn-confirm-delete" data-appid="' + appId + '">' + bi('削除する', 'Delete') + '</button>' +
+          '<button type="button" class="btn-cancel-delete" data-appid="' + appId + '">' + bi('キャンセル', 'Cancel') + '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="edit-form" id="ef-' + appId + '">' +
+        '<div class="ef-field">' +
+          '<label>' + bi('配信者名', 'Name') + '</label>' +
+          '<input type="text" id="ef-name-' + appId + '" maxlength="60" value="' + esc(entry.Streamer) + '">' +
+        '</div>' +
+        '<div class="ef-field">' +
+          '<label>' + bi('配信予定', 'Planned schedule') + '</label>' +
+          '<p class="ef-hint">' + bi('時間はすべて日本時間（JST / UTC+9）です。', 'All times are Japan time (JST / UTC+9).') + '</p>' +
+          timeGridHtml(appId, entry) +
+        '</div>' +
+        '<div class="ef-field">' +
+          '<label>' + bi('一言コメント', 'Comment') + ' <span style="font-weight:500;color:#aaa;">' + bi('任意', 'optional') + '</span></label>' +
+          '<textarea id="ef-comment-' + appId + '" maxlength="140">' + esc(entry.Comment) + '</textarea>' +
+        '</div>' +
+        '<div class="ef-field">' +
+          '<label>X (Twitter) <span style="font-weight:500;color:#aaa;">' + bi('任意', 'optional') + '</span></label>' +
+          '<input type="text" id="ef-x-' + appId + '" maxlength="120" value="' + esc(entry.X) + '" placeholder="@yourname">' +
+        '</div>' +
+        '<div class="ef-actions">' +
+          '<button type="button" class="btn-save" data-appid="' + appId + '">' + bi('保存する', 'Save') + '</button>' +
+          '<button type="button" class="btn-cancel" data-appid="' + appId + '">' + bi('キャンセル', 'Cancel') + '</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  var entries = [];
+  var token = null;
+  var currentUsername = '';
+
+  function findEntry(appId) {
+    for (var i = 0; i < entries.length; i++) { if (String(entries[i].AppId) === String(appId)) return entries[i]; }
+    return null;
+  }
+
+  function renderEntries() {
+    var list = $('entry-list');
+    list.innerHTML = '';
+    entries.forEach(function (entry) {
+      var card = document.createElement('div');
+      card.className = 'card entry-card';
+      card.id = 'card-' + entry.AppId;
+      card.innerHTML = entryCardHtml(entry);
+      list.appendChild(card);
+    });
+  }
+
+  function closeAllPanels(exceptAppId) {
+    document.querySelectorAll('.confirm-box.open').forEach(function (el) {
+      if (el.id !== 'confirm-' + exceptAppId) el.classList.remove('open');
+    });
+    document.querySelectorAll('.edit-form.open').forEach(function (el) {
+      if (el.id !== 'ef-' + exceptAppId) el.classList.remove('open');
+    });
+  }
+
+  // ---- イベント委譲 ----
+  $('entry-list').addEventListener('click', function (e) {
+    var editBtn = e.target.closest('.btn-edit-toggle');
+    var delBtn = e.target.closest('.btn-delete-toggle');
+    var confirmDelBtn = e.target.closest('.btn-confirm-delete');
+    var cancelDelBtn = e.target.closest('.btn-cancel-delete');
+    var saveBtn = e.target.closest('.btn-save');
+    var cancelBtn = e.target.closest('.btn-cancel');
+
+    if (editBtn) {
+      var appId1 = editBtn.getAttribute('data-appid');
+      closeAllPanels(appId1);
+      $('ef-' + appId1).classList.toggle('open');
+      return;
+    }
+    if (delBtn) {
+      var appId2 = delBtn.getAttribute('data-appid');
+      closeAllPanels(appId2);
+      $('confirm-' + appId2).classList.toggle('open');
+      return;
+    }
+    if (cancelDelBtn) {
+      $('confirm-' + cancelDelBtn.getAttribute('data-appid')).classList.remove('open');
+      return;
+    }
+    if (cancelBtn) {
+      $('ef-' + cancelBtn.getAttribute('data-appid')).classList.remove('open');
+      return;
+    }
+    if (confirmDelBtn) { doDelete(confirmDelBtn.getAttribute('data-appid'), confirmDelBtn); return; }
+    if (saveBtn) { doSave(saveBtn.getAttribute('data-appid'), saveBtn); return; }
+  });
+
+  function doSave(appId, btn) {
+    var entry = findEntry(appId);
+    if (!entry) return;
+    btn.disabled = true;
+    var origHtml = btn.innerHTML;
+    btn.innerHTML = bi('保存中…', 'Saving…');
+
+    var payload = {
+      action: 'update',
+      token: token,
+      appId: appId,
+      name: $('ef-name-' + appId).value.trim(),
+      schedule: getSchedule(appId),
+      comment: $('ef-comment-' + appId).value.trim(),
+      x: $('ef-x-' + appId).value.trim()
+    };
+
+    var applyLocal = function (res) {
+      res = res || {};
+      entry.Streamer = payload.name || entry.Streamer;
+      entry.Day1 = payload.schedule.day1;
+      entry.Day2 = payload.schedule.day2;
+      entry.Day3 = payload.schedule.day3;
+      entry.Comment = payload.comment;
+      entry.X = payload.x;
+      if (res.game) entry.Game = res.game;
+      if (res.steamUrl) entry.SteamUrl = res.steamUrl;
+      if (res.headerImage) entry.HeaderImage = res.headerImage;
+      if (res.developer) entry.Developer = res.developer;
+
+      var card = $('card-' + appId);
+      card.innerHTML = entryCardHtml(entry);
+      var badge = document.createElement('span');
+      badge.className = 'saved-badge';
+      badge.innerHTML = bi('保存しました', 'Saved');
+      $('ev-' + appId).querySelector('.game').appendChild(badge);
+      setTimeout(function () { if (badge.parentNode) badge.remove(); }, 3000);
+    };
+
+    if (DEV_MOCK) {
+      console.log('[DEV_MOCK] update payload:', payload);
+      setTimeout(function () { applyLocal({}); }, 400);
       return;
     }
 
-    renderEntries(entries, username);
-    showView('entries');
-
-  } catch (err) {
-    console.error(err);
-    sessionStorage.removeItem(TOKEN_KEY);
-    // トークン切れはログイン画面へ、それ以外はエラー画面へ
-    showView(err.message === 'token_expired' ? 'login' : 'error');
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.ok) {
+          applyLocal(res);
+        } else if (res && res.error === 'token_expired') {
+          sessionStorage.removeItem(TOKEN_KEY);
+          showView('login');
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+          alertInline(appId, bi('保存に失敗しました。時間をおいて再度お試しください。', 'Failed to save. Please try again in a bit.'));
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        alertInline(appId, bi('保存に失敗しました。時間をおいて再度お試しください。', 'Failed to save. Please try again in a bit.'));
+      });
   }
-}
 
-init();
+  function alertInline(appId, html) {
+    var form = $('ef-' + appId);
+    var note = form.querySelector('.ef-error');
+    if (!note) {
+      note = document.createElement('p');
+      note.className = 'ef-error';
+      note.style.cssText = 'color:#e0245e;font-size:12px;margin-top:10px;';
+      form.appendChild(note);
+    }
+    note.innerHTML = html;
+  }
+
+  function doDelete(appId, btn) {
+    btn.disabled = true;
+    var origHtml = btn.innerHTML;
+    btn.innerHTML = bi('削除中…', 'Deleting…');
+
+    var payload = { action: 'delete', token: token, appId: appId };
+
+    var applyLocal = function () {
+      entries = entries.filter(function (e) { return String(e.AppId) !== String(appId); });
+      var card = $('card-' + appId);
+      if (card) card.remove();
+      if (entries.length === 0) {
+        $('empty-username').textContent = currentUsername;
+        showView('empty');
+      }
+    };
+
+    if (DEV_MOCK) {
+      console.log('[DEV_MOCK] delete payload:', payload);
+      setTimeout(applyLocal, 300);
+      return;
+    }
+
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.ok) {
+          applyLocal();
+        } else if (res && res.error === 'token_expired') {
+          sessionStorage.removeItem(TOKEN_KEY);
+          showView('login');
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      });
+  }
+
+  // ---- Twitch OAuth -------------------------------------
+  $('btn-login').addEventListener('click', function () {
+    var url = new URL('https://id.twitch.tv/oauth2/authorize');
+    url.searchParams.set('client_id', TWITCH_CLIENT_ID);
+    url.searchParams.set('redirect_uri', REDIRECT_URI);
+    url.searchParams.set('response_type', 'token');
+    url.searchParams.set('scope', '');
+    location.href = url.toString();
+  });
+
+  function extractTokenFromHash() {
+    var params = new URLSearchParams(location.hash.replace(/^#/, ''));
+    return params.get('access_token') || null;
+  }
+
+  function fetchTwitchUser(tk) {
+    return fetch('https://api.twitch.tv/helix/users', {
+      headers: { 'Authorization': 'Bearer ' + tk, 'Client-Id': TWITCH_CLIENT_ID }
+    }).then(function (res) {
+      if (res.status === 401) throw new Error('token_expired');
+      if (!res.ok) throw new Error('twitch_api_' + res.status);
+      return res.json();
+    }).then(function (json) {
+      return (json.data && json.data[0]) ? json.data[0] : null;
+    });
+  }
+
+  function fetchEntries(tk) {
+    if (DEV_MOCK) {
+      return Promise.resolve({
+        ok: true, login: 'dev_user',
+        entries: [
+          { TwitchId: '0', TwitchLogin: 'dev_user', Streamer: 'Dev User', TwitchUrl: '#', IconUrl: '',
+            AppId: '1145360', Game: 'Hades', SteamUrl: 'https://store.steampowered.com/app/1145360/',
+            HeaderImage: steamHeaderUrl('1145360'), Developer: 'Supergiant Games',
+            Day1: '夜', Day2: '未定', Day3: '深夜', Comment: 'テストコメント', X: '@example' },
+          { TwitchId: '0', TwitchLogin: 'dev_user', Streamer: 'Dev User', TwitchUrl: '#', IconUrl: '',
+            AppId: '2379780', Game: 'Balatro', SteamUrl: 'https://store.steampowered.com/app/2379780/',
+            HeaderImage: steamHeaderUrl('2379780'), Developer: 'LocalThunk',
+            Day1: '未定', Day2: '未定', Day3: '未定', Comment: '', X: '' }
+        ]
+      });
+    }
+    return fetch(GAS_URL + '?token=' + encodeURIComponent(tk)).then(function (r) { return r.json(); });
+  }
+
+  function boot() {
+    var hashToken = extractTokenFromHash();
+    if (hashToken) {
+      sessionStorage.setItem(TOKEN_KEY, hashToken);
+      history.replaceState(null, '', location.pathname);
+    }
+    token = sessionStorage.getItem(TOKEN_KEY);
+
+    if (DEV_MOCK && !token) token = 'DEV_MOCK_TOKEN';
+    if (!token) { showView('login'); return; }
+
+    showView('loading');
+
+    var userPromise = DEV_MOCK
+      ? Promise.resolve({ login: 'dev_user' })
+      : fetchTwitchUser(token).then(function (u) { if (!u) throw new Error('no_user'); return u; });
+
+    userPromise.then(function (user) {
+      return fetchEntries(token).then(function (data) {
+        if (data && data.error === 'token_expired') throw new Error('token_expired');
+        if (!data || data.error || data.ok === false) throw new Error('gas_error');
+
+        currentUsername = user.login || data.login || '';
+        $('entry-username').textContent = currentUsername;
+        entries = Array.isArray(data.entries) ? data.entries : [];
+
+        if (entries.length === 0) {
+          $('empty-username').textContent = currentUsername;
+          showView('empty');
+          return;
+        }
+        renderEntries();
+        showView('entries');
+      });
+    }).catch(function (err) {
+      console.error(err);
+      if (err.message === 'token_expired') {
+        sessionStorage.removeItem(TOKEN_KEY);
+        showView('login');
+      } else {
+        showView('error');
+      }
+    });
+  }
+
+  // ---- 言語切替（index.html / register.html と同じ方式） ----
+  (function () {
+    var KEY = 'digspotlight-lang';
+    var btn = $('lang-toggle');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+    }
+    var saved = 'ja';
+    try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', function () {
+      var next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+    });
+  })();
+
+  boot();
+})();
 </script>
 </body>
 </html>

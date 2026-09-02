@@ -1081,13 +1081,44 @@
     });
   }
 
-  function initForm(user) {
+  // 既存の応募一覧を取得（名前/Xの自動補完用）。取得失敗はフォーム表示をブロックしない。
+  function fetchMyEntries(tk) {
+    if (DEV_MOCK) {
+      return Promise.resolve([
+        { Streamer: 'アルニコ（GameNews）', X: '@alnico_ow', Timestamp: '2026-08-20T10:00:00.000Z' },
+        { Streamer: 'alnico_gamenews',      X: '@alnico_ow', Timestamp: '2026-09-01T10:00:00.000Z' }
+      ]);
+    }
+    return fetch(GAS_URL + '?token=' + encodeURIComponent(tk))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        return (data && data.ok && Array.isArray(data.entries)) ? data.entries : [];
+      })
+      .catch(function () { return []; }); // 補助情報なので失敗しても応募自体は続行させる
+  }
+
+  // Timestamp が最も新しいエントリー＝本人が最後に確定させた表記とみなす
+  function latestEntryOf(entries) {
+    var best = null, bestT = -1;
+    entries.forEach(function (e) {
+      var t = new Date(e.Timestamp).getTime();
+      if (!isNaN(t) && t > bestT) { bestT = t; best = e; }
+    });
+    return best;
+  }
+
+  function initForm(user, latestEntry) {
     twitchUser = user;
     $('u-icon').src = user.profile_image_url || 'https://placehold.co/44x44?text=?';
     $('u-icon').onerror = function () { this.onerror = null; this.src = 'https://placehold.co/44x44?text=?'; };
     $('u-name').textContent = user.display_name || user.login;
     $('u-login').textContent = 'twitch.tv/' + user.login;
-    $('in-name').value = user.display_name || user.login;
+
+    // 名前: 過去の応募で本人が確定させた表記があればそれを優先、無ければTwitch表示名
+    $('in-name').value = (latestEntry && latestEntry.Streamer) ? latestEntry.Streamer : (user.display_name || user.login);
+    // X: 過去の応募にあれば補完（ゲームごとに毎回打ち直さなくて済むように）
+    if (latestEntry && latestEntry.X) $('in-x').value = latestEntry.X;
+
     showView('form');
   }
 
@@ -1123,15 +1154,18 @@
     if (DEV_MOCK && !token) {
       // モック時はログインを飛ばしてダミーユーザーでフォーム表示
       token = 'DEV_MOCK_TOKEN';
-      initForm({ id: '0', login: 'dev_user', display_name: 'Dev User', profile_image_url: '' });
+      fetchMyEntries(token).then(function (entries) {
+        initForm({ id: '0', login: 'dev_user', display_name: 'Dev User', profile_image_url: '' }, latestEntryOf(entries));
+      });
       return;
     }
     if (!token) { showView('login'); return; }
 
     showView('loading');
-    fetchTwitchUser(token).then(function (user) {
+    Promise.all([fetchTwitchUser(token), fetchMyEntries(token)]).then(function (results) {
+      var user = results[0], entries = results[1];
       if (!user) throw new Error('no_user');
-      initForm(user);
+      initForm(user, latestEntryOf(entries));
     }).catch(function (err) {
       console.error(err);
       sessionStorage.removeItem(TOKEN_KEY);
