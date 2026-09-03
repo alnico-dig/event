@@ -156,31 +156,66 @@
       '<div class="tbd-list">' + tbd.map(cardHtml).join('') + '</div>';
   }
 
-  fetch(GAS_URL + '?list=1')
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
-      document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
-      document.getElementById('schedule-tbd').innerHTML = buildTBDSection(entries);
-      document.getElementById('schedule-loading').style.display = 'none';
-      document.getElementById('schedule-wrap').style.display = '';
-    })
-    .catch(function (err) {
-      console.error('スケジュールの取得に失敗:', err);
-      document.getElementById('schedule-loading').innerHTML =
-        bi('スケジュールの読み込みに失敗しました。時間をおいて再読み込みしてください。', 'Failed to load the schedule. Please reload in a bit.');
-    });
+  // GAS はしばらくアクセスが無いと休眠し、復帰の初回リクエストが 15〜30 秒かかったり
+  // JSON でなくエラー HTML を返したりする（＝コールドスタート）。json パース失敗も
+  // タイムアウトも「失敗」とみなして、少し待って数回リトライする。
+  function fetchJson(url, timeoutMs) {
+    return Promise.race([
+      fetch(url).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json(); // エラー HTML なら SyntaxError → catch へ
+      }),
+      new Promise(function (_, reject) {
+        setTimeout(function () { reject(new Error('timeout')); }, timeoutMs);
+      })
+    ]);
+  }
+
+  // ---- スケジュール本体（?list=1）----
+  function loadSchedule(attempt) {
+    attempt = attempt || 1;
+    var loadingEl = document.getElementById('schedule-loading');
+    loadingEl.style.display = '';
+    loadingEl.textContent = 'Loading…';
+    fetchJson(GAS_URL + '?list=1', 22000)
+      .then(function (data) {
+        var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+        document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
+        document.getElementById('schedule-tbd').innerHTML = buildTBDSection(entries);
+        loadingEl.style.display = 'none';
+        document.getElementById('schedule-wrap').style.display = '';
+      })
+      .catch(function (err) {
+        console.error('スケジュールの取得に失敗 (try ' + attempt + '):', err);
+        if (attempt < 4) {
+          setTimeout(function () { loadSchedule(attempt + 1); }, 2500);
+          return;
+        }
+        // 4 回試して駄目 → 手動リトライボタンを出す（取得失敗のまま放置しない）
+        loadingEl.innerHTML =
+          bi('スケジュールを読み込めませんでした。', 'Couldn’t load the schedule.') +
+          ' <button type="button" id="schedule-retry" class="retry-btn">' +
+          bi('再読み込み', 'Retry') + '</button>';
+        document.getElementById('schedule-retry').addEventListener('click', function () {
+          loadSchedule(1);
+        });
+      });
+  }
+  loadSchedule();
 
   // ---- 現在配信中（NowLive）----
+  var nowliveEl = document.getElementById('nowlive');
+  var nowliveList = document.getElementById('nowlive-list');
+  var nowliveSettled = false;
+
   function renderNowLive(live) {
-    var list = document.getElementById('nowlive-list');
-    document.getElementById('nowlive').hidden = false;
+    nowliveEl.hidden = false;
     if (!live.length) {
-      list.innerHTML = '<p class="nowlive-empty">' +
+      nowliveList.innerHTML = '<p class="nowlive-empty">' +
         bi('現在、配信中の参加者はいません。', 'No participants are streaming right now.') + '</p>';
       return;
     }
-    list.innerHTML = live.map(function (s) {
+    nowliveList.innerHTML = live.map(function (s) {
       var url = 'https://www.twitch.tv/' + encodeURIComponent(s.login || '');
       // 保存アイコンは 300x300。chip 用に軽量サイズへ差し替え（Twitch CDN のときだけヒット）
       var icon = String(s.icon || '').replace('-300x300', '-70x70');
@@ -188,21 +223,51 @@
         ? '<img class="nowlive-avatar" src="' + esc(icon) + '" alt="" loading="lazy" ' +
           'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
         : '';
+      // 配信中カテゴリ（Twitch の現在の game_name）。GAS 側で「配信タイトルに digspotlight を
+      // 含む配信」だけ game を入れてくるので、空なら出さない。長い時は詰める
+      var game = String(s.game || '').trim();
+      if (game.length > 30) game = game.slice(0, 29) + '…';
+      var gameHtml = game ? '<span class="nowlive-game">' + esc(game) + '</span>' : '';
+      // 順番：赤ドット → アイコン → 名前 →（配信中カテゴリ）
       return '<a class="nowlive-chip" href="' + url + '" target="_blank" rel="noopener">' +
-        img + '<span class="live-dot" aria-hidden="true"></span>' +
-        esc(s.name || s.login || '') + '</a>';
+        '<span class="live-dot" aria-hidden="true"></span>' +
+        img +
+        '<span class="nowlive-name">' + esc(s.name || s.login || '') + '</span>' +
+        gameHtml + '</a>';
     }).join('');
   }
 
-  fetch(GAS_URL + '?live=1')
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      renderNowLive((data && Array.isArray(data.live)) ? data.live : []);
-    })
-    .catch(function (err) {
-      // 取得できないときはパネルごと非表示（スケジュール表示は妨げない）
-      console.error('NowLive の取得に失敗:', err);
-    });
+  // キャッシュヒット時の ?live=1 は 1〜1.5 秒。そこで返れば誰も見ない。
+  // 1.5 秒返らない時（＝GAS コールドスタート等）だけ「確認中…」を出す
+  var nowliveSlowTimer = setTimeout(function () {
+    if (nowliveSettled) return;
+    nowliveEl.hidden = false;
+    nowliveList.innerHTML = '<p class="nowlive-empty">' + bi('確認中…', 'Checking…') + '</p>';
+  }, 1500);
+
+  // ?live=1 も list と同様にリトライ。3 回試して駄目なら（補助情報なので）パネルを畳む。
+  function loadNowLive(attempt) {
+    attempt = attempt || 1;
+    fetchJson(GAS_URL + '?live=1', 22000)
+      .then(function (data) {
+        if (nowliveSettled) return;
+        nowliveSettled = true;
+        clearTimeout(nowliveSlowTimer);
+        renderNowLive((data && Array.isArray(data.live)) ? data.live : []);
+      })
+      .catch(function (err) {
+        if (nowliveSettled) return;
+        console.error('NowLive の取得に失敗 (try ' + attempt + '):', err);
+        if (attempt < 3) {
+          setTimeout(function () { loadNowLive(attempt + 1); }, 2500);
+          return;
+        }
+        nowliveSettled = true;
+        clearTimeout(nowliveSlowTimer);
+        nowliveEl.hidden = true; // スケジュール表示は妨げない
+      });
+  }
+  loadNowLive();
 
   // ---- 言語切替（index.html と同じ方式・localStorage共有） ----
   (function () {

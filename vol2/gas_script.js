@@ -17,7 +17,7 @@
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
 //   GET  ?list=1              → 参加者一覧（index.html #streams・公開情報のみ） { entries:[...] }
-//   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon}] }
+//   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon,game}] }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
 //   POST {action:"delete"}    → 応募の削除（edit.html）
@@ -149,7 +149,17 @@ function handleNowLive() {
           .map(function (s) {
             const lg = String(s.user_login || '').toLowerCase();
             const info = infoByLogin[lg] || {};
-            return { login: lg, name: info.name || s.user_name || lg, icon: info.icon || '' };
+            // game_name / title は同じ helix/streams レスポンスに含まれる＝追加リクエストなし。
+            // カテゴリ名は「配信タイトルに DIGspotlight を含む＝イベント参加中の配信」だけ出す
+            // （登録者が無関係な配信をしている時にゲーム名を出すと紛らわしいため）。
+            // 表記揺れ対策：大文字小文字は無視（i フラグ）、"DIG spotlight" のような空白入りも許容。
+            const onEvent = /dig\s*spotlight/i.test(String(s.title || ''));
+            return {
+              login: lg,
+              name: info.name || s.user_name || lg,
+              icon: info.icon || '',
+              game: onEvent ? String(s.game_name || '') : '',
+            };
           });
       }
     } catch (err) {
