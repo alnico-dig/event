@@ -48,6 +48,7 @@
 <div id="schedule-loading" class="list-loading">Loading…</div>
 <div class="schedule-wrap" id="schedule-wrap" style="display:none;">
   <div class="schedule-grid" id="schedule-grid"><!-- JS生成 --></div>
+  <div id="schedule-tbd"><!-- JS生成：配信日未定セクション --></div>
 </div>
 
 <div class="back-link-row">
@@ -70,14 +71,20 @@
     { ja: '12/19(土)', en: 'Sat 12/19' },
     { ja: '12/20(日)', en: 'Sun 12/20' }
   ];
-  // 表示順は 朝→昼→夜→深夜→未定 で固定（未定は深夜の後でよい、とユーザー確認済み）
+  // 表示順は 朝→昼→夜→深夜→時間未定 で固定（時間未定は深夜の後でよい、とユーザー確認済み）
+  // v = シート格納値（'未定' のまま）、ja/en = 表示ラベル
   var SLOTS = [
-    { v: '朝',   en: 'Morning',   hint: '6–11' },
-    { v: '昼',   en: 'Daytime',   hint: '11–17' },
-    { v: '夜',   en: 'Evening',   hint: '17–23' },
-    { v: '深夜', en: 'Late night', hint: '23–6' },
-    { v: '未定', en: 'TBD',        hint: '' }
+    { v: '朝',   ja: '朝',       en: 'Morning' },
+    { v: '昼',   ja: '昼',       en: 'Daytime' },
+    { v: '夜',   ja: '夜',       en: 'Evening' },
+    { v: '深夜', ja: '深夜',     en: 'Late night' },
+    { v: '未定', ja: '時間未定', en: 'Time TBD' }
   ];
+
+  // Day1/Day2/Day3 は "夜,深夜" のような "," 区切り複数値
+  var slotsOf = function (v) {
+    return String(v == null ? '' : v).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  };
 
   var esc = function (s) {
     return String(s == null ? '' : s)
@@ -110,11 +117,12 @@
     });
 
     SLOTS.forEach(function (slot) {
-      html += '<div class="sg-slot">' + bi(slot.v, slot.en) +
-        (slot.hint ? '<span class="hint">' + esc(slot.hint) + '</span>' : '') + '</div>';
+      html += '<div class="sg-slot">' + bi(slot.ja, slot.en) + '</div>';
 
       DAYS.forEach(function (dayKey) {
-        var matches = entries.filter(function (row) { return row[dayKey] === slot.v; });
+        var matches = entries.filter(function (row) {
+          return slotsOf(row[dayKey]).indexOf(slot.v) >= 0;
+        });
         html += '<div class="sg-cell">' + matches.map(cardHtml).join('') + '</div>';
       });
     });
@@ -122,11 +130,29 @@
     return html;
   }
 
+  // 配信日そのものが未定の参加者（明示フラグ、または3日とも何も選んでいない）
+  function isDatesTBD(row) {
+    if (String(row.DatesTBD) === '1') return true;
+    return DAYS.every(function (d) { return slotsOf(row[d]).length === 0; });
+  }
+
+  function buildTBDSection(entries) {
+    var tbd = entries.filter(isDatesTBD);
+    if (!tbd.length) return '';
+    return '' +
+      '<h3 class="tbd-title">' + bi('配信日未定', 'Streaming date TBD') + '</h3>' +
+      '<p class="tbd-note">' +
+        bi('開催期間中のどこかで配信予定（日程未定）。', 'Planning to stream sometime during the event (date not decided yet).') +
+      '</p>' +
+      '<div class="tbd-list">' + tbd.map(cardHtml).join('') + '</div>';
+  }
+
   fetch(GAS_URL + '?list=1')
     .then(function (r) { return r.json(); })
     .then(function (data) {
       var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
       document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
+      document.getElementById('schedule-tbd').innerHTML = buildTBDSection(entries);
       document.getElementById('schedule-loading').style.display = 'none';
       document.getElementById('schedule-wrap').style.display = '';
     })

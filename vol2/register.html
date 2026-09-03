@@ -274,13 +274,29 @@
   user-select: none;
 }
 .time-grid label.tg-cell:hover { border-color: #b9a5ff; }
-.time-grid input[type="radio"] { display: none; }
+.time-grid input[type="checkbox"] { display: none; }
 .time-grid label.tg-cell span { color: #cfcfcf; font-size: 13px; line-height: 1; }
 .time-grid label.tg-cell:has(input:checked) {
   background: #6c3cff;
   border-color: #6c3cff;
 }
 .time-grid label.tg-cell:has(input:checked) span { color: #fff; }
+.time-grid.is-disabled { opacity: 0.4; pointer-events: none; }
+
+/* 「配信日はまだ決まっていない」チェック */
+.tg-datestbd {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.tg-datestbd input { margin-top: 2px; flex-shrink: 0; }
 
 .submit-btn {
   display: block;
@@ -513,13 +529,24 @@
       <div class="field" id="f-time">
         <label class="field-label">
           <span class="ja">配信予定</span><span class="en">Planned schedule</span>
-          <span class="opt"><span class="ja">だいたいでOK・未定可</span><span class="en">rough is fine</span></span>
+          <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">各日でおおよその時間帯を選んでください。決まっていなければ「未定」のままで大丈夫です。<br>時間はすべて日本時間（JST / UTC+9）です。</span>
-          <span class="en">Pick a rough time slot for each day. Leave it on "TBD" if you're not sure yet.<br>All times are Japan time (JST / UTC+9).</span>
+          <span class="ja">配信する日と時間帯にチェックを入れてください（複数可・だいたいでOK）。日程が未定なら下のチェックだけでも構いません。<br>時間はすべて日本時間（JST / UTC+9）です。</span>
+          <span class="en">Check the days and time slots you plan to stream (multiple OK, rough is fine). If your dates aren't set, just check the box below instead.<br>All times are Japan time (JST / UTC+9).</span>
         </p>
         <div class="time-grid" id="time-grid"><!-- JS生成 --></div>
+        <label class="tg-datestbd" for="chk-dates-tbd">
+          <input type="checkbox" id="chk-dates-tbd">
+          <span>
+            <span class="ja">配信日はまだ決まっていない（開催期間中のどこかで配信予定）</span>
+            <span class="en">My streaming date isn't decided yet (planning to stream sometime during the event)</span>
+          </span>
+        </label>
+        <div class="field-error">
+          <span class="ja">配信する日時を1つ以上選ぶか、「配信日はまだ決まっていない」にチェックしてください。</span>
+          <span class="en">Pick at least one day and time slot, or check "My streaming date isn't decided yet".</span>
+        </div>
       </div>
 
       <!-- 一言コメント -->
@@ -647,7 +674,8 @@
      steamUrl: "<ストアページURL>",
      gameName: "<検索/URLで得たゲーム名（GAS側で appdetails により正規化）>",
      headerImage: "<推定ヘッダー画像URL（GAS側で appdetails により上書き）>",
-     schedule: { day1:"朝|昼|夜|深夜|未定", day2:"...", day3:"..." },
+     schedule: { day1:["夜","深夜"], day2:[], day3:[] },  // 各日で選んだ時間帯の配列（'未定'=時間未定）
+     datesTBD: false,                                     // true なら「配信日はまだ決まっていない」
      comment: "<一言コメント>",
      x: "<X ハンドル or URL>"
    }
@@ -678,12 +706,13 @@
     { ja: '12/19(土)', en: 'Sat 12/19' },
     { ja: '12/20(日)', en: 'Sun 12/20' }
   ];
+  // v = シート格納値（'未定' のまま）、ja/en = 表示ラベル。複数選択可（チェックボックス）
   var SLOTS = [
-    { v: '朝',   en: 'Morning',   hint: '6–11' },
-    { v: '昼',   en: 'Daytime',   hint: '11–17' },
-    { v: '夜',   en: 'Evening',   hint: '17–23' },
-    { v: '深夜', en: 'Late night', hint: '23–6' },
-    { v: '未定', en: 'TBD',        hint: '' }
+    { v: '朝',   ja: '朝',       en: 'Morning' },
+    { v: '昼',   ja: '昼',       en: 'Daytime' },
+    { v: '夜',   ja: '夜',       en: 'Evening' },
+    { v: '深夜', ja: '深夜',     en: 'Late night' },
+    { v: '未定', ja: '時間未定', en: 'Time TBD' }
   ];
 
   // ---- DOM ヘルパー ---------------------------------------
@@ -704,6 +733,10 @@
   }
   function slotEn(v) {
     for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].en; }
+    return v;
+  }
+  function slotJa(v) {
+    for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].ja; }
     return v;
   }
 
@@ -853,42 +886,70 @@
     $('in-game').focus();
   });
 
-  // ---- 配信予定グリッド生成 ------------------------------
+  // ---- 配信予定グリッド生成（チェックボックス・デフォルト全OFF） ----
   (function buildGrid() {
     var g = $('time-grid');
     var html = '<div class="tg-head"></div>';
     SLOTS.forEach(function (s) {
-      html += '<div class="tg-head">' + bi(s.v, s.en) +
-        (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
+      html += '<div class="tg-head">' + bi(s.ja, s.en) + '</div>';
     });
     DAYS.forEach(function (d, di) {
       html += '<div class="tg-day">' + bi(DAY_LABELS[di].ja, DAY_LABELS[di].en) + '</div>';
       SLOTS.forEach(function (s) {
-        var checked = s.v === '未定' ? ' checked' : '';
-        html += '<label class="tg-cell" title="' + esc(s.v + ' / ' + s.en) + '">' +
-          '<input type="radio" name="' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
+        html += '<label class="tg-cell" title="' + esc(DAY_LABELS[di].ja + ' ' + s.ja) + '">' +
+          '<input type="checkbox" name="' + d + '" value="' + s.v + '"><span>●</span></label>';
       });
     });
     g.innerHTML = html;
   })();
 
+  // 「配信日はまだ決まっていない」と時間帯グリッドは相互排他にする
+  var chkDatesTBD = $('chk-dates-tbd');
+  function gridCheckboxes() {
+    return Array.prototype.slice.call(document.querySelectorAll('#time-grid input[type="checkbox"]'));
+  }
+  function syncGridDisabled() {
+    var off = chkDatesTBD.checked;
+    $('time-grid').classList.toggle('is-disabled', off);
+    gridCheckboxes().forEach(function (el) { el.disabled = off; });
+  }
+  chkDatesTBD.addEventListener('change', function () {
+    if (chkDatesTBD.checked) {
+      gridCheckboxes().forEach(function (el) { el.checked = false; });
+    }
+    syncGridDisabled();
+    clearError('f-time');
+  });
+  $('time-grid').addEventListener('change', function () {
+    if (chkDatesTBD.checked) { chkDatesTBD.checked = false; syncGridDisabled(); }
+    clearError('f-time');
+  });
+
+  // getSchedule: { day1:['夜','深夜'], day2:[], day3:[] }
   function getSchedule() {
     var out = {};
     DAYS.forEach(function (d) {
-      var el = document.querySelector('input[name="' + d + '"]:checked');
-      out[d] = el ? el.value : '未定';
+      out[d] = Array.prototype.slice
+        .call(document.querySelectorAll('#time-grid input[name="' + d + '"]:checked'))
+        .map(function (el) { return el.value; });
     });
     return out;
   }
+  function getDatesTBD() { return chkDatesTBD.checked; }
+  function hasAnySchedule() {
+    if (getDatesTBD()) return true;
+    var s = getSchedule();
+    return DAYS.some(function (d) { return s[d].length > 0; });
+  }
 
-  function scheduleSummary(sched) {
+  function scheduleSummary(sched, datesTBD) {
+    if (datesTBD) return { ja: '📅 配信予定：日程未定', en: '📅 Schedule: date TBD' };
     var pj = [], pe = [];
     DAYS.forEach(function (d, i) {
-      var v = sched[d];
-      if (v && v !== '未定') {
-        pj.push(DAY_LABELS[i].ja + ' ' + v);
-        pe.push(DAY_LABELS[i].en + ' ' + slotEn(v));
-      }
+      var slots = (sched && sched[d]) || [];
+      if (!slots.length) return;
+      pj.push(DAY_LABELS[i].ja + ' ' + slots.map(slotJa).join('・'));
+      pe.push(DAY_LABELS[i].en + ' ' + slots.map(slotEn).join(' / '));
     });
     return {
       ja: pj.length ? '📅 ' + pj.join(' ／ ') : '📅 配信予定：未定',
@@ -915,7 +976,7 @@
     $('done-dev').innerHTML = info.developer
       ? bi('開発: ' + info.developer, 'Developer: ' + info.developer)
       : '';
-    var sum = scheduleSummary(info.schedule);
+    var sum = scheduleSummary(info.schedule, info.datesTBD);
     $('done-sched').innerHTML = bi(sum.ja, sum.en);
     $('done-comment').textContent = info.comment ? '💬 ' + info.comment : '';
     $('done-updated').hidden = !info.updated;
@@ -930,9 +991,12 @@
 
   function validate() {
     var ok = true;
-    clearError('f-name'); clearError('f-game');
+    clearError('f-name'); clearError('f-game'); clearError('f-time');
 
     if (!$('in-name').value.trim()) { markError('f-name'); ok = false; }
+
+    // 配信予定：時間帯を1つ以上、または「配信日はまだ決まっていない」
+    if (!hasAnySchedule()) { markError('f-time'); ok = false; }
 
     // ゲーム欄に URL を貼ったまま input が拾えていないケースの保険
     if (!selectedGame) {
@@ -979,6 +1043,7 @@
       gameName: selectedGame.name || '',
       headerImage: selectedGame.headerImage || steamHeaderUrl(selectedGame.appId),
       schedule: getSchedule(),
+      datesTBD: getDatesTBD(),
       comment: $('in-comment').value.trim(),
       x: $('in-x').value.trim()
     };
@@ -996,6 +1061,7 @@
         headerImage: res.headerImage || payload.headerImage,
         developer:   res.developer || '',
         schedule:    payload.schedule,
+        datesTBD:    payload.datesTBD,
         comment:     payload.comment,
         updated:     !!res.updated
       });
@@ -1047,8 +1113,10 @@
     setSelectedGame(null);
     $('in-game').value = '';
     $('in-comment').value = ''; $('in-x').value = '';
-    clearError('f-game'); clearError('f-name');
-    document.querySelectorAll('.time-grid input[value="未定"]').forEach(function (el) { el.checked = true; });
+    clearError('f-game'); clearError('f-name'); clearError('f-time');
+    gridCheckboxes().forEach(function (el) { el.checked = false; });
+    chkDatesTBD.checked = false;
+    syncGridDisabled();
     showView('form');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });

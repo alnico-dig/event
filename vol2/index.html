@@ -218,7 +218,11 @@ const DAY_LABELS = [
   { ja: '12/20(日)', en: 'Sun 12/20' }
 ];
 const SLOT_RANK = { '朝': 0, '昼': 1, '夜': 2, '深夜': 3, '未定': 4, '': 4 };
-const SLOT_EN = { '朝': 'Morning', '昼': 'Daytime', '夜': 'Evening', '深夜': 'Late night', '未定': 'TBD' };
+const SLOT_EN = { '朝': 'Morning', '昼': 'Daytime', '夜': 'Evening', '深夜': 'Late night', '未定': 'Time TBD' };
+const SLOT_JA = { '未定': '時間未定' }; // '朝'〜'深夜' はそのまま表示
+
+// Day1/Day2/Day3 は "夜,深夜" のような "," 区切り複数値（空 = その日は配信しない）
+const slotsOf = v => String(v == null ? '' : v).split(',').map(s => s.trim()).filter(Boolean);
 
 let allData = [];
 let currentFilter = 'all';
@@ -231,34 +235,35 @@ const escapeHtml = str => {
 const safeUrl = url => /^https?:\/\//.test(url || '') ? url : '#';
 const bi = (ja, en) => `<span class="ja">${escapeHtml(ja)}</span><span class="en">${escapeHtml(en)}</span>`;
 
-// その参加者が「配信予定あり」の日か（未定/空でなければ true）
+// その参加者がその日に配信予定を入れているか（時間帯が1つ以上あれば true。「時間未定」も含む）
 const streamsOn = (row, dayKey) => {
   const v = row[dayKey === 'day1' ? 'Day1' : dayKey === 'day2' ? 'Day2' : 'Day3'];
-  return v && v !== '未定';
+  return slotsOf(v).length > 0;
 };
-const allTBD = row => DAYS.every(d => !row[d] || row[d] === '未定');
+// 配信日そのものが未定（明示フラグ、または3日とも何も選んでいない）
+const allTBD = row =>
+  String(row.DatesTBD) === '1' || DAYS.every(d => slotsOf(row[d]).length === 0);
 
 // 配信予定サマリー（日本語 / 英語）
 function scheduleParts(row) {
+  if (allTBD(row)) return { ja: '📅 配信予定：未定', en: '📅 Schedule: TBD' };
   const pj = [], pe = [];
   DAYS.forEach((d, i) => {
-    const v = row[d];
-    if (v && v !== '未定') {
-      pj.push(`${DAY_LABELS[i].ja} ${v}`);
-      pe.push(`${DAY_LABELS[i].en} ${SLOT_EN[v] || v}`);
-    }
+    const slots = slotsOf(row[d]);
+    if (!slots.length) return;
+    pj.push(`${DAY_LABELS[i].ja} ${slots.map(s => SLOT_JA[s] || s).join('・')}`);
+    pe.push(`${DAY_LABELS[i].en} ${slots.map(s => SLOT_EN[s] || s).join(' / ')}`);
   });
-  return pj.length
-    ? { ja: '📅 ' + pj.join(' ／ '), en: '📅 ' + pe.join('  ·  ') }
-    : { ja: '📅 配信予定：未定', en: '📅 Schedule: TBD' };
+  return { ja: '📅 ' + pj.join(' ／ '), en: '📅 ' + pe.join('  ·  ') };
 }
 
-// 「配信予定順」用のソートキー（早い枠ほど小さい・全未定は最後）
+// 「配信予定順」用のソートキー（早い枠ほど小さい・未定は最後）
 function scheduleKey(row) {
   let best = 9999;
   DAYS.forEach((d, i) => {
-    const v = row[d];
-    if (v && v !== '未定') best = Math.min(best, i * 10 + (SLOT_RANK[v] ?? 4));
+    slotsOf(row[d]).forEach(s => {
+      best = Math.min(best, i * 10 + (SLOT_RANK[s] ?? 4));
+    });
   });
   return best;
 }

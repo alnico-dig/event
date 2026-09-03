@@ -659,12 +659,6 @@ a:hover {
   border-top: 1px solid #eee;
 }
 
-.sg-slot .hint {
-  font-weight: 500;
-  color: #b9a5ff;
-  font-size: 10px;
-}
-
 .sg-cell {
   border-top: 1px solid #eee;
   border-left: 1px solid #eee;
@@ -718,14 +712,35 @@ a:hover {
   text-overflow: ellipsis;
 }
 
+/* スケジュール表の下：配信日未定の参加者 */
+.tbd-title {
+  max-width: 1100px;
+  margin: 28px auto 4px;
+  padding: 0 4px;
+  font-size: 15px;
+  color: #6c3cff;
+}
+.tbd-note {
+  max-width: 1100px;
+  margin: 0 auto 12px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #888;
+}
+.tbd-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
 @media (max-width: 640px) {
   .schedule-grid { grid-template-columns: 56px repeat(3, 1fr); }
   .sg-corner, .sg-head { font-size: 11px; padding: 8px 2px; }
   .sg-slot { font-size: 11px; padding: 6px 2px; }
-  .sg-slot .hint { display: none; }
   .sg-cell { padding: 5px; gap: 4px; }
   .sg-icon { width: 28px; height: 28px; }
   .sg-streamer, .sg-game { font-size: 11px; }
+  .tbd-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {

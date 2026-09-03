@@ -181,10 +181,25 @@
   user-select: none;
 }
 .time-grid label.tg-cell:hover { border-color: #b9a5ff; }
-.time-grid input[type="radio"] { display: none; }
+.time-grid input[type="checkbox"] { display: none; }
 .time-grid label.tg-cell span { color: #cfcfcf; font-size: 13px; line-height: 1; }
 .time-grid label.tg-cell:has(input:checked) { background: #6c3cff; border-color: #6c3cff; }
 .time-grid label.tg-cell:has(input:checked) span { color: #fff; }
+.time-grid.is-disabled { opacity: 0.4; pointer-events: none; }
+
+.tg-datestbd {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.tg-datestbd input { margin-top: 2px; flex-shrink: 0; }
 
 .ef-actions { display: flex; gap: 10px; margin-top: 18px; }
 .btn-save {
@@ -334,7 +349,7 @@
    #DIGspotlight vol.2 — 登録内容の編集 (edit.html)
    ------------------------------------------------------------
    一覧: GET  GAS_URL + "?token=<twitchToken>" → { ok, login, entries:[...] }
-   保存: POST { action:"update", token, appId, name, schedule, comment, x }
+   保存: POST { action:"update", token, appId, name, schedule:{day1:[],day2:[],day3:[]}, datesTBD, comment, x }
    削除: POST { action:"delete", token, appId }
    → GAS 側の実装は vol2/gas_script.js（handleMyEntries / handleUpsert / handleDelete）
    ============================================================ */
@@ -354,13 +369,19 @@
     { ja: '12/19(土)', en: 'Sat 12/19' },
     { ja: '12/20(日)', en: 'Sun 12/20' }
   ];
+  // v = シート格納値（'未定' のまま）、ja/en = 表示ラベル。複数選択可（チェックボックス）
   var SLOTS = [
-    { v: '朝',   en: 'Morning',   hint: '6–11' },
-    { v: '昼',   en: 'Daytime',   hint: '11–17' },
-    { v: '夜',   en: 'Evening',   hint: '17–23' },
-    { v: '深夜', en: 'Late night', hint: '23–6' },
-    { v: '未定', en: 'TBD',        hint: '' }
+    { v: '朝',   ja: '朝',       en: 'Morning' },
+    { v: '昼',   ja: '昼',       en: 'Daytime' },
+    { v: '夜',   ja: '夜',       en: 'Evening' },
+    { v: '深夜', ja: '深夜',     en: 'Late night' },
+    { v: '未定', ja: '時間未定', en: 'Time TBD' }
   ];
+
+  // Day1/Day2/Day3 は "夜,深夜" のような "," 区切り複数値
+  function slotsOf(v) {
+    return String(v == null ? '' : v).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
 
   var $ = function (id) { return document.getElementById(id); };
   function showView(id) {
@@ -380,19 +401,28 @@
     for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].en; }
     return v;
   }
+  function slotJa(v) {
+    for (var i = 0; i < SLOTS.length; i++) { if (SLOTS[i].v === v) return SLOTS[i].ja; }
+    return v;
+  }
   function safeUrl(u) { return /^https?:\/\//.test(u || '') ? u : '#'; }
   function steamHeaderUrl(appId) {
     return 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg';
   }
 
+  function isDatesTBD(entry) {
+    if (String(entry.DatesTBD) === '1') return true;
+    return DAYS.every(function (d, i) { return slotsOf(entry['Day' + (i + 1)]).length === 0; });
+  }
+
   function scheduleSummary(entry) {
+    if (isDatesTBD(entry)) return { ja: '📅 配信予定：日程未定', en: '📅 Schedule: date TBD' };
     var pj = [], pe = [];
     DAYS.forEach(function (d, i) {
-      var v = entry['Day' + (i + 1)];
-      if (v && v !== '未定') {
-        pj.push(DAY_LABELS[i].ja + ' ' + v);
-        pe.push(DAY_LABELS[i].en + ' ' + slotEn(v));
-      }
+      var slots = slotsOf(entry['Day' + (i + 1)]);
+      if (!slots.length) return;
+      pj.push(DAY_LABELS[i].ja + ' ' + slots.map(slotJa).join('・'));
+      pe.push(DAY_LABELS[i].en + ' ' + slots.map(slotEn).join(' / '));
     });
     return {
       ja: pj.length ? '📅 ' + pj.join(' ／ ') : '📅 配信予定：未定',
@@ -403,32 +433,49 @@
   var X_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
 
   function timeGridHtml(appId, entry) {
-    var html = '<div class="time-grid">';
+    var tbd = String(entry.DatesTBD) === '1';
+    var html = '<div class="time-grid' + (tbd ? ' is-disabled' : '') + '" id="tg-' + appId + '">';
     html += '<div class="tg-head"></div>';
     SLOTS.forEach(function (s) {
-      html += '<div class="tg-head">' + bi(s.v, s.en) +
-        (s.hint ? '<br><span style="font-weight:400;color:#aaa;">' + s.hint + '</span>' : '') + '</div>';
+      html += '<div class="tg-head">' + bi(s.ja, s.en) + '</div>';
     });
     DAYS.forEach(function (d, di) {
-      var current = entry['Day' + (di + 1)] || '未定';
+      var current = slotsOf(entry['Day' + (di + 1)]);
       html += '<div class="tg-day">' + bi(DAY_LABELS[di].ja, DAY_LABELS[di].en) + '</div>';
       SLOTS.forEach(function (s) {
-        var checked = s.v === current ? ' checked' : '';
-        html += '<label class="tg-cell" title="' + esc(s.v + ' / ' + s.en) + '">' +
-          '<input type="radio" name="sched-' + appId + '-' + d + '" value="' + s.v + '"' + checked + '><span>●</span></label>';
+        var checked = current.indexOf(s.v) >= 0 ? ' checked' : '';
+        html += '<label class="tg-cell" title="' + esc(DAY_LABELS[di].ja + ' ' + s.ja) + '">' +
+          '<input type="checkbox" name="sched-' + appId + '-' + d + '" value="' + s.v + '"' +
+          checked + (tbd ? ' disabled' : '') + '><span>●</span></label>';
       });
     });
     html += '</div>';
+    html += '<label class="tg-datestbd" for="dtbd-' + appId + '">' +
+      '<input type="checkbox" id="dtbd-' + appId + '" class="ef-datestbd" data-appid="' + appId + '"' +
+      (tbd ? ' checked' : '') + '>' +
+      '<span>' + bi('配信日はまだ決まっていない（開催期間中のどこかで配信予定）',
+                    'My streaming date isn’t decided yet (planning to stream sometime during the event)') +
+      '</span></label>';
     return html;
   }
 
   function getSchedule(appId) {
     var out = {};
     DAYS.forEach(function (d) {
-      var el = document.querySelector('input[name="sched-' + appId + '-' + d + '"]:checked');
-      out[d] = el ? el.value : '未定';
+      out[d] = Array.prototype.slice
+        .call(document.querySelectorAll('input[name="sched-' + appId + '-' + d + '"]:checked'))
+        .map(function (el) { return el.value; });
     });
     return out;
+  }
+  function getDatesTBD(appId) {
+    var el = $('dtbd-' + appId);
+    return !!(el && el.checked);
+  }
+  function hasAnySchedule(appId) {
+    if (getDatesTBD(appId)) return true;
+    var s = getSchedule(appId);
+    return DAYS.some(function (d) { return s[d].length > 0; });
   }
 
   function entryCardHtml(entry) {
@@ -469,7 +516,7 @@
         '</div>' +
         '<div class="ef-field">' +
           '<label>' + bi('配信予定', 'Planned schedule') + '</label>' +
-          '<p class="ef-hint">' + bi('時間はすべて日本時間（JST / UTC+9）です。', 'All times are Japan time (JST / UTC+9).') + '</p>' +
+          '<p class="ef-hint">' + bi('配信する日と時間帯にチェック（複数可）。時間はすべて日本時間（JST / UTC+9）です。', 'Check the days and time slots you plan to stream (multiple OK). All times are Japan time (JST / UTC+9).') + '</p>' +
           timeGridHtml(appId, entry) +
         '</div>' +
         '<div class="ef-field">' +
@@ -517,6 +564,29 @@
     });
   }
 
+  // 「配信日はまだ決まっていない」と時間帯グリッドの相互排他（委譲）
+  $('entry-list').addEventListener('change', function (e) {
+    var dtbd = e.target.closest('.ef-datestbd');
+    if (dtbd) {
+      var appId = dtbd.getAttribute('data-appid');
+      var grid = $('tg-' + appId);
+      var off = dtbd.checked;
+      grid.classList.toggle('is-disabled', off);
+      grid.querySelectorAll('input[type="checkbox"]').forEach(function (el) {
+        el.disabled = off;
+        if (off) el.checked = false;
+      });
+      return;
+    }
+    var cell = e.target.closest('.time-grid input[type="checkbox"]');
+    if (cell) {
+      var grid2 = cell.closest('.time-grid');
+      var id = grid2.id.replace('tg-', '');
+      var box = $('dtbd-' + id);
+      if (box && box.checked) box.checked = false;
+    }
+  });
+
   // ---- イベント委譲 ----
   $('entry-list').addEventListener('click', function (e) {
     var editBtn = e.target.closest('.btn-edit-toggle');
@@ -553,16 +623,26 @@
   function doSave(appId, btn) {
     var entry = findEntry(appId);
     if (!entry) return;
+
+    if (!hasAnySchedule(appId)) {
+      alertInline(appId, bi('配信する日時を1つ以上選ぶか、「配信日はまだ決まっていない」にチェックしてください。',
+                            'Pick at least one day and time slot, or check “My streaming date isn’t decided yet”.'));
+      return;
+    }
+
     btn.disabled = true;
     var origHtml = btn.innerHTML;
     btn.innerHTML = bi('保存中…', 'Saving…');
 
+    var datesTBD = getDatesTBD(appId);
+    var sched = getSchedule(appId);
     var payload = {
       action: 'update',
       token: token,
       appId: appId,
       name: $('ef-name-' + appId).value.trim(),
-      schedule: getSchedule(appId),
+      schedule: sched,
+      datesTBD: datesTBD,
       comment: $('ef-comment-' + appId).value.trim(),
       x: $('ef-x-' + appId).value.trim()
     };
@@ -570,9 +650,10 @@
     var applyLocal = function (res) {
       res = res || {};
       entry.Streamer = payload.name || entry.Streamer;
-      entry.Day1 = payload.schedule.day1;
-      entry.Day2 = payload.schedule.day2;
-      entry.Day3 = payload.schedule.day3;
+      entry.Day1 = datesTBD ? '' : sched.day1.join(',');
+      entry.Day2 = datesTBD ? '' : sched.day2.join(',');
+      entry.Day3 = datesTBD ? '' : sched.day3.join(',');
+      entry.DatesTBD = datesTBD ? '1' : '';
       entry.Comment = payload.comment;
       entry.X = payload.x;
       if (res.game) entry.Game = res.game;
@@ -715,11 +796,11 @@
           { TwitchId: '0', TwitchLogin: 'dev_user', Streamer: 'Dev User', TwitchUrl: '#', IconUrl: '',
             AppId: '1145360', Game: 'Hades', SteamUrl: 'https://store.steampowered.com/app/1145360/',
             HeaderImage: steamHeaderUrl('1145360'), Developer: 'Supergiant Games',
-            Day1: '夜', Day2: '未定', Day3: '深夜', Comment: 'テストコメント', X: '@example' },
+            Day1: '夜,深夜', Day2: '', Day3: '未定', DatesTBD: '', Comment: 'テストコメント', X: '@example' },
           { TwitchId: '0', TwitchLogin: 'dev_user', Streamer: 'Dev User', TwitchUrl: '#', IconUrl: '',
             AppId: '2379780', Game: 'Balatro', SteamUrl: 'https://store.steampowered.com/app/2379780/',
             HeaderImage: steamHeaderUrl('2379780'), Developer: 'LocalThunk',
-            Day1: '未定', Day2: '未定', Day3: '未定', Comment: '', X: '' }
+            Day1: '', Day2: '', Day3: '', DatesTBD: '1', Comment: '', X: '' }
         ]
       });
     }

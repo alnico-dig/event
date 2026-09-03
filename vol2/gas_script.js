@@ -34,9 +34,12 @@ const CONFIG = {
 const HEADERS = [
   'Timestamp', 'TwitchId', 'TwitchLogin', 'Streamer', 'TwitchUrl', 'IconUrl',
   'AppId', 'Game', 'SteamUrl', 'HeaderImage', 'Developer',
-  'Day1', 'Day2', 'Day3', 'Comment', 'X'
+  'Day1', 'Day2', 'Day3', 'DatesTBD', 'Comment', 'X'
 ];
 
+// Day1/Day2/Day3 に入りうる時間帯。複数選択可なので保存時は "," 区切り。
+// '未定' = その日は配信するが時間未定。空文字 = その日は配信しない。
+// 表示ラベルはフロント側で「時間未定」等に出し分ける（格納値は '未定' のまま）。
 const SLOTS = ['朝', '昼', '夜', '深夜', '未定'];
 
 // ============================================================
@@ -69,7 +72,7 @@ function doGet(e) {
 const PUBLIC_COLS = [
   'TwitchLogin', 'Streamer', 'TwitchUrl', 'IconUrl',
   'AppId', 'Game', 'SteamUrl', 'HeaderImage',
-  'Day1', 'Day2', 'Day3', 'Comment', 'X'
+  'Day1', 'Day2', 'Day3', 'DatesTBD', 'Comment', 'X'
 ]; // Developer / TwitchId / Timestamp は返さない
 
 function handlePublicList() {
@@ -239,6 +242,8 @@ function handleUpsert(body, mustExist) {
     if (mustExist && foundRow < 0) return respond({ error: 'not_found' });
 
     const sched = body.schedule || {};
+    // 「配信日はまだ決まっていない」がチェックされている場合は Day1-3 を空にし DatesTBD を立てる
+    const datesTBD = body.datesTBD === true || body.datesTBD === '1' || body.datesTBD === 1;
     const rowObj = {
       Timestamp: new Date(),
       TwitchId: user.id,
@@ -253,9 +258,10 @@ function handleUpsert(body, mustExist) {
       HeaderImage: details.header || sanitizeUrl(body.headerImage) ||
                    ('https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/' + appId + '/header.jpg'),
       Developer: details.developer || '',
-      Day1: cleanSlot(sched.day1),
-      Day2: cleanSlot(sched.day2),
-      Day3: cleanSlot(sched.day3),
+      Day1: datesTBD ? '' : cleanSlots(sched.day1),
+      Day2: datesTBD ? '' : cleanSlots(sched.day2),
+      Day3: datesTBD ? '' : cleanSlots(sched.day3),
+      DatesTBD: datesTBD ? '1' : '',
       Comment: String(body.comment || '').trim().slice(0, 300),
       X: normalizeX(body.x),
     };
@@ -385,8 +391,16 @@ function fetchAppDetails(appId) {
   return out;
 }
 
-function cleanSlot(v) {
-  return SLOTS.indexOf(v) >= 0 ? v : '未定';
+// 時間帯の複数選択を検証して "," 区切り文字列に正規化する。
+// 受け取り: 配列（["夜","深夜"]）または "," 区切り文字列。
+// SLOTS 外の値は捨て、重複を除き、SLOTS の並び順（朝→昼→夜→深夜→未定）に整える。
+// 何も選ばれていなければ空文字（＝その日は配信しない）。
+function cleanSlots(v) {
+  var arr;
+  if (Array.isArray(v)) arr = v;
+  else arr = String(v || '').split(',');
+  var picked = arr.map(function (s) { return String(s).trim(); });
+  return SLOTS.filter(function (slot) { return picked.indexOf(slot) >= 0; }).join(',');
 }
 
 function sanitizeUrl(v) {
