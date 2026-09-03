@@ -17,6 +17,7 @@
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
 //   GET  ?list=1              → 参加者一覧（index.html #streams・公開情報のみ） { entries:[...] }
+//   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon}] }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
 //   POST {action:"delete"}    → 応募の削除（edit.html）
@@ -64,6 +65,7 @@ function doGet(e) {
   if (p.q !== undefined) return handleSearch(p.q);
   if (p.token) return handleMyEntries(p.token);
   if (p.list) return handlePublicList();
+  if (p.live) return handleNowLive();
   return respond({ error: 'no_params' });
 }
 
@@ -97,6 +99,94 @@ function handlePublicList() {
   const out = { entries: rows };
   cache.put('public_list', JSON.stringify(out), 60);
   return respond(out);
+}
+
+// ---- 今 Twitch で配信中の参加者（schedule.html の NowLive パネル用） ----
+// 参加者の TwitchLogin を helix/streams にまとめて問い合わせる（最大100件 = 1リクエスト）。
+// 結果は 5 分キャッシュ。キャッシュ有効中は何人アクセスしても Twitch 呼び出しは 1 回だけ。
+// App Access Token は Script Properties の TWITCH_CLIENT_SECRET から取得（クライアント非公開）。
+function handleNowLive() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('now_live');
+  if (hit) return respond(JSON.parse(hit));
+
+  const sheet = getEntriesSheet();
+  const data = sheet.getDataRange().getValues();
+  const header = data[0];
+  const loginCol = header.indexOf('TwitchLogin');
+  const streamerCol = header.indexOf('Streamer');
+  const iconCol = header.indexOf('IconUrl');
+  const appCol = header.indexOf('AppId');
+
+  const logins = [];
+  const infoByLogin = {};
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][appCol]) continue;
+    const lg = String(data[i][loginCol] || '').toLowerCase().trim();
+    if (!lg || infoByLogin[lg] !== undefined) continue;
+    infoByLogin[lg] = {
+      name: String(data[i][streamerCol] || '') || lg,
+      icon: String(data[i][iconCol] || ''),
+    };
+    logins.push(lg);
+  }
+
+  let live = [];
+  if (logins.length) {
+    try {
+      const token = getAppToken();
+      const qs = logins.slice(0, 100)
+        .map(function (l) { return 'user_login=' + encodeURIComponent(l); })
+        .join('&');
+      const res = UrlFetchApp.fetch('https://api.twitch.tv/helix/streams?first=100&' + qs, {
+        headers: { 'Client-Id': CONFIG.twitchClientId, 'Authorization': 'Bearer ' + token },
+        muteHttpExceptions: true,
+      });
+      if (res.getResponseCode() === 200) {
+        const arr = (JSON.parse(res.getContentText()).data) || [];
+        live = arr
+          .filter(function (s) { return s && s.type === 'live'; })
+          .map(function (s) {
+            const lg = String(s.user_login || '').toLowerCase();
+            const info = infoByLogin[lg] || {};
+            return { login: lg, name: info.name || s.user_name || lg, icon: info.icon || '' };
+          });
+      }
+    } catch (err) {
+      // トークン取得失敗・API エラー等 → 空で返す（パネル側は「配信中なし」表示）
+    }
+  }
+
+  const out = { live: live };
+  cache.put('now_live', JSON.stringify(out), 300); // 5分
+  return respond(out);
+}
+
+// Twitch App Access Token（client_credentials フロー）。~6時間キャッシュ。
+function getAppToken() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('twitch_app_token');
+  if (hit) return hit;
+
+  const secret = PropertiesService.getScriptProperties().getProperty('TWITCH_CLIENT_SECRET');
+  if (!secret) throw new Error('no_client_secret');
+
+  const res = UrlFetchApp.fetch('https://id.twitch.tv/oauth2/token', {
+    method: 'post',
+    payload: {
+      client_id: CONFIG.twitchClientId,
+      client_secret: secret,
+      grant_type: 'client_credentials',
+    },
+    muteHttpExceptions: true,
+  });
+  if (res.getResponseCode() !== 200) throw new Error('token_http_' + res.getResponseCode());
+  const j = JSON.parse(res.getContentText());
+  if (!j.access_token) throw new Error('token_no_access_token');
+  // expires_in は秒（通常 ~50日）。CacheService 上限の 6 時間で頭打ち。
+  const ttl = Math.min(21600, Math.max(60, (j.expires_in || 3600) - 60));
+  cache.put('twitch_app_token', j.access_token, ttl);
+  return j.access_token;
 }
 
 // storesearch はサントラ・DLC・体験版・開発ツールも同じ type("app") で返してくる
@@ -275,7 +365,7 @@ function handleUpsert(body, mustExist) {
     } else {
       sheet.appendRow(rowArr);
     }
-    CacheService.getScriptCache().remove('public_list'); // 一覧を即時反映
+    CacheService.getScriptCache().removeAll(['public_list', 'now_live']); // 一覧・NowLive を即時反映
     return respond({
       ok: true,
       updated: foundRow > 0,
@@ -315,7 +405,7 @@ function handleDelete(body) {
         if (appId) break;
       }
     }
-    if (deleted > 0) CacheService.getScriptCache().remove('public_list');
+    if (deleted > 0) CacheService.getScriptCache().removeAll(['public_list', 'now_live']);
     return respond({ ok: true, deleted: deleted });
   } finally {
     lock.releaseLock();

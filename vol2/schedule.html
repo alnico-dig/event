@@ -45,6 +45,15 @@
   <span class="en">Planned streams by day and time slot, shown as entered at signup — treat times as rough estimates.</span>
 </p>
 
+<!-- 現在配信中（NowLive）: GAS ?live=1 から取得。取得できない時は丸ごと非表示 -->
+<div class="nowlive" id="nowlive" hidden>
+  <h3 class="nowlive-title">
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="ja">現在配信中</span><span class="en">Live now</span>
+  </h3>
+  <div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div>
+</div>
+
 <div id="schedule-loading" class="list-loading">Loading…</div>
 <div class="schedule-wrap" id="schedule-wrap" style="display:none;">
   <div class="schedule-grid" id="schedule-grid"><!-- JS生成 --></div>
@@ -160,6 +169,39 @@
       console.error('スケジュールの取得に失敗:', err);
       document.getElementById('schedule-loading').innerHTML =
         bi('スケジュールの読み込みに失敗しました。時間をおいて再読み込みしてください。', 'Failed to load the schedule. Please reload in a bit.');
+    });
+
+  // ---- 現在配信中（NowLive）----
+  function renderNowLive(live) {
+    var list = document.getElementById('nowlive-list');
+    document.getElementById('nowlive').hidden = false;
+    if (!live.length) {
+      list.innerHTML = '<p class="nowlive-empty">' +
+        bi('現在、配信中の参加者はいません。', 'No participants are streaming right now.') + '</p>';
+      return;
+    }
+    list.innerHTML = live.map(function (s) {
+      var url = 'https://www.twitch.tv/' + encodeURIComponent(s.login || '');
+      // 保存アイコンは 300x300。chip 用に軽量サイズへ差し替え（Twitch CDN のときだけヒット）
+      var icon = String(s.icon || '').replace('-300x300', '-70x70');
+      var img = icon
+        ? '<img class="nowlive-avatar" src="' + esc(icon) + '" alt="" loading="lazy" ' +
+          'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
+        : '';
+      return '<a class="nowlive-chip" href="' + url + '" target="_blank" rel="noopener">' +
+        img + '<span class="live-dot" aria-hidden="true"></span>' +
+        esc(s.name || s.login || '') + '</a>';
+    }).join('');
+  }
+
+  fetch(GAS_URL + '?live=1')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      renderNowLive((data && Array.isArray(data.live)) ? data.live : []);
+    })
+    .catch(function (err) {
+      // 取得できないときはパネルごと非表示（スケジュール表示は妨げない）
+      console.error('NowLive の取得に失敗:', err);
     });
 
   // ---- 言語切替（index.html と同じ方式・localStorage共有） ----

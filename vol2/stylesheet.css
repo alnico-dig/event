@@ -615,6 +615,68 @@ a:hover {
   color: #6c3cff;
 }
 
+/* 現在配信中（NowLive）パネル */
+.nowlive {
+  max-width: 1100px;
+  margin: 0 auto 20px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+.nowlive-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #333;
+}
+.live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e0245e;
+  flex-shrink: 0;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.nowlive-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.nowlive-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px 5px 6px;
+  background: #faf8ff;
+  border: 1px solid #e5dcff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6c3cff;
+}
+.nowlive-chip:hover { background: #f3f0ff; text-decoration: none; opacity: 1; }
+.nowlive-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e5dcff;
+  flex-shrink: 0;
+}
+.nowlive-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
 .schedule-wrap {
   max-width: 1100px;
   margin: 0 auto;
