@@ -29,6 +29,10 @@ const CONFIG = {
   spreadsheetId: '17ja0sEc8tH8My5Mwtraq5yZH8ryrtjG8-RUOQvL7G5I',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   entriesSheet: 'entries',
+  // イベント開催期間（JST・yyyyMMdd）。NowLive のカテゴリ名フィルタ（タイトルに DIGspotlight）を
+  // この期間だけ有効にする。期間外は本番前テストのため素通し。
+  eventStart: '20261218',
+  eventEnd: '20261220',
 };
 
 // entries シートの列（この順序で固定。index.html / edit.html が名前で参照する）
@@ -101,6 +105,12 @@ function handlePublicList() {
   return respond(out);
 }
 
+// 今 JST でイベント開催期間中か（yyyyMMdd の文字列比較。CONFIG.eventStart〜eventEnd）
+function isDuringEvent_() {
+  const ymd = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyyMMdd');
+  return ymd >= CONFIG.eventStart && ymd <= CONFIG.eventEnd;
+}
+
 // ---- 今 Twitch で配信中の参加者（schedule.html の NowLive パネル用） ----
 // 参加者の TwitchLogin を helix/streams にまとめて問い合わせる（最大100件 = 1リクエスト）。
 // 結果は 5 分キャッシュ。キャッシュ有効中は何人アクセスしても Twitch 呼び出しは 1 回だけ。
@@ -144,21 +154,24 @@ function handleNowLive() {
       });
       if (res.getResponseCode() === 200) {
         const arr = (JSON.parse(res.getContentText()).data) || [];
+        // 開催期間中だけ、配信タイトルによるカテゴリ名フィルタを有効にする。
+        // 期間外は本番前テストのため素通し（DIGspotlight タグを付けなくても game_name を確認できる）。
+        const filterByTitle = isDuringEvent_();
         live = arr
           .filter(function (s) { return s && s.type === 'live'; })
           .map(function (s) {
             const lg = String(s.user_login || '').toLowerCase();
             const info = infoByLogin[lg] || {};
             // game_name / title は同じ helix/streams レスポンスに含まれる＝追加リクエストなし。
-            // カテゴリ名は「配信タイトルに DIGspotlight を含む＝イベント参加中の配信」だけ出す
+            // 開催期間中は「配信タイトルに DIGspotlight を含む＝イベント参加中の配信」だけカテゴリを出す
             // （登録者が無関係な配信をしている時にゲーム名を出すと紛らわしいため）。
             // 表記揺れ対策：大文字小文字は無視（i フラグ）、"DIG spotlight" のような空白入りも許容。
-            const onEvent = /dig\s*spotlight/i.test(String(s.title || ''));
+            const showGame = !filterByTitle || /dig\s*spotlight/i.test(String(s.title || ''));
             return {
               login: lg,
               name: info.name || s.user_name || lg,
               icon: info.icon || '',
-              game: onEvent ? String(s.game_name || '') : '',
+              game: showGame ? String(s.game_name || '') : '',
             };
           });
       }

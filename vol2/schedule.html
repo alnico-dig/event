@@ -223,8 +223,8 @@
         ? '<img class="nowlive-avatar" src="' + esc(icon) + '" alt="" loading="lazy" ' +
           'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
         : '';
-      // 配信中カテゴリ（Twitch の現在の game_name）。GAS 側で「配信タイトルに digspotlight を
-      // 含む配信」だけ game を入れてくるので、空なら出さない。長い時は詰める
+      // 配信中カテゴリ（Twitch の現在の game_name）。GAS 側で出し分け済み（開催期間中は
+      // 配信タイトルに DIGspotlight を含む配信だけ）なので、空なら出さない。長い時は詰める
       var game = String(s.game || '').trim();
       if (game.length > 30) game = game.slice(0, 29) + '…';
       var gameHtml = game ? '<span class="nowlive-game">' + esc(game) + '</span>' : '';
