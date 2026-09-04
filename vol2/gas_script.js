@@ -17,7 +17,7 @@
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
 //   GET  ?list=1              → 参加者一覧（index.html #streams・公開情報のみ） { entries:[...] }
-//   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon,game}] }
+//   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon,title}] }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
 //   POST {action:"delete"}    → 応募の削除（edit.html）
@@ -29,8 +29,8 @@ const CONFIG = {
   spreadsheetId: '17ja0sEc8tH8My5Mwtraq5yZH8ryrtjG8-RUOQvL7G5I',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   entriesSheet: 'entries',
-  // イベント開催期間（JST・yyyyMMdd）。NowLive のカテゴリ名フィルタ（タイトルに DIGspotlight）を
-  // この期間だけ有効にする。期間外は本番前テストのため素通し。
+  // イベント開催期間（JST・yyyyMMdd）。NowLive パネルを「配信タイトルに DIGspotlight を含む配信だけ」に
+  // 絞るのはこの期間だけ。期間外は絞らず全 live を返す（本番前テスト用）。
   eventStart: '20261218',
   eventEnd: '20261220',
 };
@@ -154,24 +154,28 @@ function handleNowLive() {
       });
       if (res.getResponseCode() === 200) {
         const arr = (JSON.parse(res.getContentText()).data) || [];
-        // 開催期間中だけ、配信タイトルによるカテゴリ名フィルタを有効にする。
-        // 期間外は本番前テストのため素通し（DIGspotlight タグを付けなくても game_name を確認できる）。
+        // NowLive パネルは「配信終わりに参加者へ Raid する」用途。表示は配信者名＋配信タイトル。
+        // Twitch カテゴリ（game_name）は本イベント対象（インディー・低レビュー作）だと
+        // "Games + Demos" / "Just Chatting" になりがちで判断材料にならないので使わない。
+        //
+        // 開催期間中は「配信タイトルに DIGspotlight を含む＝イベント配信」だけに絞る
+        // （index に「開催中は参加者へ Raid」と明記しているので、対象が明確な方が良い）。
+        // 期間外は絞らず全員返す（本番前テストで #DIGspotlight タグを付けなくても確認できるように）。
+        // 表記揺れ対策：大文字小文字は無視（i フラグ）、"DIG spotlight" の空白入りも許容。
         const filterByTitle = isDuringEvent_();
         live = arr
           .filter(function (s) { return s && s.type === 'live'; })
+          .filter(function (s) {
+            return !filterByTitle || /dig\s*spotlight/i.test(String(s.title || ''));
+          })
           .map(function (s) {
             const lg = String(s.user_login || '').toLowerCase();
             const info = infoByLogin[lg] || {};
-            // game_name / title は同じ helix/streams レスポンスに含まれる＝追加リクエストなし。
-            // 開催期間中は「配信タイトルに DIGspotlight を含む＝イベント参加中の配信」だけカテゴリを出す
-            // （登録者が無関係な配信をしている時にゲーム名を出すと紛らわしいため）。
-            // 表記揺れ対策：大文字小文字は無視（i フラグ）、"DIG spotlight" のような空白入りも許容。
-            const showGame = !filterByTitle || /dig\s*spotlight/i.test(String(s.title || ''));
             return {
               login: lg,
               name: info.name || s.user_name || lg,
               icon: info.icon || '',
-              game: showGame ? String(s.game_name || '') : '',
+              title: String(s.title || ''),
             };
           });
       }

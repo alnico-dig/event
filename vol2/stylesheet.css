@@ -628,9 +628,9 @@ a:hover {
   color: #6c3cff;
 }
 
-/* 現在配信中（NowLive）パネル */
+/* 現在配信中（NowLive）パネル ＝ 配信終わりの Raid 先選び用の縦リスト */
 .nowlive {
-  max-width: 1100px;
+  max-width: 680px;
   margin: 0 auto 20px;
   padding: 14px 16px;
   background: #fff;
@@ -642,11 +642,18 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 15px;
   color: #333;
 }
+.nowlive-count {
+  font-weight: 400;
+  font-size: 13px;
+  color: #999;
+}
 .live-dot {
+  display: inline-block;
+  vertical-align: middle;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -658,45 +665,67 @@ a:hover {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
-.nowlive-list {
+/* スクロール枠＋下端フェード（6.5行くらいで切って「まだ下に在る」と分からせる） */
+.nowlive-scrollwrap { position: relative; }
+.nowlive-scroll {
+  max-height: 312px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.nowlive-scroll::-webkit-scrollbar { width: 8px; }
+.nowlive-scroll::-webkit-scrollbar-thumb { background: #e5dcff; border-radius: 4px; }
+.nowlive-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  pointer-events: none;
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff);
+}
+.nowlive-list { display: flex; flex-direction: column; }
+.nowlive-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.nowlive-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 13px 5px 12px;
-  background: #faf8ff;
-  border: 1px solid #e5dcff;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #6c3cff;
+  gap: 10px;
+  padding: 7px 6px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
 }
-.nowlive-chip:hover { background: #f3f0ff; text-decoration: none; opacity: 1; }
-.nowlive-name { font-weight: 700; }
-.nowlive-game {
-  font-weight: 500;
-  font-size: 12px;
-  color: #9b8fc4;
-  /* 長いカテゴリ名で chip 幅が暴れないよう頭打ち＋末尾を「…」に（JS 側の字数カットの保険） */
-  max-width: min(150px, 42vw);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.nowlive-row:hover { background: #faf8ff; opacity: 1; }
 .nowlive-avatar {
-  width: 22px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   background: #e5dcff;
   flex-shrink: 0;
 }
+.nowlive-rowmain { min-width: 0; flex: 1; }
+.nowlive-rowname {
+  display: block;
+  font-weight: 700;
+  color: #6c3cff;
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nowlive-rowname .live-dot { margin-right: 6px; }
+.nowlive-rowtitle {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .nowlive-empty {
   margin: 0;
+  padding: 4px 6px;
   font-size: 13px;
   color: #999;
 }

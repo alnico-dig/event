@@ -45,13 +45,18 @@
   <span class="en">Planned streams by day and time slot, shown as entered at signup — treat times as rough estimates.</span>
 </p>
 
-<!-- 現在配信中（NowLive）: GAS ?live=1 から取得。取得できない時は丸ごと非表示 -->
+<!-- 現在配信中（NowLive）: GAS ?live=1 から取得。配信終わりの Raid 先選び用。
+     開催期間中は「配信タイトルに DIGspotlight を含む配信」だけ GAS が返す。取得できない時は丸ごと非表示 -->
 <div class="nowlive" id="nowlive" hidden>
   <h3 class="nowlive-title">
     <span class="live-dot" aria-hidden="true"></span>
     <span class="ja">現在配信中</span><span class="en">Live now</span>
+    <span class="nowlive-count" id="nowlive-count" hidden></span>
   </h3>
-  <div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div>
+  <div class="nowlive-scrollwrap">
+    <div class="nowlive-scroll"><div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div></div>
+    <div class="nowlive-fade" id="nowlive-fade" hidden></div>
+  </div>
 </div>
 
 <div id="schedule-loading" class="list-loading">Loading…</div>
@@ -204,38 +209,55 @@
   loadSchedule();
 
   // ---- 現在配信中（NowLive）----
+  // 配信終わりに参加者へ Raid する時の一覧。配信者名＋配信タイトルの縦リスト。
+  // 開催期間中は GAS が「タイトルに DIGspotlight を含む配信」だけ返す。
   var nowliveEl = document.getElementById('nowlive');
   var nowliveList = document.getElementById('nowlive-list');
+  var nowliveScrollEl = nowliveList.parentNode; // .nowlive-scroll
+  var nowliveCount = document.getElementById('nowlive-count');
+  var nowliveFade = document.getElementById('nowlive-fade');
   var nowliveSettled = false;
+
+  // 一番下までスクロールしたら下端フェードを消す（見切れてない行を隠さない）
+  nowliveScrollEl.addEventListener('scroll', function () {
+    nowliveFade.hidden =
+      nowliveScrollEl.scrollTop + nowliveScrollEl.clientHeight >= nowliveScrollEl.scrollHeight - 4;
+  });
 
   function renderNowLive(live) {
     nowliveEl.hidden = false;
     if (!live.length) {
+      nowliveCount.hidden = true;
+      nowliveFade.hidden = true;
       nowliveList.innerHTML = '<p class="nowlive-empty">' +
         bi('現在、配信中の参加者はいません。', 'No participants are streaming right now.') + '</p>';
       return;
     }
+    nowliveCount.textContent = '(' + live.length + ')';
+    nowliveCount.hidden = false;
     nowliveList.innerHTML = live.map(function (s) {
       var url = 'https://www.twitch.tv/' + encodeURIComponent(s.login || '');
-      // 保存アイコンは 300x300。chip 用に軽量サイズへ差し替え（Twitch CDN のときだけヒット）
+      // 保存アイコンは 300x300。軽量サイズへ差し替え（Twitch CDN のときだけヒット）
       var icon = String(s.icon || '').replace('-300x300', '-70x70');
       var img = icon
         ? '<img class="nowlive-avatar" src="' + esc(icon) + '" alt="" loading="lazy" ' +
           'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
-        : '';
-      // 配信中カテゴリ（Twitch の現在の game_name）。GAS 側で出し分け済み（開催期間中は
-      // 配信タイトルに DIGspotlight を含む配信だけ）なので、空なら出さない。
-      // 見た目の頭打ちは CSS（.nowlive-game の max-width＋ellipsis）。ここは異常に長い時の保険だけ
-      var game = String(s.game || '').trim();
-      if (game.length > 50) game = game.slice(0, 49) + '…';
-      var gameHtml = game ? '<span class="nowlive-game">' + esc(game) + '</span>' : '';
-      // 順番：赤ドット → アイコン → 名前 →（配信中カテゴリ）
-      return '<a class="nowlive-chip" href="' + url + '" target="_blank" rel="noopener">' +
-        '<span class="live-dot" aria-hidden="true"></span>' +
+        : '<span class="nowlive-avatar"></span>';
+      // 2行目は配信タイトルを素のまま（記号除去はしない＝【】が残る等の事故を避ける）。
+      // 1行に収めて末尾を「…」にするのは CSS（.nowlive-rowtitle）
+      var title = String(s.title || '').trim();
+      return '<a class="nowlive-row" href="' + url + '" target="_blank" rel="noopener">' +
         img +
-        '<span class="nowlive-name">' + esc(s.name || s.login || '') + '</span>' +
-        gameHtml + '</a>';
+        '<span class="nowlive-rowmain">' +
+          '<span class="nowlive-rowname"><span class="live-dot" aria-hidden="true"></span>' +
+            esc(s.name || s.login || '') + '</span>' +
+          (title ? '<span class="nowlive-rowtitle">' + esc(title) + '</span>' : '') +
+        '</span>' +
+      '</a>';
     }).join('');
+    // 中身がスクロール範囲を超えていれば下端のフェードを出す（超えていなければ不要）
+    nowliveScrollEl.scrollTop = 0;
+    nowliveFade.hidden = nowliveScrollEl.scrollHeight <= nowliveScrollEl.clientHeight + 2;
   }
 
   // キャッシュヒット時の ?live=1 は 1〜1.5 秒。そこで返れば誰も見ない。
