@@ -101,7 +101,7 @@ function handlePublicList() {
     rows.push(o);
   }
   const out = { entries: rows };
-  cache.put('public_list', JSON.stringify(out), 60);
+  cache.put('public_list', JSON.stringify(out), 300); // 5分（登録/編集/削除時に removeAll で即時破棄されるので長めでOK）
   return respond(out);
 }
 

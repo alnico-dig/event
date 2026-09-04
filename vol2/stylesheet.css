@@ -683,17 +683,19 @@ a:hover {
   pointer-events: none;
   background: linear-gradient(rgba(255, 255, 255, 0), #fff);
 }
-.nowlive-list { display: flex; flex-direction: column; }
+.nowlive-list { display: flex; flex-direction: column; gap: 4px; }
 .nowlive-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 6px;
+  padding: 7px 8px;
   border-radius: 10px;
   text-decoration: none;
   color: inherit;
+  background: #f3eeff;              /* ホバー無しでも配信者の区切りが分かるよう薄く着色 */
+  transition: background 0.12s;
 }
-.nowlive-row:hover { background: #faf8ff; opacity: 1; }
+.nowlive-row:hover { background: #e6dcff; opacity: 1; }  /* ホバーでもう一段濃く */
 .nowlive-avatar {
   width: 34px;
   height: 34px;
@@ -713,7 +715,6 @@ a:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.nowlive-rowname .live-dot { margin-right: 6px; }
 .nowlive-rowtitle {
   display: block;
   font-size: 12px;

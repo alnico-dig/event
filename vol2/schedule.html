@@ -176,13 +176,34 @@
     ]);
   }
 
+  // 視聴者ごとのリロード抑制：直近 CACHE_TTL 以内に取得済みなら sessionStorage の結果を使い
+  // GAS を叩かない。リロード連打しても 1 人あたり GAS ヒットは 90 秒に 1 回まで。
+  var CACHE_TTL = 90 * 1000;
+  function cachedFetchJson(url, key, timeoutMs) {
+    try {
+      var raw = sessionStorage.getItem(key);
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && (Date.now() - o.t) < CACHE_TTL) return Promise.resolve(o.d);
+      }
+    } catch (e) {}
+    return fetchJson(url, timeoutMs).then(function (data) {
+      try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
+      return data;
+    });
+  }
+
   // ---- スケジュール本体（?list=1）----
   function loadSchedule(attempt) {
     attempt = attempt || 1;
     var loadingEl = document.getElementById('schedule-loading');
     loadingEl.style.display = '';
     loadingEl.textContent = 'Loading…';
-    fetchJson(GAS_URL + '?list=1', 22000)
+    // 1回目は sessionStorage キャッシュ経由、リトライ時は素の fetch（失敗した相手をもう一度）
+    var get = attempt === 1
+      ? cachedFetchJson(GAS_URL + '?list=1', 'dig_sched_list', 22000)
+      : fetchJson(GAS_URL + '?list=1', 22000);
+    get
       .then(function (data) {
         var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
         document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
@@ -249,8 +270,7 @@
       return '<a class="nowlive-row" href="' + url + '" target="_blank" rel="noopener">' +
         img +
         '<span class="nowlive-rowmain">' +
-          '<span class="nowlive-rowname"><span class="live-dot" aria-hidden="true"></span>' +
-            esc(s.name || s.login || '') + '</span>' +
+          '<span class="nowlive-rowname">' + esc(s.name || s.login || '') + '</span>' +
           (title ? '<span class="nowlive-rowtitle">' + esc(title) + '</span>' : '') +
         '</span>' +
       '</a>';
@@ -271,7 +291,10 @@
   // ?live=1 も list と同様にリトライ。3 回試して駄目なら（補助情報なので）パネルを畳む。
   function loadNowLive(attempt) {
     attempt = attempt || 1;
-    fetchJson(GAS_URL + '?live=1', 22000)
+    var get = attempt === 1
+      ? cachedFetchJson(GAS_URL + '?live=1', 'dig_sched_live', 22000)
+      : fetchJson(GAS_URL + '?live=1', 22000);
+    get
       .then(function (data) {
         if (nowliveSettled) return;
         nowliveSettled = true;
