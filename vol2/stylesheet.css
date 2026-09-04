@@ -681,6 +681,11 @@ a:hover {
   font-weight: 500;
   font-size: 12px;
   color: #9b8fc4;
+  /* 長いカテゴリ名で chip 幅が暴れないよう頭打ち＋末尾を「…」に（JS 側の字数カットの保険） */
+  max-width: min(150px, 42vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .nowlive-avatar {
   width: 22px;

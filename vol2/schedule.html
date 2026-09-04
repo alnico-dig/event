@@ -224,9 +224,10 @@
           'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
         : '';
       // 配信中カテゴリ（Twitch の現在の game_name）。GAS 側で出し分け済み（開催期間中は
-      // 配信タイトルに DIGspotlight を含む配信だけ）なので、空なら出さない。長い時は詰める
+      // 配信タイトルに DIGspotlight を含む配信だけ）なので、空なら出さない。
+      // 見た目の頭打ちは CSS（.nowlive-game の max-width＋ellipsis）。ここは異常に長い時の保険だけ
       var game = String(s.game || '').trim();
-      if (game.length > 30) game = game.slice(0, 29) + '…';
+      if (game.length > 50) game = game.slice(0, 49) + '…';
       var gameHtml = game ? '<span class="nowlive-game">' + esc(game) + '</span>' : '';
       // 順番：赤ドット → アイコン → 名前 →（配信中カテゴリ）
       return '<a class="nowlive-chip" href="' + url + '" target="_blank" rel="noopener">' +
