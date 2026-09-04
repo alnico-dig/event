@@ -717,8 +717,8 @@ a:hover {
 }
 .nowlive-rowtitle {
   display: block;
-  font-size: 12px;
-  color: #888;
+  font-size: 13px;
+  color: #666;
   line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
