@@ -812,7 +812,7 @@ a:hover {
 }
 
 .sg-streamer {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #6c3cff;
   white-space: nowrap;
@@ -821,7 +821,7 @@ a:hover {
 }
 
 .sg-game {
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
   white-space: nowrap;
   overflow: hidden;
