@@ -784,6 +784,7 @@ a:hover {
   flex-direction: column;
   gap: 6px;
   min-height: 60px;
+  min-width: 0;              /* グリッド列が中身の最小幅で広がってはみ出すのを防ぐ */
 }
 
 .sg-card {
@@ -794,6 +795,7 @@ a:hover {
   background: #faf8ff;
   border-radius: 10px;
   border: 1px solid #eee;
+  min-width: 0;
 }
 
 .sg-icon {
@@ -850,13 +852,51 @@ a:hover {
   gap: 8px;
 }
 
+/* モバイル用の日切替タブはデスクトップでは非表示 */
+.schedule-tabs { display: none; }
+
 @media (max-width: 640px) {
-  .schedule-grid { grid-template-columns: 56px repeat(3, 1fr); }
-  .sg-corner, .sg-head { font-size: 11px; padding: 8px 2px; }
-  .sg-slot { font-size: 11px; padding: 6px 2px; }
-  .sg-cell { padding: 5px; gap: 4px; }
-  .sg-icon { width: 28px; height: 28px; }
-  .sg-streamer, .sg-game { font-size: 11px; }
+  /* モバイルは3日を横並びにせず、タブで1日ずつ表示（横スクロールを回避） */
+  .schedule-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .sched-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6c3cff;
+    background: #f3f0ff;
+    border: 1px solid #e5dcff;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+  .sched-tab[aria-current="true"] {
+    background: #6c3cff;
+    color: #fff;
+    border-color: #6c3cff;
+  }
+
+  /* ラベル1列＋その日の1列だけ。非表示セルはグリッドから外れて行が畳まれる */
+  .schedule-grid { grid-template-columns: 56px 1fr; }
+  .schedule-grid .sg-head[data-day],
+  .schedule-grid .sg-cell[data-day] { display: none; }
+  .schedule-grid.show-0 .sg-head[data-day="0"],
+  .schedule-grid.show-1 .sg-head[data-day="1"],
+  .schedule-grid.show-2 .sg-head[data-day="2"] { display: block; }
+  .schedule-grid.show-0 .sg-cell[data-day="0"],
+  .schedule-grid.show-1 .sg-cell[data-day="1"],
+  .schedule-grid.show-2 .sg-cell[data-day="2"] { display: flex; }
+
+  .sg-corner, .sg-head { font-size: 12px; padding: 8px 4px; }
+  .sg-slot { font-size: 12px; padding: 8px 2px; }
+  .sg-cell { padding: 6px; gap: 5px; }
+  .sg-icon { width: 32px; height: 32px; }
+  .sg-streamer { font-size: 13px; }
+  .sg-game { font-size: 12px; }
   .tbd-list { grid-template-columns: 1fr; }
 }
 

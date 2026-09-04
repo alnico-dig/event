@@ -61,6 +61,7 @@
 
 <div id="schedule-loading" class="list-loading">Loading…</div>
 <div class="schedule-wrap" id="schedule-wrap" style="display:none;">
+  <div class="schedule-tabs" id="schedule-tabs"><!-- JS生成：モバイル用の日切替タブ --></div>
   <div class="schedule-grid" id="schedule-grid"><!-- JS生成 --></div>
   <div id="schedule-tbd"><!-- JS生成：配信日未定セクション --></div>
 </div>
@@ -126,22 +127,50 @@
   function buildGrid(entries) {
     var html = '';
     html += '<div class="sg-corner"></div>';
-    DAY_LABELS.forEach(function (d) {
-      html += '<div class="sg-head">' + bi(d.ja, d.en) + '</div>';
+    DAY_LABELS.forEach(function (d, i) {
+      html += '<div class="sg-head" data-day="' + i + '">' + bi(d.ja, d.en) + '</div>';
     });
 
     SLOTS.forEach(function (slot) {
       html += '<div class="sg-slot">' + bi(slot.ja, slot.en) + '</div>';
 
-      DAYS.forEach(function (dayKey) {
+      DAYS.forEach(function (dayKey, i) {
         var matches = entries.filter(function (row) {
           return slotsOf(row[dayKey]).indexOf(slot.v) >= 0;
         });
-        html += '<div class="sg-cell">' + matches.map(cardHtml).join('') + '</div>';
+        html += '<div class="sg-cell" data-day="' + i + '">' + matches.map(cardHtml).join('') + '</div>';
       });
     });
 
     return html;
+  }
+
+  // モバイル（≤640px）用の日切替タブ。デスクトップでは CSS で非表示。
+  function buildTabs() {
+    return DAY_LABELS.map(function (d, i) {
+      return '<button type="button" class="sched-tab" data-day="' + i + '"' +
+        (i === 0 ? ' aria-current="true"' : '') + '>' + bi(d.ja, d.en) + '</button>';
+    }).join('');
+  }
+
+  // タブ押下でグリッドの表示日を切り替える（CSS の .show-N ルールで該当日だけ表示）。
+  // グリッドは display:none のセルがレイアウトから外れるので「ラベル＋1日分」の行に畳まれる。
+  function initScheduleTabs() {
+    var grid = document.getElementById('schedule-grid');
+    var tabs = document.getElementById('schedule-tabs');
+    tabs.innerHTML = buildTabs();
+    grid.classList.add('show-0');
+    tabs.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.sched-tab') : null;
+      if (!btn) return;
+      var day = btn.getAttribute('data-day');
+      grid.classList.remove('show-0', 'show-1', 'show-2');
+      grid.classList.add('show-' + day);
+      Array.prototype.forEach.call(tabs.children, function (c) {
+        if (c === btn) c.setAttribute('aria-current', 'true');
+        else c.removeAttribute('aria-current');
+      });
+    });
   }
 
   // 配信日そのものが未定の参加者（明示フラグ、または3日とも何も選んでいない）
@@ -208,6 +237,7 @@
         var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
         document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
         document.getElementById('schedule-tbd').innerHTML = buildTBDSection(entries);
+        initScheduleTabs();
         loadingEl.style.display = 'none';
         document.getElementById('schedule-wrap').style.display = '';
       })
