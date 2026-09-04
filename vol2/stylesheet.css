@@ -668,7 +668,7 @@ a:hover {
 /* スクロール枠＋下端フェード（6.5行くらいで切って「まだ下に在る」と分からせる） */
 .nowlive-scrollwrap { position: relative; }
 .nowlive-scroll {
-  max-height: 312px;
+  max-height: 324px;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -692,10 +692,11 @@ a:hover {
   border-radius: 10px;
   text-decoration: none;
   color: inherit;
-  background: #f3eeff;              /* ホバー無しでも配信者の区切りが分かるよう薄く着色 */
+  background: #faf8ff;              /* スケジュール表の .sg-card と同色 */
+  border: 1px solid #eee;           /* 枠でホバー無しでも配信者の区切りを出す（.sg-card と同じ） */
   transition: background 0.12s;
 }
-.nowlive-row:hover { background: #e6dcff; opacity: 1; }  /* ホバーでもう一段濃く */
+.nowlive-row:hover { background: #ece4ff; opacity: 1; }  /* ホバーでもう一段濃く */
 .nowlive-avatar {
   width: 34px;
   height: 34px;
