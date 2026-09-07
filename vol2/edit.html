@@ -159,6 +159,8 @@
 }
 .ef-field textarea { resize: vertical; min-height: 56px; }
 .ef-hint { font-size: 12px; color: #999; margin: 4px 0 0; line-height: 1.5; }
+.ef-count { font-size: 12px; color: #aaa; text-align: right; margin-top: 4px; }
+.ef-count.near { color: #e0245e; }
 
 .time-grid {
   display: grid;
@@ -521,7 +523,9 @@
         '</div>' +
         '<div class="ef-field">' +
           '<label>' + bi('一言コメント', 'Comment') + ' <span style="font-weight:500;color:#aaa;">' + bi('任意', 'optional') + '</span></label>' +
-          '<textarea id="ef-comment-' + appId + '" maxlength="140">' + esc(entry.Comment) + '</textarea>' +
+          '<p class="ef-hint">' + bi('日本語・英語どちらでもOK、両方書いても大丈夫です。', 'Japanese and/or English are both fine — feel free to write both.') + '</p>' +
+          '<textarea id="ef-comment-' + appId + '" maxlength="300">' + esc(entry.Comment) + '</textarea>' +
+          '<div class="ef-count"><span>' + (entry.Comment || '').length + '</span> / 300</div>' +
         '</div>' +
         '<div class="ef-field">' +
           '<label>X (Twitter) <span style="font-weight:500;color:#aaa;">' + bi('任意', 'optional') + '</span></label>' +
@@ -585,6 +589,15 @@
       var box = $('dtbd-' + id);
       if (box && box.checked) box.checked = false;
     }
+  });
+
+  $('entry-list').addEventListener('input', function (e) {
+    var ta = e.target.closest('textarea[id^="ef-comment-"]');
+    if (!ta) return;
+    var wrap = ta.parentNode.querySelector('.ef-count');
+    if (!wrap) return;
+    wrap.querySelector('span').textContent = ta.value.length;
+    wrap.classList.toggle('near', ta.value.length >= 280);
   });
 
   // ---- イベント委譲 ----

@@ -143,6 +143,13 @@
   box-shadow: 0 0 0 3px rgba(108,60,255,0.12);
 }
 .field textarea { resize: vertical; min-height: 64px; }
+.char-count {
+  font-size: 12px;
+  color: #aaa;
+  text-align: right;
+  margin-top: 4px;
+}
+.char-count.near { color: #e0245e; }
 .field.invalid input[type="text"],
 .field.invalid textarea { border-color: #e0245e; }
 .field-error {
@@ -556,10 +563,11 @@
           <span class="opt"><span class="ja">任意</span><span class="en">optional</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">意気込みやゲームの紹介など（サイトに表示されます）。</span>
-          <span class="en">A note about your pick, your enthusiasm, etc. Shown on the site.</span>
+          <span class="ja">意気込みやゲームの紹介など（サイトに表示されます）。日本語・英語どちらでもOK、両方書いても大丈夫です。</span>
+          <span class="en">A note about your pick, your enthusiasm, etc. Shown on the site. Japanese and/or English are both fine — feel free to write both.</span>
         </p>
-        <textarea id="in-comment" maxlength="140"></textarea>
+        <textarea id="in-comment" maxlength="300"></textarea>
+        <div class="char-count"><span id="cc-comment">0</span> / 300</div>
       </div>
 
       <!-- X -->
@@ -1020,6 +1028,16 @@
     $(id).addEventListener('input', function () { clearError('f-' + id.replace('in-', '')); });
   });
 
+  // ---- コメント文字数カウンター ----
+  var COMMENT_MAX = 300;
+  function updateCommentCount() {
+    var n = $('in-comment').value.length;
+    $('cc-comment').textContent = n;
+    $('cc-comment').parentNode.classList.toggle('near', n >= COMMENT_MAX - 20);
+  }
+  $('in-comment').addEventListener('input', updateCommentCount);
+  updateCommentCount();
+
   // ---- 送信 ---------------------------------------------
   var token = null;
   var twitchUser = null; // { id, login, display_name, profile_image_url }
@@ -1113,6 +1131,7 @@
     setSelectedGame(null);
     $('in-game').value = '';
     $('in-comment').value = ''; $('in-x').value = '';
+    updateCommentCount();
     clearError('f-game'); clearError('f-name'); clearError('f-time');
     gridCheckboxes().forEach(function (el) { el.checked = false; });
     chkDatesTBD.checked = false;

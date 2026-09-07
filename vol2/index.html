@@ -337,6 +337,27 @@ function renderList(data) {
     list.appendChild(card);
   });
 
+  // コメントが2行を超えるカードだけ「もっと見る」で開閉できるようにする
+  list.querySelectorAll('.meta.note').forEach(note => {
+    note.classList.add('clamped');
+    if (note.scrollHeight - note.clientHeight <= 1) { note.classList.remove('clamped'); return; }
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'note-toggle';
+    btn.innerHTML = bi('もっと見る', 'Show more');
+    note.after(btn);
+
+    const toggle = () => {
+      const open = note.closest('.card').classList.toggle('note-open');
+      btn.innerHTML = open ? bi('閉じる', 'Show less') : bi('もっと見る', 'Show more');
+    };
+    btn.addEventListener('click', toggle);
+    note.addEventListener('click', () => {
+      if (!note.closest('.card').classList.contains('note-open')) toggle();
+    });
+  });
+
   if (data.length === 0) {
     const msg = allData.length === 0
       ? bi('まだ応募がありません。第一号になりませんか？', 'No entries yet — be the first!')
