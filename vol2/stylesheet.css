@@ -63,6 +63,10 @@ html[lang="en"] .ja { display: none !important; }
   opacity: 1;
 }
 .nav-prev { color: #999 !important; }
+.nav-links a[aria-current="page"] {
+  background: #f3f0ff;
+  color: #6c3cff;
+}
 
 .nav-actions {
   display: flex;
@@ -623,12 +627,6 @@ a:hover {
 }
 
 /* Schedule page */
-.schedule-page-link {
-  font-size: 13px;
-  color: #6c3cff;
-  font-weight: 600;
-}
-
 .schedule-note {
   text-align: center;
   font-size: 13px;

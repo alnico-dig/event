@@ -10,27 +10,23 @@
 <script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
 
 <link rel="stylesheet" href="stylesheet.css">
-<style>
-.sched-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-}
-</style>
 </head>
 
 <body>
-<header class="sched-topbar">
+<header class="site-nav">
   <a class="nav-logo" href="index.html">#DIGspotlight</a>
-  <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  <nav class="nav-links">
+    <a href="index.html#about"><span class="ja">概要</span><span class="en">About</span></a>
+    <a href="index.html#rules"><span class="ja">ルール</span><span class="en">Rules</span></a>
+    <a href="index.html#notice"><span class="ja">注意事項</span><span class="en">Notes</span></a>
+    <a href="index.html#streams"><span class="ja">参加者一覧</span><span class="en">Streamers</span></a>
+    <a href="schedule.html" aria-current="page"><span class="ja">スケジュール</span><span class="en">Schedule</span></a>
+    <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
+  </nav>
+  <div class="nav-actions">
+    <a href="register.html" class="nav-cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  </div>
 </header>
 
 <header class="hero">
