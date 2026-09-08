@@ -16,14 +16,18 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.edit-topbar-inner {
+  max-width: 1040px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .edit-wrap { max-width: 800px; margin: 0 auto; padding: 8px 20px 60px; }
@@ -255,13 +259,13 @@
 
 <body>
 <header class="edit-topbar">
-  <a class="nav-logo" href="index.html">#DIGspotlight</a>
-  <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  <div class="edit-topbar-inner">
+    <a class="nav-logo" href="index.html">#DIGspotlight</a>
+    <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  </div>
 </header>
 
-<header class="hero">
-  <img src="header.png" class="hero-img" alt="#DIGspotlight vol.2">
-</header>
+<div class="mini-hero"></div>
 
 <h2 class="section-title">
   <span class="ja">登録内容を編集する</span><span class="en">Edit Your Entries</span>

@@ -40,37 +40,60 @@
 
 <!-- ===== ヘッダーナビ（スティッキー固定） ===== -->
 <header class="site-nav">
-  <a class="nav-logo" href="#top">#DIGspotlight</a>
-  <nav class="nav-links">
-    <a href="#about"><span class="ja">概要</span><span class="en">About</span></a>
-    <a href="#rules"><span class="ja">ルール</span><span class="en">Rules</span></a>
-    <a href="#notice"><span class="ja">注意事項</span><span class="en">Notes</span></a>
-    <a href="#streams"><span class="ja">参加者一覧</span><span class="en">Streamers</span></a>
-    <a href="schedule.html"><span class="ja">スケジュール</span><span class="en">Schedule</span></a>
-    <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
-  </nav>
-  <div class="nav-actions">
-    <a href="register.html" class="nav-cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
-    <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+  <div class="site-nav-inner">
+    <a class="nav-logo" href="#top">#DIGspotlight</a>
+    <nav class="nav-links">
+      <a href="#about"><span class="ja">概要</span><span class="en">About</span></a>
+      <a href="#rules"><span class="ja">ルール</span><span class="en">Rules</span></a>
+      <a href="#notice"><span class="ja">注意事項</span><span class="en">Notes</span></a>
+      <a href="#streams"><span class="ja">参加タイトル一覧</span><span class="en">Titles</span></a>
+      <a href="#assets"><span class="ja">アセット</span><span class="en">Assets</span></a>
+      <a href="schedule.html"><span class="ja">スケジュール</span><span class="en">Schedule</span></a>
+      <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
+    </nav>
+    <div class="nav-actions">
+      <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+      <a href="register.html" class="nav-cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    </div>
   </div>
 </header>
 
 <header class="hero">
   <img src="header.png" class="hero-img" alt="#DIGspotlight">
 </header>
+<div class="hero-info">
+  <div class="hero-date">2026.12.18 <span class="hero-date-sep">–</span> 12.20 <span class="hero-jst">(JST)</span></div>
+  <div class="hero-tagline">
+    <span class="ja">埋もれた名作を発掘する配信イベント</span>
+    <span class="en">Discover lesser-known games on Twitch</span>
+  </div>
+  <div class="hero-organizer">
+    <span class="ja">主催: アルニコ</span><span class="en">Organizer: alnico</span><span class="hero-organizer-sep">・</span><a href="https://www.twitch.tv/alnico_gamenews" target="_blank" rel="noopener">Twitch: alnico_GameNews</a><span class="hero-organizer-sep">・</span><a href="https://x.com/alnico_ow" target="_blank" rel="noopener">X: @alnico_ow</a>
+  </div>
+  <div class="hero-cta-row">
+    <a href="register.html" class="hero-cta-primary"><span class="ja">応募する</span><span class="en">Apply</span></a>
+    <a href="#streams" class="hero-cta-secondary"><span class="ja">参加タイトル一覧を見る</span><span class="en">View Titles</span></a>
+  </div>
+  <div id="hero-count" class="hero-count"></div>
+</div>
 
 <!-- ===== 概要 ===== -->
 <section id="about" class="about-section">
   <h2 class="section-title">#DIGspotlight | 未発見ゲームスポットライト</h2>
-  <p class="summary">
-    <span class="ja">まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」<br>他の配信者とつながりながら、新しいゲームや開発者と出会えるチャンスです</span>
-    <span class="en">A streaming event to discover lesser-known and overlooked games — #DIGspotlight<br>Connect with fellow streamers while discovering new games and developers</span>
-  </p>
+  <div class="about-card">
+    <h3 class="about-card-title">
+      <span class="ja">イベント概要</span><span class="en">Event Overview</span>
+    </h3>
+    <p class="summary">
+      <span class="ja">まだ知られていない名作や、埋もれているゲームを発掘する配信イベント「#DIGspotlight」<br>他の配信者とつながりながら、新しいゲームや開発者と出会えるチャンスです</span>
+      <span class="en">A streaming event to discover lesser-known and overlooked games — #DIGspotlight<br>Connect with fellow streamers while discovering new games and developers</span>
+    </p>
 
-  <div class="event-info">
-    <div>📍 <span class="ja">開催場所：Twitch配信</span><span class="en">Streaming on Twitch</span></div>
-    <div>📅 <span class="ja">開催期間：2026年12月18日（金）〜20日（日）（日本時間 / JST）</span><span class="en">Dec 18–20, 2026 (Fri–Sun) — all times JST (UTC+9)</span></div>
-    <div>🏷️ <span class="ja">Steam ウインターセール期間中</span><span class="en">During the Steam Winter Sale</span></div>
+    <div class="event-info">
+      <div>📍 <span class="ja">開催場所：Twitch配信</span><span class="en">Streaming on Twitch</span></div>
+      <div>📅 <span class="ja">開催期間：2026年12月18日（金）〜20日（日）（日本時間 / JST）</span><span class="en">Dec 18–20, 2026 (Fri–Sun) — all times JST (UTC+9)</span></div>
+      <div>🏷️ <span class="ja">Steam ウインターセール期間中</span><span class="en">During the Steam Winter Sale</span></div>
+    </div>
   </div>
 </section>
 
@@ -185,7 +208,9 @@
 </section>
 
 <!-- ===== 参加者・ゲーム一覧 ===== -->
-<h2 class="section-title" id="streams">DIG Game Streams</h2>
+<h2 class="section-title" id="streams">
+  <span class="ja">配信タイトル一覧</span><span class="en">DIG Game Streams</span>
+</h2>
 <div id="count"></div>
 <div class="filter-row">
   <div id="date-filter" class="filter">
@@ -232,6 +257,15 @@ const escapeHtml = str => {
 };
 const safeUrl = url => /^https?:\/\//.test(url || '') ? url : '#';
 const bi = (ja, en) => `<span class="ja">${escapeHtml(ja)}</span><span class="en">${escapeHtml(en)}</span>`;
+const biHtml = (ja, en) => `<span class="ja">${ja}</span><span class="en">${en}</span>`;
+
+// row.X は URL / "@handle" / "handle" のどれでも来うるので表示用ハンドルに正規化
+function xHandle(x) {
+  if (!x) return '';
+  let h = String(x).trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, '');
+  h = h.replace(/^@/, '').split(/[/?]/)[0];
+  return h ? '@' + h : '';
+}
 
 // その参加者がその日に配信予定を入れているか（時間帯が1つ以上あれば true。「時間未定」も含む）
 const streamsOn = (row, dayKey) => {
@@ -242,17 +276,22 @@ const streamsOn = (row, dayKey) => {
 const allTBD = row =>
   String(row.DatesTBD) === '1' || DAYS.every(d => slotsOf(row[d]).length === 0);
 
-// 配信予定サマリー（日本語 / 英語）
-function scheduleParts(row) {
-  if (allTBD(row)) return { ja: '📅 配信予定：未定', en: '📅 Schedule: TBD' };
-  const pj = [], pe = [];
+// 配信予定を日付ごとの小さなチップ（タグ）にして表示（詰め込み文よりスキャンしやすくする）
+function scheduleChips(row) {
+  if (allTBD(row)) {
+    return {
+      ja: '<span class="chip chip-tbd">配信予定：未定</span>',
+      en: '<span class="chip chip-tbd">Schedule: TBD</span>'
+    };
+  }
+  const ja = [], en = [];
   DAYS.forEach((d, i) => {
-    const slots = slotsOf(row[d]);
-    if (!slots.length) return;
-    pj.push(`${DAY_LABELS[i].ja} ${slots.map(s => SLOT_JA[s] || s).join('・')}`);
-    pe.push(`${DAY_LABELS[i].en} ${slots.map(s => SLOT_EN[s] || s).join(' / ')}`);
+    slotsOf(row[d]).forEach(s => {
+      ja.push(`<span class="chip">${escapeHtml(DAY_LABELS[i].ja)} ${escapeHtml(SLOT_JA[s] || s)}</span>`);
+      en.push(`<span class="chip">${escapeHtml(DAY_LABELS[i].en)} ${escapeHtml(SLOT_EN[s] || s)}</span>`);
+    });
   });
-  return { ja: '📅 ' + pj.join(' ／ '), en: '📅 ' + pe.join('  ·  ') };
+  return { ja: ja.join(''), en: en.join('') };
 }
 
 // 「配信予定順」用のソートキー（早い枠ほど小さい・未定は最後）
@@ -294,7 +333,8 @@ function cardHtml(row) {
   const twitch = safeUrl(row.TwitchUrl);
   const steam = safeUrl(row.SteamUrl);
   const header = row.HeaderImage || (row.AppId ? `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${row.AppId}/header.jpg` : '');
-  const sched = scheduleParts(row);
+  const chips = scheduleChips(row);
+  const handle = xHandle(row.X);
 
   return `
     <div class="left">
@@ -303,11 +343,13 @@ function cardHtml(row) {
           onerror="this.onerror=null;this.src='https://placehold.co/56x56?text=%3F'">
       </a>
       <div class="info">
-        <div class="row streamer">🎙️<a href="${twitch}" target="_blank" rel="noopener">${escapeHtml(row.Streamer)}</a>${
-          row.X ? ` <a class="x-link" href="${safeUrl(row.X)}" target="_blank" rel="noopener" aria-label="X">${X_SVG}</a>` : ''
-        }</div>
-        <div class="row game">🎮 <a href="${steam}" target="_blank" rel="noopener">${escapeHtml(row.Game)}</a></div>
-        <div class="meta">${bi(sched.ja, sched.en)}</div>
+        <div class="row streamer"><span class="row-icon">🎙️</span><a href="${twitch}" target="_blank" rel="noopener">${escapeHtml(row.Streamer)}</a></div>
+        ${handle ? `<div class="row x-row"><span class="row-icon">${X_SVG}</span><a href="${safeUrl(row.X)}" target="_blank" rel="noopener">${escapeHtml(handle)}</a></div>` : ''}
+        <div class="row game"><span class="row-icon">🎮</span><a href="${steam}" target="_blank" rel="noopener">${escapeHtml(row.Game)}</a></div>
+        <div class="row schedule">
+          <span class="row-icon">📅</span>
+          <div class="schedule-chips">${biHtml(chips.ja, chips.en)}</div>
+        </div>
         ${row.Comment ? `<div class="meta note">💬 ${escapeHtml(row.Comment)}</div>` : ''}
       </div>
     </div>
@@ -376,6 +418,16 @@ fetch(GAS_URL + '?list=1')
     listLoading.style.display = 'none';
     applyAndRender();
 
+    const heroCount = document.getElementById('hero-count');
+    if (heroCount && allData.length) {
+      const titles = new Set(allData.map(r => String(r.Game || '').trim()).filter(Boolean)).size;
+      const streamers = new Set(allData.map(r => String(r.TwitchLogin || r.Streamer || '').trim()).filter(Boolean)).size;
+      heroCount.innerHTML = bi(
+        `🔥 現在 ${streamers}人 が ${titles}タイトルで参加中！`,
+        `🔥 ${streamers} streamers · ${titles} titles joined so far!`
+      );
+    }
+
     document.querySelectorAll('#date-filter button').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#date-filter button').forEach(b => b.classList.remove('active'));
@@ -399,17 +451,17 @@ fetch(GAS_URL + '?list=1')
   });
 </script>
 
-<section class="assets">
-  <h3 class="assets-title">DIG Stream Assets</h3>
+<section class="assets" id="assets">
+  <h3 class="assets-title"><span class="ja">アセット</span><span class="en">DIG Stream Assets</span></h3>
   <div class="banner-row">
     <img src="dig_banner.png" class="banner" loading="lazy">
     <div class="banner-actions">
       <a href="dig_banner.png" download class="download-btn">
-        ダウンロード<br><small>Download</small>
+        <span class="ja">ダウンロード</span><span class="en">Download</span>
       </a>
       <div class="banner-note">
-        ご自由にお使いください<br>
-        <small>Free to use on your stream</small>
+        <span class="ja">ご自由にお使いください</span>
+        <span class="en">Free to use on your stream</span>
       </div>
     </div>
   </div>
