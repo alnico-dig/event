@@ -470,6 +470,13 @@ fetch(GAS_URL + '?list=1')
   </div>
 </section>
 
+<div class="event-share">
+  <a class="event-share-link" id="event-share-link" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    <span class="ja">このイベントをシェア</span><span class="en">Share this event</span>
+  </a>
+</div>
+
 <footer class="footer">
   ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
 </footer>
@@ -493,6 +500,21 @@ fetch(GAS_URL + '?list=1')
     const next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
     apply(next);
     try { localStorage.setItem(KEY, next); } catch (e) {}
+  });
+})();
+
+/* ===== イベント全体のシェア（X）。カードは vol2 トップの OGP（ogp.jpg）。 ===== */
+(function () {
+  const link = document.getElementById('event-share-link');
+  if (!link) return;
+  const EVENT_URL = 'https://alnico-dig.github.io/event/vol2/';
+  link.addEventListener('click', function () {
+    const en = document.documentElement.lang === 'en';
+    const text = en
+      ? '#DIGspotlight vol.2 — a Twitch streaming event to discover lesser-known games. Dec 18–20.'
+      : '埋もれた作品を発掘するTwitch配信イベント #DIGspotlight vol.2、12/18〜20 開催！';
+    this.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
+      '&url=' + encodeURIComponent(EVENT_URL);
   });
 })();
 </script>

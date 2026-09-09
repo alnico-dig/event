@@ -580,6 +580,30 @@ a:hover {
   color: #888;
 }
 
+/* イベント全体のシェア（控えめなピル型リンク・フッター直前） */
+.event-share {
+  text-align: center;
+  padding: 8px 10px 0;
+}
+.event-share-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  font-size: 13px;
+  color: #666;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.event-share-link:hover {
+  background: #f3f0ff;
+  border-color: #b9a5ff;
+  color: #6c3cff;
+  text-decoration: none;
+}
+
 /* サブページ用の簡易アクセント（ヒーロー画像の代わりに一筋だけ色を残す） */
 .mini-hero {
   height: 5px;
