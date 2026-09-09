@@ -50,6 +50,10 @@
     <span class="ja">現在配信中</span><span class="en">Live now</span>
     <span class="nowlive-count" id="nowlive-count" hidden></span>
   </h3>
+  <p class="nowlive-hint" id="nowlive-hint" hidden>
+    <span class="ja">📣 Shoutout ／ 🚀 Raid のコマンドをコピーします（自分の配信のチャットで使えます）</span>
+    <span class="en">Copies a 📣 Shoutout / 🚀 Raid chat command — for broadcasters to paste in their own stream chat</span>
+  </p>
   <div class="nowlive-scrollwrap">
     <div class="nowlive-scroll"><div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div></div>
     <div class="nowlive-fade" id="nowlive-fade" hidden></div>
@@ -264,7 +268,14 @@
   var nowliveScrollEl = nowliveList.parentNode; // .nowlive-scroll
   var nowliveCount = document.getElementById('nowlive-count');
   var nowliveFade = document.getElementById('nowlive-fade');
+  var nowliveHint = document.getElementById('nowlive-hint');
   var nowliveSettled = false;
+
+  // Twitch の login は英数字とアンダースコアの 2〜25 文字のみ。
+  // NowLive の login は GAS が helix の user_login を返すので基本安全だが、
+  // /shoutout・/raid コマンド文字列を組む前にここでも形式を確認する（チャットへの
+  // 貼り付け時に余計な文字・改行が混じらないための保険）。
+  var LOGIN_RE = /^[a-z0-9_]{2,25}$/;
 
   // 一番下までスクロールしたら下端フェードを消す（見切れてない行を隠さない）
   nowliveScrollEl.addEventListener('scroll', function () {
@@ -272,35 +283,101 @@
       nowliveScrollEl.scrollTop + nowliveScrollEl.clientHeight >= nowliveScrollEl.scrollHeight - 4;
   });
 
+  // コマンドコピー（📣 /shoutout・🚀 /raid）。行は増える可能性があるのでイベント委譲。
+  nowliveList.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.nowlive-btn') : null;
+    if (!btn || !nowliveList.contains(btn)) return;
+    var cmd = btn.getAttribute('data-cmd') || '';
+    if (!cmd) return;
+    copyText(cmd).then(function (ok) {
+      if (!ok || btn.dataset.reset) return;
+      var orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      btn.dataset.reset = '1';
+      setTimeout(function () {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+        delete btn.dataset.reset;
+      }, 1200);
+    });
+  });
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return legacyCopy(text); }
+      );
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
   function renderNowLive(live) {
     nowliveEl.hidden = false;
     if (!live.length) {
       nowliveCount.hidden = true;
       nowliveFade.hidden = true;
+      nowliveHint.hidden = true;
       nowliveList.innerHTML = '<p class="nowlive-empty">' +
         bi('現在、配信中の参加者はいません。', 'No participants are streaming right now.') + '</p>';
       return;
     }
     nowliveCount.textContent = '(' + live.length + ')';
     nowliveCount.hidden = false;
+    nowliveHint.hidden = false;
     nowliveList.innerHTML = live.map(function (s) {
-      var url = 'https://www.twitch.tv/' + encodeURIComponent(s.login || '');
+      var login = String(s.login || '').toLowerCase();
+      var valid = LOGIN_RE.test(login);
+      var url = valid ? 'https://www.twitch.tv/' + login : '#';
       // 保存アイコンは 300x300。軽量サイズへ差し替え（Twitch CDN のときだけヒット）
       var icon = String(s.icon || '').replace('-300x300', '-70x70');
       var img = icon
         ? '<img class="nowlive-avatar" src="' + esc(icon) + '" alt="" loading="lazy" ' +
           'onerror="this.onerror=null;this.src=\'https://placehold.co/40x40?text=%3F\'">'
         : '<span class="nowlive-avatar"></span>';
+      // 名前はチャンネルへのリンク（行全体リンクをやめてコマンドボタンを置けるように）
+      // esc() は & < > " を実体参照化するので、テキストにも属性値にもそのまま使える
+      var name = esc(s.name || login || '');
+      var nameEl = valid
+        ? '<a class="nowlive-rowname" href="' + url + '" target="_blank" rel="noopener">' + name + '</a>'
+        : '<span class="nowlive-rowname">' + name + '</span>';
       // 2行目は配信タイトルを素のまま（記号除去はしない＝【】が残る等の事故を避ける）。
       // 1行に収めて末尾を「…」にするのは CSS（.nowlive-rowtitle）
       var title = String(s.title || '').trim();
-      return '<a class="nowlive-row" href="' + url + '" target="_blank" rel="noopener">' +
+      // 配信者向けコマンド。login は LOGIN_RE を通っているので data-cmd に安全に埋め込める
+      var actions = valid
+        ? '<span class="nowlive-actions">' +
+            '<button type="button" class="nowlive-btn" data-cmd="/shoutout ' + login + '" ' +
+              'title="/shoutout ' + login + ' をコピー" aria-label="' +
+              name + ' の shoutout コマンドをコピー">📣</button>' +
+            '<button type="button" class="nowlive-btn" data-cmd="/raid ' + login + '" ' +
+              'title="/raid ' + login + ' をコピー" aria-label="' +
+              name + ' の raid コマンドをコピー">🚀</button>' +
+          '</span>'
+        : '';
+      return '<div class="nowlive-row">' +
         img +
         '<span class="nowlive-rowmain">' +
-          '<span class="nowlive-rowname">' + esc(s.name || s.login || '') + '</span>' +
+          nameEl +
           (title ? '<span class="nowlive-rowtitle">' + esc(title) + '</span>' : '') +
         '</span>' +
-      '</a>';
+        actions +
+      '</div>';
     }).join('');
     // 中身がスクロール範囲を超えていれば下端のフェードを出す（超えていなければ不要）
     nowliveScrollEl.scrollTop = 0;
