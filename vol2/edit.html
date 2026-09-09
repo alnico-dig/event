@@ -113,6 +113,9 @@
 .btn-edit-toggle:hover { background: #e5dcff; }
 .btn-delete-toggle { background: #fdecef; color: #e0245e; }
 .btn-delete-toggle:hover { background: #fbd7dd; }
+.btn-share-x { background: #000; color: #fff; display: inline-flex; align-items: center; gap: 6px; }
+.btn-share-x:hover { background: #222; }
+.btn-share-x svg { width: 13px; height: 13px; fill: currentColor; }
 
 /* 削除確認（インライン。ネイティブconfirmは使わない） */
 .confirm-box {
@@ -505,6 +508,7 @@
         '</div>' +
         '<div class="entry-actions">' +
           '<button type="button" class="btn-edit-toggle" data-appid="' + appId + '">✏️ ' + bi('編集', 'Edit') + '</button>' +
+          '<button type="button" class="btn-share-x" data-appid="' + appId + '">' + X_SVG + bi('シェア', 'Share') + '</button>' +
           '<button type="button" class="btn-delete-toggle" data-appid="' + appId + '">🗑️ ' + bi('削除', 'Delete') + '</button>' +
         '</div>' +
       '</div>' +
@@ -549,6 +553,21 @@
   function findEntry(appId) {
     for (var i = 0; i < entries.length; i++) { if (String(entries[i].AppId) === String(appId)) return entries[i]; }
     return null;
+  }
+
+  // ---- X（Twitter）投稿リンク ----
+  // カードは Steam ストアページ。イベントは本文の文言＋ハッシュタグで示す。
+  // スケジュールは本文に入れない（開催直前まで大まかな人が多いため）。register.html と同文面。
+  function tweetIntentUrl(gameName, steamUrl) {
+    var en = document.documentElement.lang === 'en';
+    var g = String(gameName || '').trim();
+    if (g.length > 80) g = g.slice(0, 79) + '…';
+    var text = en
+      ? 'Joining #DIGspotlight vol.2 to discover lesser-known games on Twitch\n🎮 ' + g
+      : 'Twitch配信イベント #DIGspotlight vol.2 で配信します！\n🎮 ' + g;
+    var u = /^https?:\/\//.test(steamUrl || '') ? steamUrl : 'https://store.steampowered.com/';
+    return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
+      '&url=' + encodeURIComponent(u);
   }
 
   function renderEntries() {
@@ -608,11 +627,23 @@
   $('entry-list').addEventListener('click', function (e) {
     var editBtn = e.target.closest('.btn-edit-toggle');
     var delBtn = e.target.closest('.btn-delete-toggle');
+    var shareBtn = e.target.closest('.btn-share-x');
     var confirmDelBtn = e.target.closest('.btn-confirm-delete');
     var cancelDelBtn = e.target.closest('.btn-cancel-delete');
     var saveBtn = e.target.closest('.btn-save');
     var cancelBtn = e.target.closest('.btn-cancel');
 
+    if (shareBtn) {
+      var sAppId = shareBtn.getAttribute('data-appid');
+      var sEntry = findEntry(sAppId);
+      if (sEntry) {
+        var sSteam = /^https?:\/\//.test(sEntry.SteamUrl || '')
+          ? sEntry.SteamUrl
+          : 'https://store.steampowered.com/app/' + sAppId + '/';
+        window.open(tweetIntentUrl(sEntry.Game, sSteam), '_blank', 'noopener');
+      }
+      return;
+    }
     if (editBtn) {
       var appId1 = editBtn.getAttribute('data-appid');
       closeAllPanels(appId1);

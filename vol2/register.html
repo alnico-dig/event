@@ -410,6 +410,22 @@
 }
 .done-view-site:hover { background: #f3f0ff; text-decoration: none; opacity: 1; }
 
+.done-share-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  text-decoration: none;
+}
+.done-share-x:hover { background: #222; text-decoration: none; opacity: 1; }
+.done-share-x svg { width: 16px; height: 16px; fill: currentColor; }
+
 @media (max-width: 520px) {
   .time-grid { grid-template-columns: 62px repeat(5, 1fr); font-size: 11px; }
   .time-grid .tg-day { font-size: 10px; }
@@ -628,12 +644,16 @@
       </p>
 
       <div class="done-actions">
-        <button type="button" class="submit-btn" id="btn-again">
-          <span class="ja">別のゲームを応募する</span><span class="en">Submit another game</span>
-        </button>
+        <a class="done-share-x" id="done-share-x" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="ja">X で投稿する</span><span class="en">Post on X</span>
+        </a>
         <a class="done-view-site" id="done-view-site" href="index.html#streams">
           <span class="ja">サイトで確認する</span><span class="en">View on the site</span>
         </a>
+        <button type="button" class="submit-btn" id="btn-again">
+          <span class="ja">別のゲームを応募する</span><span class="en">Submit another game</span>
+        </button>
       </div>
       <div class="back-row">
         <a href="index.html"><span class="ja">トップページへ</span><span class="en">Back to top</span></a>
@@ -993,9 +1013,33 @@
     $('done-comment').textContent = info.comment ? '💬 ' + info.comment : '';
     $('done-updated').hidden = !info.updated;
 
+    doneShareGame = info.game || '';
+    doneShareSteam = /^https?:\/\//.test(info.steamUrl || '') ? info.steamUrl
+      : (appId ? 'https://store.steampowered.com/app/' + appId + '/' : '');
+
     showView('done');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // ---- X（Twitter）投稿リンク --------------------------
+  // カードは Steam ストアページ（url パラメータ）。イベントは本文の文言＋ハッシュタグで示す。
+  // 配信スケジュールは本文に入れない（開催直前まで大まかな人が多いため）。
+  var doneShareGame = '', doneShareSteam = '';
+  function tweetIntentUrl(gameName, steamUrl) {
+    var en = document.documentElement.lang === 'en';
+    var g = String(gameName || '').trim();
+    if (g.length > 80) g = g.slice(0, 79) + '…';
+    var text = en
+      ? 'Joining #DIGspotlight vol.2 to discover lesser-known games on Twitch\n🎮 ' + g
+      : 'Twitch配信イベント #DIGspotlight vol.2 で配信します！\n🎮 ' + g;
+    var u = /^https?:\/\//.test(steamUrl || '') ? steamUrl : 'https://store.steampowered.com/';
+    return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
+      '&url=' + encodeURIComponent(u);
+  }
+  // <a> の href をクリック直前に現在の言語で組み直す（完了画面で言語を切り替えた場合の対策）
+  $('done-share-x').addEventListener('click', function () {
+    this.href = tweetIntentUrl(doneShareGame, doneShareSteam);
+  });
 
   // ---- バリデーション ------------------------------------
   function markError(fid) { $(fid).classList.add('invalid'); }
