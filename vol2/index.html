@@ -85,7 +85,7 @@
 
 <!-- ===== 概要 ===== -->
 <section id="about" class="about-section">
-  <h2 class="section-title">#DIGspotlight</h2>
+  <h2 class="section-title">#DIGspotlight vol.2</h2>
   <div class="about-card">
     <h3 class="about-card-title">
       <span class="ja">イベント概要</span><span class="en">Event Overview</span>
@@ -123,7 +123,7 @@
     </li>
     <li>
       配信タイトルにゲーム名および「#DIGspotlight」を入れてください。
-      <small>イベント外の配信をされる際は「#DIGspotlight」を外してください</small>
+      <small>※イベント外の配信をされる際は「#DIGspotlight」を外してください</small>
     </li>
     <li>
       レイドは可能な限りイベント参加者へお願いします。
@@ -462,7 +462,7 @@ fetch(GAS_URL + '?list=1')
       const streamers = new Set(allData.map(r => String(r.TwitchLogin || r.Streamer || '').trim()).filter(Boolean)).size;
       heroCount.innerHTML = bi(
         `🔥 現在 ${titles}タイトル、${streamers}名が参加中！`,
-        `🔥 ${streamers} streamers · ${titles} titles joined so far!`
+        `🔥 ${titles} titles · ${streamers} streamers joined so far!`
       );
     }
 
