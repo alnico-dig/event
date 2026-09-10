@@ -362,6 +362,7 @@ a:hover {
 
 .hero-date-sep { opacity: 0.7; margin: 0 2px; }
 .hero-jst { font-size: 16px; font-weight: 600; opacity: 0.85; margin-left: 2px; }
+.hero-time { font-size: 0.6em; font-weight: 700; opacity: 0.9; }
 
 .hero-tagline {
   margin-top: 6px;
@@ -383,7 +384,7 @@ a:hover {
   padding-bottom: 1px;
 }
 .hero-organizer a:hover { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.9); }
-.hero-organizer-sep { margin: 0 8px; opacity: 0.6; }
+.hero-organizer-sep { margin: 0 8px; color: inherit; }
 
 .hero-cta-row {
   margin-top: 16px;
