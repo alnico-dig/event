@@ -373,11 +373,17 @@ a:hover {
 .hero-organizer {
   margin-top: 12px;
   font-size: 15px;
-  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.75);
 }
-.hero-organizer a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
-.hero-organizer a:hover { opacity: 0.8; }
-.hero-organizer-sep { margin: 0 8px; opacity: 0.5; }
+.hero-organizer a {
+  color: #e6dcff;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(230, 220, 255, 0.5);
+  padding-bottom: 1px;
+}
+.hero-organizer a:hover { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.9); }
+.hero-organizer-sep { margin: 0 8px; opacity: 0.6; }
 
 .hero-cta-row {
   margin-top: 16px;
@@ -480,6 +486,34 @@ a:hover {
   margin-top: 1px;
   line-height: 1.5;
   font-size: 0.9em;
+}
+
+.notice-group + .notice-group {
+  margin-top: 22px;
+}
+
+.notice-group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6c3cff;
+  letter-spacing: 0.2px;
+}
+.notice-group-title::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #6c3cff, #3f6091);
+  flex-shrink: 0;
+}
+
+.notice-group ul {
+  margin: 0;
+  padding-left: 22px;
 }
 
 .rule-tabs {
