@@ -35,6 +35,12 @@ html[lang="en"] .ja { display: none !important; }
   padding: 10px 18px;
 }
 
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-logo {
   font-weight: 800;
   font-size: 16px;
