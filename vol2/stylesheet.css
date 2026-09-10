@@ -96,6 +96,16 @@ html[lang="en"] .ja { display: none !important; }
   text-decoration: none;
 }
 
+.nav-cta-outline {
+  padding: 7px 15px;
+  border-radius: 999px;
+  border: 1px solid #6c3cff;
+  color: #6c3cff;
+  font-weight: 700;
+  font-size: 13px;
+}
+.nav-cta-outline:hover { background: #f3f0ff; text-decoration: none; }
+
 .lang-toggle {
   padding: 7px 12px;
   border: 1px solid #6c3cff;
