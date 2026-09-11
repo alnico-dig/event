@@ -487,22 +487,26 @@ function fetchAppDetails(appId) {
   if (hit) return JSON.parse(hit);
 
   const out = { game: '', developer: '', header: '' };
-  try {
-    const res = UrlFetchApp.fetch(
-      'https://store.steampowered.com/api/appdetails?appids=' +
-        encodeURIComponent(appId) + '&l=japanese&cc=jp',
-      { muteHttpExceptions: true }
-    );
-    if (res.getResponseCode() === 200) {
+  const url = 'https://store.steampowered.com/api/appdetails?appids=' +
+    encodeURIComponent(appId) + '&l=japanese&cc=jp';
+
+  // ここで取れないとGame名が "App <ID>" のまま保存されてしまうため、
+  // handleSearch と同様にSteamの瞬間的な失敗を最大2回までリトライする
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) Utilities.sleep(600);
+    try {
+      const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      if (res.getResponseCode() !== 200) continue;
       const node = JSON.parse(res.getContentText())[appId];
       if (node && node.success && node.data) {
         out.game = node.data.name || '';
         out.developer = (node.data.developers || []).join(', ');
         out.header = node.data.header_image || '';
+        break;
       }
+    } catch (err) {
+      // 次の試行へ（両方失敗なら空のまま＝フロントの推定URL・入力値で代替）
     }
-  } catch (err) {
-    // 取れなければ空のまま（フロントの推定URL・入力値で代替）
   }
   cache.put('ad_' + appId, JSON.stringify(out), 21600); // 6時間
   return out;
