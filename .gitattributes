@@ -5,3 +5,4 @@
 
 # アーカイブのデータスナップショットはバイト単位で凍結する（改行変換しない）
 vol1/data/*.csv -text
+vol2/data/*.csv -text
