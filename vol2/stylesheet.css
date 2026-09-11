@@ -129,7 +129,9 @@ html[lang="en"] .ja { display: none !important; }
 
 @media (max-width: 720px) {
   .site-nav-inner { flex-wrap: wrap; gap: 8px; }
-  .nav-links { order: 3; flex-basis: 100%; width: 100%; }
+  /* justify-content:center のままだと横スクロール時にはみ出した左端（概要など）へ
+     scrollLeft を負方向にできず永久に到達できなくなるため、折り返し時は左寄せにする */
+  .nav-links { order: 3; flex-basis: 100%; width: 100%; justify-content: flex-start; }
   /* ナビが2段になる分、アンカー飛び先のオフセットも広げる */
   [id] { scroll-margin-top: 104px; }
 }
