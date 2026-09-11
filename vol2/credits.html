@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <title>#DIGspotlight Credits</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
 <style>
 body {
   margin: 0;
@@ -94,12 +92,8 @@ body {
 </div>
 
 <script>
-const csv_url = "data/participants.csv";
-
-const getValue = (row, keyword) => {
-  const key = Object.keys(row).find(k => k && k.includes(keyword));
-  return key ? row[key] : "";
-};
+// index.html・schedule.htmlと同じGAS Webアプリ（?list=1は公開安全な列のみを返す）
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
 
 const escapeHtml = str => {
   if (!str) return "";
@@ -109,53 +103,32 @@ const escapeHtml = str => {
 const track = document.getElementById("track");
 const wrapper = document.getElementById("wrapper");
 
-// Twitchユーザー名抽出
-function getUsername(twitch) {
-  if (!twitch) return "";
-  return twitch
-    .replace("https://www.twitch.tv/", "")
-    .replace("https://twitch.tv/", "")
-    .split("?")[0]
-    .replace("/", "")
-    .toLowerCase();
-}
+fetch(GAS_URL + '?list=1')
+.then(res => res.json())
+.then(json => {
 
-fetch(csv_url)
-.then(res => res.text())
-.then(text => {
-
-  const parsed = Papa.parse(text, { header: true });
-  const data = parsed.data;
-
-  const validData = data.filter(row => {
-    const game = getValue(row, "Game");
-    return game && game.trim() !== "";
+  const validData = (json.entries || []).filter(row => {
+    const game = row.Game;
+    return game && String(game).trim() !== "";
   });
 
   // ===== ストリーマーごとにまとめる =====
   const map = {};
 
   validData.forEach(row => {
-    const streamer = getValue(row, "Streamer");
-    const twitch = getValue(row, "Twitch");
-    const game = getValue(row, "Game");
-    const icon = getValue(row, "Icon");
-    const header = getValue(row, "Header");
+    const login = String(row.TwitchLogin || "").toLowerCase();
 
-    const username = getUsername(twitch);
-
-    if (!map[username]) {
-      map[username] = {
-        streamer,
-        username,
-        icon,
+    if (!map[login]) {
+      map[login] = {
+        streamer: row.Streamer,
+        icon: row.IconUrl,
         games: []
       };
     }
 
-    map[username].games.push({
-      game,
-      header
+    map[login].games.push({
+      game: row.Game,
+      header: row.HeaderImage
     });
   });
 
@@ -270,7 +243,7 @@ fetch(csv_url)
 
 })
 .catch(err => {
-  console.error("CSV取得失敗:", err);
+  console.error("データ取得失敗:", err);
 });
 </script>
 
