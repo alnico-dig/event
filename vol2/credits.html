@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>DIGspotlight Credits</title>
+<title>#DIGspotlight Credits</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -120,11 +120,6 @@ function getUsername(twitch) {
     .toLowerCase();
 }
 
-// AppID
-function getAppId(url) {
-  return url.match(/app\/(\d+)/)?.[1];
-}
-
 fetch(csv_url)
 .then(res => res.text())
 .then(text => {
@@ -144,7 +139,8 @@ fetch(csv_url)
     const streamer = getValue(row, "Streamer");
     const twitch = getValue(row, "Twitch");
     const game = getValue(row, "Game");
-    const steam = getValue(row, "Steam");
+    const icon = getValue(row, "Icon");
+    const header = getValue(row, "Header");
 
     const username = getUsername(twitch);
 
@@ -152,13 +148,14 @@ fetch(csv_url)
       map[username] = {
         streamer,
         username,
+        icon,
         games: []
       };
     }
 
     map[username].games.push({
       game,
-      steam
+      header
     });
   });
 
@@ -170,9 +167,7 @@ fetch(csv_url)
     const block = document.createElement("div");
     block.className = "credit-block";
 
-    const icon = user.username
-      ? `icons/${user.username}.png`
-      : "";
+    const icon = user.icon || "";
 
     const header = `
       <div class="streamer-header">
@@ -182,8 +177,7 @@ fetch(csv_url)
     `;
 
     const gamesHTML = user.games.map(g => {
-      const appId = getAppId(g.steam);
-      const img = appId ? `images/${appId}.jpg` : "";
+      const img = g.header || "";
 
       return `
         <div class="game-item">
@@ -210,7 +204,7 @@ fetch(csv_url)
     <div style="font-size:28px; font-weight:bold; margin-bottom:20px;">
       Thank you for watching & supporting!!<br>
       and all streamers & developers!!<br><br>
-      Presented by alnico_GameNews
+      Presented by alnico
     </div>
   `;
 
