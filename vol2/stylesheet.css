@@ -129,7 +129,9 @@ html[lang="en"] .ja { display: none !important; }
 
 @media (max-width: 720px) {
   .site-nav-inner { flex-wrap: wrap; gap: 8px; }
-  .nav-links { order: 3; width: 100%; }
+  .nav-links { order: 3; flex-basis: 100%; width: 100%; }
+  /* ナビが2段になる分、アンカー飛び先のオフセットも広げる */
+  [id] { scroll-margin-top: 104px; }
 }
 
 header {
