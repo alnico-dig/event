@@ -867,27 +867,27 @@
 
     showView('loading');
 
-    var userPromise = DEV_MOCK
-      ? Promise.resolve({ login: 'dev_user' })
-      : fetchTwitchUser(token).then(function (u) { if (!u) throw new Error('no_user'); return u; });
+    // Twitch本人確認とGASの応募一覧取得を並列実行（GAS側もverifyTwitchで同じ確認をしているが、
+    // 直列だと往復が2回分積み上がるので同時に投げてレイテンシを重ねる）
+    var userPromise = DEV_MOCK ? Promise.resolve({ login: 'dev_user' }) : fetchTwitchUser(token);
 
-    userPromise.then(function (user) {
-      return fetchEntries(token).then(function (data) {
-        if (data && data.error === 'token_expired') throw new Error('token_expired');
-        if (!data || data.error || data.ok === false) throw new Error('gas_error');
+    Promise.all([userPromise, fetchEntries(token)]).then(function (results) {
+      var user = results[0], data = results[1];
+      if (!user) throw new Error('no_user');
+      if (data && data.error === 'token_expired') throw new Error('token_expired');
+      if (!data || data.error || data.ok === false) throw new Error('gas_error');
 
-        currentUsername = user.login || data.login || '';
-        $('entry-username').textContent = currentUsername;
-        entries = Array.isArray(data.entries) ? data.entries : [];
+      currentUsername = user.login || data.login || '';
+      $('entry-username').textContent = currentUsername;
+      entries = Array.isArray(data.entries) ? data.entries : [];
 
-        if (entries.length === 0) {
-          $('empty-username').textContent = currentUsername;
-          showView('empty');
-          return;
-        }
-        renderEntries();
-        showView('entries');
-      });
+      if (entries.length === 0) {
+        $('empty-username').textContent = currentUsername;
+        showView('empty');
+        return;
+      }
+      renderEntries();
+      showView('entries');
     }).catch(function (err) {
       console.error(err);
       if (err.message === 'token_expired') {
