@@ -41,8 +41,8 @@
   <span class="ja">配信スケジュール</span><span class="en">Stream Schedule</span>
 </h2>
 <p class="schedule-note">
-  <span class="ja">各日・時間帯ごとの配信予定です。だいたいの目安として、参加者の申請時の入力をそのまま表示しています。</span><br>
-  <span class="en">Planned streams by day and time slot, shown as entered at signup — treat times as rough estimates.</span>
+  <span class="ja">各日・時間帯ごとの配信予定です。だいたいの目安としてご覧ください。</span><br>
+  <span class="en">Planned streams by day and time slot — treat times as rough estimates.</span>
 </p>
 
 <!-- 現在配信中（NowLive）: GAS ?live=1 から取得。配信終わりの Raid 先選び用。
@@ -50,12 +50,12 @@
 <div class="nowlive" id="nowlive" hidden>
   <h3 class="nowlive-title">
     <span class="live-dot" aria-hidden="true"></span>
-    <span class="ja">現在配信中</span><span class="en">Live now</span>
+    <span class="ja">現在配信中！</span><span class="en">Live now!</span>
     <span class="nowlive-count" id="nowlive-count" hidden></span>
   </h3>
   <p class="nowlive-hint" id="nowlive-hint" hidden>
-    <span class="ja">📣 Shoutout ／ 🚀 Raid のコマンドをコピーします（自分の配信のチャットで使えます）</span>
-    <span class="en">Copies a 📣 Shoutout / 🚀 Raid chat command — for broadcasters to paste in their own stream chat</span>
+    <span class="ja">📣 Shoutout ／ 🚀 Raid のコマンドをコピーします（参加者同士の交流にご活用ください）</span>
+    <span class="en">Copies a 📣 Shoutout / 🚀 Raid command — paste it in your own chat to connect with fellow participants</span>
   </p>
   <div class="nowlive-scrollwrap">
     <div class="nowlive-scroll"><div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div></div>
@@ -75,7 +75,7 @@
 </div>
 
 <footer class="footer">
-  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico</a>
 </footer>
 
 <script>
@@ -188,9 +188,6 @@
     if (!tbd.length) return '';
     return '' +
       '<h3 class="tbd-title">' + bi('配信日未定', 'Streaming date TBD') + '</h3>' +
-      '<p class="tbd-note">' +
-        bi('開催期間中のどこかで配信予定（日程未定）。', 'Planning to stream sometime during the event (date not decided yet).') +
-      '</p>' +
       '<div class="tbd-list">' + tbd.map(cardHtml).join('') + '</div>';
   }
 

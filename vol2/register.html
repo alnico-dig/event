@@ -462,8 +462,8 @@
   <div id="view-login" style="display:none;">
     <div class="login-box">
       <p>
-        <span class="ja">Twitchアカウントでログインして応募します。<br>アイコン・チャンネルURLは自動で取得されます。</span>
-        <span class="en">Log in with Twitch to apply.<br>Your icon and channel URL are fetched automatically.</span>
+        <span class="ja">配信するTwitchアカウントでログインしてください。</span>
+        <span class="en">Log in with the Twitch account you'll be streaming from.</span>
       </p>
       <button id="btn-login" class="twitch-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -472,8 +472,8 @@
         <span class="ja">Twitchでログイン</span><span class="en">Log in with Twitch</span>
       </button>
       <p style="margin-top:20px;font-size:12px;color:#bbb;">
-        <span class="ja">本人確認とアイコン取得のためにTwitchアカウントを使用します。メールアドレスの取得や投稿は行いません。</span>
-        <span class="en">Used only to verify your identity and fetch your icon. We never read your email or post anything.</span>
+        <span class="ja">イベント用のアカウント登録を省略し<br>なりすましの防止やチャンネルURL記入の手間などを省くためのものです。<br>個人情報の取得が行えるものではないのでご安心ください。</span>
+        <span class="en">This lets you skip creating a separate account for the event,<br>and helps prevent impersonation while saving you the hassle of typing in your channel URL.<br>It doesn't give us access to any personal information, so there's nothing to worry about.</span>
       </p>
     </div>
     <div class="back-row">
@@ -506,7 +506,7 @@
           <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">サイトに表示される名前です。Twitch表示名を初期値にしています（変更可）。</span>
+          <span class="ja">サイトに表示される名前です。Twitch表示名を初期値にしています(変更可)。</span>
           <span class="en">Shown on the site. Pre-filled with your Twitch display name — you can change it.</span>
         </p>
         <input type="text" id="in-name" maxlength="60" autocomplete="off">
@@ -522,8 +522,8 @@
           <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">ルール: Steamレビュー1000件未満のゲーム。<br>ゲーム名で検索して候補から選ぶか、Steamストアページの URL をそのまま貼り付けてください。</span>
-          <span class="en">Rule: a game with fewer than 1,000 Steam reviews.<br>Search by name and pick from the list, or just paste the game's Steam store URL.</span>
+          <span class="ja">ルール: 自国の言語でSteamレビュー1000件以下のゲーム。<br>ゲーム名で検索して候補から選ぶか、SteamストアページのURLをそのまま貼り付けてください。</span>
+          <span class="en">Rule: a game with 1,000 or fewer Steam reviews in your own language.<br>Search by name and pick from the list, or just paste the game's Steam store URL.</span>
         </p>
 
         <div class="game-search">
@@ -546,7 +546,7 @@
         </div>
 
         <div class="field-error">
-          <span class="ja">ゲームを候補から選ぶか、有効な Steam ストアページの URL を貼り付けてください。</span>
+          <span class="ja">ゲームを候補から選ぶか、有効なSteamストアページのURLを貼り付けてください。</span>
           <span class="en">Pick a game from the list, or paste a valid Steam store page URL.</span>
         </div>
       </div>
@@ -558,19 +558,19 @@
           <span class="req"><span class="ja">必須</span><span class="en">Required</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">配信する日と時間帯にチェックを入れてください（複数可・だいたいでOK）。日程が未定なら下のチェックだけでも構いません。<br>時間はすべて日本時間（JST / UTC+9）です。</span>
+          <span class="ja">配信をする日と時間帯にチェックを入れてください。(複数可・だいたいでOK)<br>日程が未定の場合は配信日未定にチェックしてください。時間はすべて日本時間(JST)です。</span>
           <span class="en">Check the days and time slots you plan to stream (multiple OK, rough is fine). If your dates aren't set, just check the box below instead.<br>All times are Japan time (JST / UTC+9).</span>
         </p>
         <div class="time-grid" id="time-grid"><!-- JS生成 --></div>
         <label class="tg-datestbd" for="chk-dates-tbd">
           <input type="checkbox" id="chk-dates-tbd">
           <span>
-            <span class="ja">配信日はまだ決まっていない（開催期間中のどこかで配信予定）</span>
+            <span class="ja">配信日未定(開催期間中のどこかで配信予定)</span>
             <span class="en">My streaming date isn't decided yet (planning to stream sometime during the event)</span>
           </span>
         </label>
         <div class="field-error">
-          <span class="ja">配信する日時を1つ以上選ぶか、「配信日はまだ決まっていない」にチェックしてください。</span>
+          <span class="ja">配信する日時を1つ以上選ぶか、配信日未定にチェックしてください。</span>
           <span class="en">Pick at least one day and time slot, or check "My streaming date isn't decided yet".</span>
         </div>
       </div>
@@ -582,7 +582,7 @@
           <span class="opt"><span class="ja">任意</span><span class="en">optional</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">意気込みやゲームの紹介など（サイトに表示されます）。日本語・英語どちらでもOK、両方書いても大丈夫です。</span>
+          <span class="ja">意気込みやゲームの紹介など。(サイトに表示されます) 日本語・英語どちらでもOK、両方書いても大丈夫です。</span>
           <span class="en">A note about your pick, your enthusiasm, etc. Shown on the site. Japanese and/or English are both fine — feel free to write both.</span>
         </p>
         <textarea id="in-comment" maxlength="300"></textarea>
@@ -596,8 +596,8 @@
           <span class="opt"><span class="ja">任意</span><span class="en">optional</span></span>
         </label>
         <p class="field-hint">
-          <span class="ja">@ユーザー名 または プロフィールURL</span>
-          <span class="en">@handle or profile URL</span>
+          <span class="ja">@ユーザー名 または プロフィールURLを入力してください。</span>
+          <span class="en">Enter your @handle or profile URL.</span>
         </p>
         <input type="text" id="in-x" maxlength="120" autocomplete="off" placeholder="@yourname">
       </div>
@@ -606,8 +606,8 @@
         <span class="ja">応募する</span><span class="en">Submit</span>
       </button>
       <p class="form-note">
-        <span class="ja">送信後、画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更できます。</span>
-        <span class="en">Everything except images goes live on the site immediately. You can change it later from the <a href="edit.html">edit page</a>.</span>
+        <span class="ja">応募後、すぐサイトに反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更できます。</span>
+        <span class="en">It goes live on the site right after you apply. You can change it later from the <a href="edit.html">edit page</a>.</span>
       </p>
     </form>
 
@@ -624,7 +624,7 @@
         <span class="ja">応募を受け付けました！</span><span class="en">Entry received!</span>
       </h3>
       <div class="done-updated" id="done-updated" hidden>
-        <span class="ja">既存の応募を更新しました</span><span class="en">Updated your existing entry</span>
+        <span class="ja">既存の応募を更新しました！</span><span class="en">Updated your existing entry!</span>
       </div>
 
       <div class="done-card">
@@ -638,8 +638,8 @@
       </div>
 
       <p class="done-note">
-        <span class="ja">画像以外はすぐにサイトへ反映されます。内容はあとから <a href="edit.html">編集ページ</a> で変更・削除できます。</span>
-        <span class="en">Everything except images is live on the site now. You can change or remove it anytime from the <a href="edit.html">edit page</a>.</span>
+        <span class="ja">応募後、すぐサイトに反映されます。<br>内容はあとから <a href="edit.html">編集ページ</a> で変更・削除できます。</span>
+        <span class="en">It's live on the site now.<br>You can change or remove it anytime from the <a href="edit.html">edit page</a>.</span>
       </p>
 
       <div class="done-actions">
@@ -679,7 +679,7 @@
 </div>
 
 <footer class="footer">
-  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico</a>
 </footer>
 
 <script>
@@ -864,7 +864,7 @@
       .catch(function () {
         if (term !== lastTerm) return;
         suggestBox.innerHTML = '<div class="suggest-empty">' +
-          bi('検索できませんでした。Steam ストアページの URL を貼り付けてください。',
+          bi('検索できませんでした。SteamストアページのURLを貼り付けてください。',
              'Search failed. Paste the game’s Steam store URL instead.') + '</div>';
         suggestBox.classList.add('open');
       });
@@ -1264,7 +1264,7 @@
       document.documentElement.lang = lang;
       btn.textContent = lang === 'ja' ? 'EN' : '日本語';
       $('in-game').placeholder = lang === 'ja'
-        ? 'ゲーム名で検索 / Steam URL を貼り付け'
+        ? 'ゲーム名で検索 / Steam URLを貼り付け'
         : 'Search by name / paste Steam URL';
     }
     var saved = 'ja';

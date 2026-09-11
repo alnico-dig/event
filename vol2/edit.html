@@ -279,7 +279,7 @@
   <div id="view-login" style="display:none;">
     <div class="login-box">
       <p>
-        <span class="ja">申請時に使用したTwitchアカウントでログインすると、申請済みのゲームが表示されます。</span>
+        <span class="ja">応募時に使用したTwitchアカウントでログインすることで<br>応募済みのゲーム一覧が表示されます。</span>
         <span class="en">Log in with the Twitch account you used to apply to see your submitted games.</span>
       </p>
       <button id="btn-login" class="twitch-btn">
@@ -289,8 +289,8 @@
         <span class="ja">Twitchでログイン</span><span class="en">Log in with Twitch</span>
       </button>
       <p style="margin-top:20px;font-size:12px;color:#bbb;">
-        <span class="ja">本人確認のためにTwitchアカウントを使用します。メールアドレスの取得や投稿は行いません。</span>
-        <span class="en">Used only to verify your identity. We never read your email or post anything.</span>
+        <span class="ja">イベント用のアカウント登録を省略し<br>なりすましの防止やチャンネルURL記入の手間などを省くためのものです。<br>個人情報の取得が行えるものではないのでご安心ください。</span>
+        <span class="en">This lets you skip creating a separate account for the event,<br>and helps prevent impersonation while saving you the hassle of typing in your channel URL.<br>It doesn't give us access to any personal information, so there's nothing to worry about.</span>
       </p>
     </div>
     <div class="back-row">
@@ -323,9 +323,9 @@
   <div id="view-empty" style="display:none;">
     <div class="list-loading" style="max-width:520px;text-align:center;margin:0 auto;">
       <strong id="empty-username"></strong>
-      <span class="ja">の申請が見つかりませんでした。</span><span class="en">No applications found for this account.</span><br><br>
+      <span class="ja">の応募が見つかりませんでした。</span><span class="en">No entries found for this account.</span><br><br>
       <small style="color:#bbb;">
-        <span class="ja">申請に使用したアカウントと異なる可能性があります。別アカウントで試す場合はTwitchからログアウト後に再度お試しください。</span>
+        <span class="ja">応募に使用したアカウントと異なる可能性があります。別アカウントで試す場合はTwitchからログアウト後に再度お試しください。</span>
         <span class="en">This may not be the account you used to apply. To try a different account, log out of Twitch first, then log in again.</span>
       </small>
     </div>
@@ -349,7 +349,7 @@
 </div>
 
 <footer class="footer">
-  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico_GameNews</a>
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico</a>
 </footer>
 
 <script>
@@ -461,7 +461,7 @@
     html += '<label class="tg-datestbd" for="dtbd-' + appId + '">' +
       '<input type="checkbox" id="dtbd-' + appId + '" class="ef-datestbd" data-appid="' + appId + '"' +
       (tbd ? ' checked' : '') + '>' +
-      '<span>' + bi('配信日はまだ決まっていない（開催期間中のどこかで配信予定）',
+      '<span>' + bi('配信日未定(開催期間中のどこかで配信予定)',
                     'My streaming date isn’t decided yet (planning to stream sometime during the event)') +
       '</span></label>';
     return html;
@@ -525,12 +525,12 @@
         '</div>' +
         '<div class="ef-field">' +
           '<label>' + bi('配信予定', 'Planned schedule') + '</label>' +
-          '<p class="ef-hint">' + bi('配信する日と時間帯にチェック（複数可）。時間はすべて日本時間（JST / UTC+9）です。', 'Check the days and time slots you plan to stream (multiple OK). All times are Japan time (JST / UTC+9).') + '</p>' +
+          '<p class="ef-hint"><span class="ja">' + esc('配信をする日と時間帯にチェックを入れてください。(複数可・だいたいでOK)') + '<br>' + esc('日程が未定の場合は配信日未定にチェックしてください。時間はすべて日本時間(JST)です。') + '</span><span class="en">' + esc("Check the days and time slots you plan to stream (multiple OK). If your dates aren't set, just check the box below instead.") + '<br>' + esc('All times are Japan time (JST / UTC+9).') + '</span></p>' +
           timeGridHtml(appId, entry) +
         '</div>' +
         '<div class="ef-field">' +
           '<label>' + bi('一言コメント', 'Comment') + ' <span style="font-weight:500;color:#aaa;">' + bi('任意', 'optional') + '</span></label>' +
-          '<p class="ef-hint">' + bi('日本語・英語どちらでもOK、両方書いても大丈夫です。', 'Japanese and/or English are both fine — feel free to write both.') + '</p>' +
+          '<p class="ef-hint">' + bi('意気込みやゲームの紹介など。(サイトに表示されます) 日本語・英語どちらでもOK、両方書いても大丈夫です。', 'A note about your pick, your enthusiasm, etc. Shown on the site. Japanese and/or English are both fine — feel free to write both.') + '</p>' +
           '<textarea id="ef-comment-' + appId + '" maxlength="300">' + esc(entry.Comment) + '</textarea>' +
           '<div class="ef-count"><span>' + (entry.Comment || '').length + '</span> / 300</div>' +
         '</div>' +
@@ -672,7 +672,7 @@
     if (!entry) return;
 
     if (!hasAnySchedule(appId)) {
-      alertInline(appId, bi('配信する日時を1つ以上選ぶか、「配信日はまだ決まっていない」にチェックしてください。',
+      alertInline(appId, bi('配信する日時を1つ以上選ぶか、配信日未定にチェックしてください。',
                             'Pick at least one day and time slot, or check “My streaming date isn’t decided yet”.'));
       return;
     }
