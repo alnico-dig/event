@@ -3,7 +3,7 @@ body {
   margin: 0;
 
   background:
-    radial-gradient(circle at 20% 20%, #f3f0ff 0%, transparent 40%),
+    radial-gradient(circle at 20% 20%, #eaf3ff 0%, transparent 40%),
     radial-gradient(circle at 80% 30%, #e0f7ff 0%, transparent 40%),
     linear-gradient(180deg, #ffffff, #f7f7f7);
 }
@@ -44,7 +44,7 @@ html[lang="en"] .ja { display: none !important; }
 .nav-logo {
   font-weight: 800;
   font-size: 16px;
-  color: #6c3cff;
+  color: #1f7dff;
   white-space: nowrap;
 }
 .nav-logo:hover { text-decoration: none; opacity: 1; }
@@ -69,15 +69,15 @@ html[lang="en"] .ja { display: none !important; }
   white-space: nowrap;
 }
 .nav-links a:hover {
-  background: #f3f0ff;
-  color: #6c3cff;
+  background: #eaf3ff;
+  color: #1f7dff;
   text-decoration: none;
   opacity: 1;
 }
 .nav-prev { color: #999 !important; }
 .nav-links a[aria-current="page"] {
-  background: #f3f0ff;
-  color: #6c3cff;
+  background: #eaf3ff;
+  color: #1f7dff;
 }
 
 .nav-actions {
@@ -90,11 +90,11 @@ html[lang="en"] .ja { display: none !important; }
 .nav-cta {
   padding: 8px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  background: linear-gradient(135deg, #1f7dff, #5fc3ff);
   color: #fff !important;
   font-weight: 700;
   font-size: 13px;
-  box-shadow: 0 4px 12px rgba(108, 60, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 125, 255, 0.3);
 }
 .nav-cta:hover {
   transform: translateY(-1px);
@@ -105,24 +105,24 @@ html[lang="en"] .ja { display: none !important; }
 .nav-cta-outline {
   padding: 7px 15px;
   border-radius: 999px;
-  border: 1px solid #6c3cff;
-  color: #6c3cff;
+  border: 1px solid #1f7dff;
+  color: #1f7dff;
   font-weight: 700;
   font-size: 13px;
 }
-.nav-cta-outline:hover { background: #f3f0ff; text-decoration: none; }
+.nav-cta-outline:hover { background: #eaf3ff; text-decoration: none; }
 
 .lang-toggle {
   padding: 7px 12px;
-  border: 1px solid #6c3cff;
+  border: 1px solid #1f7dff;
   border-radius: 999px;
   background: #fff;
-  color: #6c3cff;
+  color: #1f7dff;
   font-weight: 700;
   font-size: 12px;
   cursor: pointer;
 }
-.lang-toggle:hover { background: #f3f0ff; }
+.lang-toggle:hover { background: #eaf3ff; }
 
 /* アンカー飛び先がスティッキーナビに隠れないように */
 [id] { scroll-margin-top: 64px; }
@@ -142,7 +142,7 @@ header {
 }
 
 a {
-  color: #6c3cff;
+  color: #1f7dff;
   text-decoration: none;
 }
 
@@ -208,7 +208,7 @@ a:hover {
 }
   
 .streamer a {
-  color: #6c3cff;
+  color: #1f7dff;
   font-weight: 600;
 }
 
@@ -227,7 +227,7 @@ a:hover {
   font-size: 13px;
   color: #666;
 }
-.x-row a { color: #6c3cff; font-weight: 600; }
+.x-row a { color: #1f7dff; font-weight: 600; }
 .x-row a:hover { opacity: 0.8; }
 
 .schedule {
@@ -308,7 +308,7 @@ a:hover {
   padding: 2px 0 0;
   font: inherit;
   font-size: 13px;
-  color: #6c3cff;
+  color: #1f7dff;
   cursor: pointer;
 }
 .note-toggle:hover { text-decoration: underline; }
@@ -398,10 +398,10 @@ a:hover {
   color: rgba(255, 255, 255, 0.75);
 }
 .hero-organizer a {
-  color: #e6dcff;
+  color: #cdeaff;
   font-weight: 700;
   text-decoration: none;
-  border-bottom: 1px solid rgba(230, 220, 255, 0.5);
+  border-bottom: 1px solid rgba(205, 234, 255, 0.5);
   padding-bottom: 1px;
 }
 .hero-organizer a:hover { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.9); }
@@ -419,7 +419,7 @@ a:hover {
 .hero-cta-primary {
   padding: 11px 28px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  background: linear-gradient(135deg, #1f7dff, #5fc3ff);
   color: #fff !important;
   font-weight: 700;
   font-size: 16px;
@@ -473,9 +473,9 @@ a:hover {
   content: "";
   height: 1px;
   width: 44px;
-  background: linear-gradient(to right, transparent, #6c3cff88);
+  background: linear-gradient(to right, transparent, #1f7dff88);
 }
-.section-title::after { background: linear-gradient(to left, transparent, #6c3cff88); }
+.section-title::after { background: linear-gradient(to left, transparent, #1f7dff88); }
 
 .rules {
   max-width: 800px;
@@ -499,7 +499,7 @@ a:hover {
   width: 4px;
   height: 18px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #6c3cff, #3f6091);
+  background: linear-gradient(180deg, #1f7dff, #3f6091);
 }
 
 .rules li small {
@@ -521,7 +521,7 @@ a:hover {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 700;
-  color: #6c3cff;
+  color: #1f7dff;
   letter-spacing: 0.2px;
 }
 .notice-group-title::before {
@@ -529,7 +529,7 @@ a:hover {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: linear-gradient(135deg, #6c3cff, #3f6091);
+  background: linear-gradient(135deg, #1f7dff, #3f6091);
   flex-shrink: 0;
 }
 
@@ -546,13 +546,13 @@ a:hover {
   padding: 14px 24px;
   font-size: 15px;
 
-  background: linear-gradient(135deg, #6c3cff, #8f6bff);
+  background: linear-gradient(135deg, #1f7dff, #5fc3ff);
   color: white;
 
   border-radius: 12px;
   font-weight: bold;
 
-  box-shadow: 0 6px 16px rgba(108,60,255,0.3);
+  box-shadow: 0 6px 16px rgba(31,125,255,0.3);
 }
 
 .cta:hover {
@@ -578,8 +578,8 @@ a:hover {
   padding: 14px 24px;
   font-size: 15px;
   background: white;
-  color: #6c3cff;
-  border: 2px solid #6c3cff;
+  color: #1f7dff;
+  border: 2px solid #1f7dff;
   border-radius: 12px;
   font-weight: bold;
   text-decoration: none;
@@ -587,7 +587,7 @@ a:hover {
 }
 
 .cta-outline:hover {
-  background: #f3f0ff;
+  background: #eaf3ff;
   transform: translateY(-2px);
   opacity: 1;
   text-decoration: none;
@@ -625,16 +625,16 @@ a:hover {
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .event-share-link:hover {
-  background: #f3f0ff;
-  border-color: #b9a5ff;
-  color: #6c3cff;
+  background: #eaf3ff;
+  border-color: #7dbfff;
+  color: #1f7dff;
   text-decoration: none;
 }
 
 /* サブページ用の簡易アクセント（ヒーロー画像の代わりに一筋だけ色を残す） */
 .mini-hero {
   height: 5px;
-  background: linear-gradient(90deg, #6c3cff, #3f6091, #6c3cff);
+  background: linear-gradient(90deg, #1f7dff, #3f6091, #1f7dff);
 }
 
 .about-card {
@@ -661,7 +661,7 @@ a:hover {
   width: 4px;
   height: 16px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #6c3cff, #3f6091);
+  background: linear-gradient(180deg, #1f7dff, #3f6091);
 }
 
 .summary {
@@ -694,41 +694,61 @@ a:hover {
   content: "";
   height: 1px;
   width: 28px;
-  background: linear-gradient(to right, transparent, #6c3cff66);
+  background: linear-gradient(to right, transparent, #1f7dff66);
 }
-.assets-title::after { background: linear-gradient(to left, transparent, #6c3cff66); }
-
-.banner-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.banner {
-  max-width: 320px;
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.banner-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+.assets-title::after { background: linear-gradient(to left, transparent, #1f7dff66); }
 
 .banner-note {
-  margin-top: 6px;
+  margin: 0 0 16px;
   font-size: 11px;
   color: #777;
   line-height: 1.4;
 }
 
+.banner-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+}
+
+.banner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 220px;
+}
+
+.banner {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.banner-transparent {
+  background-image:
+    linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee),
+    linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
+.banner-label {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #223b64;
+}
+
+.banner-card .download-btn {
+  margin-top: 6px;
+}
+
 .download-btn {
   display: inline-block;
   padding: 10px 14px;
-  background: #6c5ce7;
+  background: #2f80ed;
   color: white;
   text-decoration: none;
   border-radius: 8px;
@@ -738,7 +758,7 @@ a:hover {
 }
 
 .download-btn:hover {
-  background: #5a4bd1;
+  background: #1f6fd6;
   transform: translateY(-1px);
 }
 
@@ -757,7 +777,7 @@ a:hover {
 }
 
 .event-info div {
-  background: #f3f0ff;
+  background: #eaf3ff;
   padding: 8px 14px;
   border-radius: 10px;
 }
@@ -788,15 +808,15 @@ a:hover {
 .retry-btn {
   margin-left: 6px;
   padding: 4px 12px;
-  border: 1px solid #d9cffb;
+  border: 1px solid #bcdcff;
   border-radius: 999px;
-  background: #f3f0ff;
-  color: #6c3cff;
+  background: #eaf3ff;
+  color: #1f7dff;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
-.retry-btn:hover { background: #e9e3ff; }
+.retry-btn:hover { background: #dcefff; }
 
 .filter-row {
   display: flex;
@@ -821,7 +841,7 @@ a:hover {
 }
 
 .filter button.active {
-  background: #6c3cff;
+  background: #1f7dff;
   color: #fff;
 }
 
@@ -864,7 +884,7 @@ a:hover {
 
 .back-link {
   font-size: 13px;
-  color: #6c3cff;
+  color: #1f7dff;
 }
 
 /* 現在配信中（NowLive）パネル ＝ 配信終わりの Raid 先選び用の縦リスト */
@@ -918,7 +938,7 @@ a:hover {
   overscroll-behavior: contain;
 }
 .nowlive-scroll::-webkit-scrollbar { width: 8px; }
-.nowlive-scroll::-webkit-scrollbar-thumb { background: #e5dcff; border-radius: 4px; }
+.nowlive-scroll::-webkit-scrollbar-thumb { background: #cfe6ff; border-radius: 4px; }
 .nowlive-fade {
   position: absolute;
   left: 0;
@@ -937,24 +957,24 @@ a:hover {
   border-radius: 10px;
   text-decoration: none;
   color: inherit;
-  background: #faf8ff;              /* スケジュール表の .sg-card と同色 */
+  background: #f6fafd;              /* スケジュール表の .sg-card と同色 */
   border: 1px solid #eee;           /* 枠でホバー無しでも配信者の区切りを出す（.sg-card と同じ） */
   transition: background 0.12s;
 }
-.nowlive-row:hover { background: #ece4ff; opacity: 1; }  /* ホバーでもう一段濃く */
+.nowlive-row:hover { background: #dcefff; opacity: 1; }  /* ホバーでもう一段濃く */
 .nowlive-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
   object-fit: cover;
-  background: #e5dcff;
+  background: #cfe6ff;
   flex-shrink: 0;
 }
 .nowlive-rowmain { min-width: 0; flex: 1; }
 .nowlive-rowname {
   display: block;
   font-weight: 700;
-  color: #6c3cff;
+  color: #1f7dff;
   font-size: 14px;
   line-height: 1.3;
   white-space: nowrap;
@@ -971,7 +991,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 .nowlive-btn {
-  border: 1px solid #e5dcff;
+  border: 1px solid #cfe6ff;
   background: #fff;
   border-radius: 8px;
   padding: 4px 8px;
@@ -980,10 +1000,10 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.nowlive-btn:hover { background: #f1ecff; }
+.nowlive-btn:hover { background: #eaf6ff; }
 .nowlive-btn.copied {
-  background: #6c3cff;
-  border-color: #6c3cff;
+  background: #1f7dff;
+  border-color: #1f7dff;
   color: #fff;
 }
 .nowlive-rowtitle {
@@ -1023,7 +1043,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
 
 .sg-corner,
 .sg-head {
-  background: #6c3cff;
+  background: #1f7dff;
   color: white;
   text-align: center;
   font-weight: 700;
@@ -1032,8 +1052,8 @@ a.nowlive-rowname:hover { text-decoration: underline; }
 }
 
 .sg-slot {
-  background: #f3f0ff;
-  color: #6c3cff;
+  background: #eaf3ff;
+  color: #1f7dff;
   font-weight: 700;
   font-size: 13px;
   text-align: center;
@@ -1062,7 +1082,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: #faf8ff;
+  background: #f6fafd;
   border-radius: 10px;
   border: 1px solid #eee;
   min-width: 0;
@@ -1087,7 +1107,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
 .sg-streamer {
   font-size: 14px;
   font-weight: 700;
-  color: #6c3cff;
+  color: #1f7dff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1107,7 +1127,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   margin: 28px auto 4px;
   padding: 0 4px;
   font-size: 15px;
-  color: #6c3cff;
+  color: #1f7dff;
 }
 .tbd-list {
   display: grid;
@@ -1131,16 +1151,16 @@ a.nowlive-rowname:hover { text-decoration: underline; }
     padding: 9px 4px;
     font-size: 12px;
     font-weight: 700;
-    color: #6c3cff;
-    background: #f3f0ff;
-    border: 1px solid #e5dcff;
+    color: #1f7dff;
+    background: #eaf3ff;
+    border: 1px solid #cfe6ff;
     border-radius: 9px;
     cursor: pointer;
   }
   .sched-tab[aria-current="true"] {
-    background: #6c3cff;
+    background: #1f7dff;
     color: #fff;
-    border-color: #6c3cff;
+    border-color: #1f7dff;
   }
 
   /* ラベル1列＋その日の1列だけ。非表示セルはグリッドから外れて行が畳まれる */
