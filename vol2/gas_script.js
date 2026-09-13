@@ -40,7 +40,7 @@ const CONFIG = {
   spreadsheetId: '17ja0sEc8tH8My5Mwtraq5yZH8ryrtjG8-RUOQvL7G5I',
   // 公開用スプレッドシート（PUBLIC_COLSのみを同期・「リンクを知っている全員が閲覧可」で共有し
   // index.html/schedule.html/credits.htmlが直CSVエクスポートで読む。setup_public_sheet()参照
-  publicSheetId: '',
+  publicSheetId: '1DefWp9Xl6xsvXEoEkDF2ikpB0Lhy0rVfZ7PH-9Jn1s0',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   entriesSheet: 'entries',
   // イベント開催期間（JST・yyyyMMdd）。NowLive パネルを「配信タイトルに DIGspotlight を含む配信だけ」に

@@ -279,7 +279,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCT
 // 公開用スプレッドシート（gas_script.js の CONFIG.publicSheetId と同じID）が設定済みなら
 // そちらを直CSVエクスポートで読む（vol1と同じ方式・GASのdoGet/内部リダイレクトを経由しないため速く安定）。
 // 未設定（空文字）の間はGAS(?list=1)にフォールバックする。セットアップ手順はgas_script.js冒頭参照
-const PUBLIC_SHEET_ID = '';
+const PUBLIC_SHEET_ID = '1DefWp9Xl6xsvXEoEkDF2ikpB0Lhy0rVfZ7PH-9Jn1s0';
 const PUBLIC_SHEET_CSV_URL = PUBLIC_SHEET_ID
   ? 'https://docs.google.com/spreadsheets/d/' + PUBLIC_SHEET_ID + '/export?format=csv'
   : '';
