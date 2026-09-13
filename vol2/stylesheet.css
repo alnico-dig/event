@@ -1037,7 +1037,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   padding: 0 16px 40px;
 }
 
-/* 5行（朝/昼/夜/深夜/未定）×3列（開催日）固定のCSS Grid。
+/* 5行（深夜/朝/昼/夜/未定）×3列（開催日）固定のCSS Grid。
    テーブルと違い列幅が中身（長いタイトル等）に引っ張られないので、
    3日分が常に横スクロール無しで収まる。 */
 .schedule-grid {

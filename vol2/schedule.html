@@ -45,8 +45,8 @@
   <span class="ja">配信スケジュール</span><span class="en">Stream Schedule</span>
 </h2>
 <p class="schedule-note">
-  <span class="ja">各日・時間帯ごとの配信予定です。だいたいの目安としてご覧ください。</span><br>
-  <span class="en">Planned streams by day and time slot — treat times as rough estimates.</span>
+  <span class="ja">各日・時間帯ごとの配信予定です。だいたいの目安としてご覧ください。「深夜」は各日0時〜3時頃です(12/18の深夜は開催開始0時のキックオフ配信も含みます)。</span><br>
+  <span class="en">Planned streams by day and time slot — treat times as rough estimates. "Late night" means roughly 0:00–3:00 that day (includes midnight kickoff streams on 12/18).</span>
 </p>
 
 <!-- 現在配信中（NowLive）: GAS ?live=1 から取得。配信終わりの Raid 先選び用。
@@ -101,13 +101,14 @@
     { ja: '12/19(土)', en: 'Sat 12/19' },
     { ja: '12/20(日)', en: 'Sun 12/20' }
   ];
-  // 表示順は 朝→昼→夜→深夜→時間未定 で固定（時間未定は深夜の後でよい、とユーザー確認済み）
+  // 表示順は 深夜→朝→昼→夜→時間未定。「深夜」は当日0時台〜3時頃（未明）を指す＝各日の最初の枠として扱う
+  // （夜の続き扱いにすると最終日の深夜が開催終了時刻をまたいでしまうため、この並びで統一）
   // v = シート格納値（'未定' のまま）、ja/en = 表示ラベル
   var SLOTS = [
+    { v: '深夜', ja: '深夜',     en: 'Late night' },
     { v: '朝',   ja: '朝',       en: 'Morning' },
     { v: '昼',   ja: '昼',       en: 'Daytime' },
     { v: '夜',   ja: '夜',       en: 'Evening' },
-    { v: '深夜', ja: '深夜',     en: 'Late night' },
     { v: '未定', ja: '時間未定', en: 'Time TBD' }
   ];
 
