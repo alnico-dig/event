@@ -12,6 +12,8 @@
 <script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
 
 <link rel="stylesheet" href="stylesheet.css">
+<!-- スケジュールグリッドを公開用スプレッドシートのCSVから読むためのパーサー（PUBLIC_SHEET_ID未設定時は未使用） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -85,6 +87,13 @@
   'use strict';
 
   var GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
+  // 公開用スプレッドシート（gas_script.js の CONFIG.publicSheetId と同じID、index.htmlと共通）が
+  // 設定済みならグリッド（?list=1相当）はそちらを直CSVで読む。NowLive(?live=1)は引き続きGAS
+  // （Twitchのリアルタイム配信状況が必要なため）。未設定の間はGASにフォールバックする。
+  var PUBLIC_SHEET_ID = '';
+  var PUBLIC_SHEET_CSV_URL = PUBLIC_SHEET_ID
+    ? 'https://docs.google.com/spreadsheets/d/' + PUBLIC_SHEET_ID + '/export?format=csv'
+    : '';
 
   var DAYS = ['Day1', 'Day2', 'Day3'];
   var DAY_LABELS = [
@@ -225,19 +234,63 @@
     });
   }
 
-  // ---- スケジュール本体（?list=1）----
+  // グリッド用データ取得。公開スプレッドシートのCSVが速い（vol1と同じ方式）ので優先し、
+  // 未設定ならGAS(?list=1)にフォールバックする。戻り値はどちらの経路でも entries 配列。
+  function fetchGridData() {
+    if (PUBLIC_SHEET_CSV_URL) {
+      return fetchJsonOrTextRace(PUBLIC_SHEET_CSV_URL, 15000, /* asText */ true)
+        .then(function (text) {
+          return new Promise(function (resolve, reject) {
+            Papa.parse(text, {
+              header: true,
+              skipEmptyLines: true,
+              complete: function (result) { resolve(result.data); },
+              error: reject
+            });
+          });
+        });
+    }
+    return fetchJson(GAS_URL + '?list=1', 22000).then(function (data) {
+      return (data && Array.isArray(data.entries)) ? data.entries : [];
+    });
+  }
+  function fetchJsonOrTextRace(url, timeoutMs, asText) {
+    return Promise.race([
+      fetch(url).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return asText ? r.text() : r.json();
+      }),
+      new Promise(function (_, reject) {
+        setTimeout(function () { reject(new Error('timeout')); }, timeoutMs);
+      })
+    ]);
+  }
+  function cachedFetchGridData() {
+    var key = 'dig_sched_list';
+    try {
+      var raw = sessionStorage.getItem(key);
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && (Date.now() - o.t) < CACHE_TTL) return Promise.resolve(o.d);
+      }
+    } catch (e) {}
+    return fetchGridData().then(function (data) {
+      try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
+      return data;
+    });
+  }
+
+  // ---- スケジュール本体 ----
   function loadSchedule(attempt) {
     attempt = attempt || 1;
     var loadingEl = document.getElementById('schedule-loading');
     loadingEl.style.display = '';
     loadingEl.textContent = 'Loading…';
-    // 1回目は sessionStorage キャッシュ経由、リトライ時は素の fetch（失敗した相手をもう一度）
-    var get = attempt === 1
-      ? cachedFetchJson(GAS_URL + '?list=1', 'dig_sched_list', 22000)
-      : fetchJson(GAS_URL + '?list=1', 22000);
+    // 1回目は sessionStorage キャッシュ経由、リトライ時は素の再取得（失敗した相手をもう一度）
+    var get = attempt === 1 ? cachedFetchGridData() : fetchGridData();
     get
       .then(function (data) {
-        var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+        var entries = Array.isArray(data) ? data : [];
         document.getElementById('schedule-grid').innerHTML = buildGrid(entries);
         document.getElementById('schedule-tbd').innerHTML = buildTBDSection(entries);
         initScheduleTabs();

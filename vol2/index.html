@@ -29,6 +29,9 @@
 
 <link rel="stylesheet" href="stylesheet.css">
 
+<!-- 参加者一覧を公開用スプレッドシートのCSVから読むためのパーサー（PUBLIC_SHEET_ID未設定時は未使用） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SFHVH7WR23"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -271,8 +274,15 @@
 <div id="list-loading">Loading…</div>
 <div id="list"></div>
 <script>
-/* ===== #streams：参加者一覧（entries スキーマ・GAS ?list=1 から取得） ===== */
+/* ===== #streams：参加者一覧 ===== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
+// 公開用スプレッドシート（gas_script.js の CONFIG.publicSheetId と同じID）が設定済みなら
+// そちらを直CSVエクスポートで読む（vol1と同じ方式・GASのdoGet/内部リダイレクトを経由しないため速く安定）。
+// 未設定（空文字）の間はGAS(?list=1)にフォールバックする。セットアップ手順はgas_script.js冒頭参照
+const PUBLIC_SHEET_ID = '';
+const PUBLIC_SHEET_CSV_URL = PUBLIC_SHEET_ID
+  ? 'https://docs.google.com/spreadsheets/d/' + PUBLIC_SHEET_ID + '/export?format=csv'
+  : '';
 
 const DAYS = ['Day1', 'Day2', 'Day3'];
 const DAY_LABELS = [
@@ -452,24 +462,45 @@ function applyAndRender() {
 
 const listLoading = document.getElementById('list-loading');
 
-// GAS はしばらくアクセスが無いと休眠し、復帰の初回リクエストが数秒〜数十秒かかったり
-// JSON でなくエラー HTML を返したりする（＝コールドスタート）。json パース失敗もタイムアウトも
-// 「失敗」とみなして少し待って数回リトライする（schedule.htmlと同じ方式。以前はここが単発fetchのままで
-// GASの一時的な応答遅延・失敗がそのままユーザーへの表示失敗に直結していた）。
-function fetchJson(url, timeoutMs) {
+// 公開スプレッドシートのCSVは直接エクスポートなので基本速い（vol1と同じ）。
+// GASフォールバック時はコールドスタートで数秒〜数十秒かかったりJSONでなくエラーHTMLを
+// 返したりする。どちらの経路でもタイムアウト・パース失敗は「失敗」とみなし少し待ってリトライする。
+function fetchWithTimeout(url, timeoutMs) {
   return Promise.race([
-    fetch(url).then(res => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }),
+    fetch(url),
     new Promise((_, reject) => {
       setTimeout(() => reject(new Error('timeout')), timeoutMs);
     })
   ]);
 }
 
+function fetchListData() {
+  if (PUBLIC_SHEET_CSV_URL) {
+    return fetchWithTimeout(PUBLIC_SHEET_CSV_URL, 15000)
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(text => new Promise((resolve, reject) => {
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: result => resolve(result.data),
+          error: reject
+        });
+      }));
+  }
+  return fetchWithTimeout(GAS_URL + '?list=1', 22000)
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(json => json.entries || []);
+}
+
 const LIST_CACHE_TTL = 90 * 1000;
-function cachedFetchJson(url, key, timeoutMs) {
+function cachedFetchListData() {
+  const key = 'dig_index_list';
   try {
     const raw = sessionStorage.getItem(key);
     if (raw) {
@@ -477,7 +508,7 @@ function cachedFetchJson(url, key, timeoutMs) {
       if (o && (Date.now() - o.t) < LIST_CACHE_TTL) return Promise.resolve(o.d);
     }
   } catch (e) {}
-  return fetchJson(url, timeoutMs).then(data => {
+  return fetchListData().then(data => {
     try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
     return data;
   });
@@ -485,12 +516,10 @@ function cachedFetchJson(url, key, timeoutMs) {
 
 function loadList(attempt) {
   attempt = attempt || 1;
-  const get = attempt === 1
-    ? cachedFetchJson(GAS_URL + '?list=1', 'dig_index_list', 22000)
-    : fetchJson(GAS_URL + '?list=1', 22000);
+  const get = attempt === 1 ? cachedFetchListData() : fetchListData();
   get
-    .then(json => {
-      allData = (json.entries || []).filter(r => r && String(r.Game || '').trim() !== '');
+    .then(rows => {
+      allData = (rows || []).filter(r => r && String(r.Game || '').trim() !== '');
       listLoading.style.display = 'none';
       applyAndRender();
 

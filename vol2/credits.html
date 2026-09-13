@@ -85,6 +85,8 @@ body {
   to { transform: translateY(calc(-1 * var(--scroll-distance))); }
 }
 </style>
+<!-- 一覧を公開用スプレッドシートのCSVから読むためのパーサー（PUBLIC_SHEET_ID未設定時は未使用） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -94,8 +96,14 @@ body {
 </div>
 
 <script>
-// index.html・schedule.htmlと同じGAS Webアプリ（?list=1は公開安全な列のみを返す）
+// index.html・schedule.htmlと同じGAS Webアプリ（?list=1は公開安全な列のみを返す・フォールバック用）
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyT9pn4WAGQZ6xVM1i0LDCTrq3gWxF1EdEY0L1yFk1J7AsfUvhyG4AYt54Y7Mn2w82f/exec';
+// 公開用スプレッドシート（gas_script.js の CONFIG.publicSheetId・index.html/schedule.htmlと共通）が
+// 設定済みならそちらを直CSVで読む。未設定の間はGAS(?list=1)にフォールバックする。
+const PUBLIC_SHEET_ID = '';
+const PUBLIC_SHEET_CSV_URL = PUBLIC_SHEET_ID
+  ? 'https://docs.google.com/spreadsheets/d/' + PUBLIC_SHEET_ID + '/export?format=csv'
+  : '';
 
 const escapeHtml = str => {
   if (!str) return "";
@@ -105,11 +113,42 @@ const escapeHtml = str => {
 const track = document.getElementById("track");
 const wrapper = document.getElementById("wrapper");
 
-fetch(GAS_URL + '?list=1')
-.then(res => res.json())
-.then(json => {
+function fetchWithTimeout(url, timeoutMs) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
+  ]);
+}
 
-  const validData = (json.entries || []).filter(row => {
+function fetchListData() {
+  if (PUBLIC_SHEET_CSV_URL) {
+    return fetchWithTimeout(PUBLIC_SHEET_CSV_URL, 15000)
+      .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+      .then(text => new Promise((resolve, reject) => {
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: result => resolve(result.data),
+          error: reject
+        });
+      }));
+  }
+  return fetchWithTimeout(GAS_URL + '?list=1', 22000)
+    .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(json => json.entries || []);
+}
+
+function loadCredits(attempt) {
+  attempt = attempt || 1;
+  fetchListData().then(renderCredits).catch(err => {
+    console.error('一覧の取得に失敗 (try ' + attempt + '):', err);
+    if (attempt < 4) { setTimeout(() => loadCredits(attempt + 1), 2500); }
+  });
+}
+
+function renderCredits(rows) {
+
+  const validData = (rows || []).filter(row => {
     const game = row.Game;
     return game && String(game).trim() !== "";
   });
@@ -243,10 +282,9 @@ fetch(GAS_URL + '?list=1')
     setTimeout(startScroll, 1500); // 1.5秒休憩
   });
 
-})
-.catch(err => {
-  console.error("データ取得失敗:", err);
-});
+}
+
+loadCredits();
 </script>
 
 </body>

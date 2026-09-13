@@ -13,10 +13,21 @@
 //      - アクセスできるユーザー：全員
 // 5. 発行された /exec URL を register.html / edit.html の GAS_URL に設定
 //
+// 【公開用スプレッドシート（一覧の高速表示用・任意だが強く推奨）】
+// GAS の /exec 経由（?list=1）は Google 側の内部リダイレクトが稀に失敗し、体感の遅さ・
+// 読み込み失敗の原因になる（doGet自体は正常終了するため実行数ログにも残らない）。
+// index.html/schedule.html/credits.htmlは代わりにスプレッドシートの直CSVエクスポートを読む
+// ことでこれを回避する（vol1と同じ方式）。手順：
+// 1. 新しい空の Google スプレッドシートを作成
+// 2. 共有設定を「リンクを知っている全員」「閲覧者」にする
+// 3. URL 中の spreadsheet ID を CONFIG.publicSheetId に設定
+// 4. manualSyncPublicSheet() を1回手動実行（既存データを流し込む。以降は自動同期）
+// 5. デプロイを新バージョンで再デプロイ
+//
 // 【エンドポイント】
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
-//   GET  ?list=1              → 参加者一覧（index.html #streams・公開情報のみ） { entries:[...] }
+//   GET  ?list=1              → 参加者一覧（フォールバック用。通常は公開スプレッドシートのCSVを使う） { entries:[...] }
 //   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon,title}] }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
@@ -27,6 +38,9 @@
 const CONFIG = {
   // 第2回用スプレッドシート（2026-09-01 作成）
   spreadsheetId: '17ja0sEc8tH8My5Mwtraq5yZH8ryrtjG8-RUOQvL7G5I',
+  // 公開用スプレッドシート（PUBLIC_COLSのみを同期・「リンクを知っている全員が閲覧可」で共有し
+  // index.html/schedule.html/credits.htmlが直CSVエクスポートで読む。setup_public_sheet()参照
+  publicSheetId: '',
   twitchClientId: 'kp13odpytkan0tqo6xmgj5509h4104',
   entriesSheet: 'entries',
   // イベント開催期間（JST・yyyyMMdd）。NowLive パネルを「配信タイトルに DIGspotlight を含む配信だけ」に
@@ -103,6 +117,43 @@ function handlePublicList() {
   const out = { entries: rows };
   cache.put('public_list', JSON.stringify(out), 300); // 5分（登録/編集/削除時に removeAll で即時破棄されるので長めでOK）
   return respond(out);
+}
+
+// ---- 公開用スプレッドシートへの同期 ----
+// entries シート（非公開・TwitchId/Timestamp/Developerを含む）から PUBLIC_COLS だけを
+// 別スプレッドシート（publicSheetId・リンクを知っている全員が閲覧可）にミラーする。
+// index.html/schedule.html/credits.html はこちらを直CSVエクスポートで読むため GAS の
+// doGet実行やscript.google.com側のリダイレクトを経由せず、vol1時代と同じ速さ・安定性になる。
+// 応募/編集/削除のたびに呼び出す。publicSheetId未設定なら何もしない。
+function syncPublicSheet_() {
+  if (!CONFIG.publicSheetId) return;
+  try {
+    const data = getEntriesSheet().getDataRange().getValues();
+    const header = data[0];
+    const idx = {};
+    PUBLIC_COLS.forEach(function (k) { idx[k] = header.indexOf(k); });
+    const appCol = header.indexOf('AppId');
+
+    const rows = [PUBLIC_COLS];
+    for (let i = 1; i < data.length; i++) {
+      if (!data[i][appCol]) continue;
+      rows.push(PUBLIC_COLS.map(function (k) { return data[i][idx[k]]; }));
+    }
+
+    const pubSheet = SpreadsheetApp.openById(CONFIG.publicSheetId).getSheets()[0];
+    pubSheet.clearContents();
+    pubSheet.getRange(1, 1, rows.length, PUBLIC_COLS.length).setValues(rows);
+  } catch (err) {
+    // 公開シートへの同期失敗は応募/編集自体を失敗させない（次回の同期タイミングで追いつく）
+    Logger.log('syncPublicSheet_ 失敗: ' + err);
+  }
+}
+
+// 公開スプレッドシートを作った直後に1回だけ手動実行して既存データを流し込む
+// （Apps Scriptエディタで関数を選んで実行）。以降はhandleUpsert/handleDeleteが自動で呼ぶ。
+function manualSyncPublicSheet() {
+  syncPublicSheet_();
+  Logger.log('公開シート同期完了');
 }
 
 // 今 JST でイベント開催期間中か（yyyyMMdd の文字列比較。CONFIG.eventStart〜eventEnd）
@@ -393,6 +444,7 @@ function handleUpsert(body, mustExist) {
       sheet.appendRow(rowArr);
     }
     CacheService.getScriptCache().removeAll(['public_list', 'now_live']); // 一覧・NowLive を即時反映
+    syncPublicSheet_();
     return respond({
       ok: true,
       updated: foundRow > 0,
@@ -432,7 +484,10 @@ function handleDelete(body) {
         if (appId) break;
       }
     }
-    if (deleted > 0) CacheService.getScriptCache().removeAll(['public_list', 'now_live']);
+    if (deleted > 0) {
+      CacheService.getScriptCache().removeAll(['public_list', 'now_live']);
+      syncPublicSheet_();
+    }
     return respond({ ok: true, deleted: deleted });
   } finally {
     lock.releaseLock();
