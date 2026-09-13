@@ -451,44 +451,94 @@ function applyAndRender() {
 }
 
 const listLoading = document.getElementById('list-loading');
-fetch(GAS_URL + '?list=1')
-  .then(res => res.json())
-  .then(json => {
-    allData = (json.entries || []).filter(r => r && String(r.Game || '').trim() !== '');
-    listLoading.style.display = 'none';
-    applyAndRender();
 
-    const heroCount = document.getElementById('hero-count');
-    if (heroCount && allData.length) {
-      const titles = new Set(allData.map(r => String(r.Game || '').trim()).filter(Boolean)).size;
-      const streamers = new Set(allData.map(r => String(r.TwitchLogin || r.Streamer || '').trim()).filter(Boolean)).size;
-      heroCount.innerHTML = bi(
-        `🔥 現在 ${titles}タイトル、${streamers}名が参加中！`,
-        `🔥 ${titles} titles · ${streamers} streamers joined so far!`
-      );
+// GAS はしばらくアクセスが無いと休眠し、復帰の初回リクエストが数秒〜数十秒かかったり
+// JSON でなくエラー HTML を返したりする（＝コールドスタート）。json パース失敗もタイムアウトも
+// 「失敗」とみなして少し待って数回リトライする（schedule.htmlと同じ方式。以前はここが単発fetchのままで
+// GASの一時的な応答遅延・失敗がそのままユーザーへの表示失敗に直結していた）。
+function fetchJson(url, timeoutMs) {
+  return Promise.race([
+    fetch(url).then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('timeout')), timeoutMs);
+    })
+  ]);
+}
+
+const LIST_CACHE_TTL = 90 * 1000;
+function cachedFetchJson(url, key, timeoutMs) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (o && (Date.now() - o.t) < LIST_CACHE_TTL) return Promise.resolve(o.d);
     }
-
-    document.querySelectorAll('#date-filter button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#date-filter button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.day;
-        applyAndRender();
-      });
-    });
-    document.querySelectorAll('#sort-filter button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#sort-filter button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentSort = btn.dataset.sort;
-        applyAndRender();
-      });
-    });
-  })
-  .catch(err => {
-    console.error('一覧の取得に失敗:', err);
-    listLoading.innerHTML = bi('一覧の読み込みに失敗しました。時間をおいて再読み込みしてください。', 'Failed to load the list. Please reload in a bit.');
+  } catch (e) {}
+  return fetchJson(url, timeoutMs).then(data => {
+    try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
+    return data;
   });
+}
+
+function loadList(attempt) {
+  attempt = attempt || 1;
+  const get = attempt === 1
+    ? cachedFetchJson(GAS_URL + '?list=1', 'dig_index_list', 22000)
+    : fetchJson(GAS_URL + '?list=1', 22000);
+  get
+    .then(json => {
+      allData = (json.entries || []).filter(r => r && String(r.Game || '').trim() !== '');
+      listLoading.style.display = 'none';
+      applyAndRender();
+
+      const heroCount = document.getElementById('hero-count');
+      if (heroCount && allData.length) {
+        const titles = new Set(allData.map(r => String(r.Game || '').trim()).filter(Boolean)).size;
+        const streamers = new Set(allData.map(r => String(r.TwitchLogin || r.Streamer || '').trim()).filter(Boolean)).size;
+        heroCount.innerHTML = bi(
+          `🔥 現在 ${titles}タイトル、${streamers}名が参加中！`,
+          `🔥 ${titles} titles · ${streamers} streamers joined so far!`
+        );
+      }
+    })
+    .catch(err => {
+      console.error('一覧の取得に失敗 (try ' + attempt + '):', err);
+      if (attempt < 4) {
+        setTimeout(() => loadList(attempt + 1), 2500);
+        return;
+      }
+      listLoading.style.display = '';
+      listLoading.innerHTML = bi('一覧の読み込みに失敗しました。', 'Failed to load the list.') +
+        ' <button type="button" id="list-retry" class="retry-btn">' + bi('再読み込み', 'Retry') + '</button>';
+      const retryBtn = document.getElementById('list-retry');
+      if (retryBtn) retryBtn.addEventListener('click', () => {
+        listLoading.textContent = 'Loading…';
+        loadList(1);
+      });
+    });
+}
+
+document.querySelectorAll('#date-filter button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#date-filter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.day;
+    applyAndRender();
+  });
+});
+document.querySelectorAll('#sort-filter button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#sort-filter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSort = btn.dataset.sort;
+    applyAndRender();
+  });
+});
+
+loadList();
 </script>
 
 <section class="assets" id="assets">
