@@ -445,6 +445,19 @@ function handleUpsert(body, mustExist) {
     } else {
       sheet.appendRow(rowArr);
     }
+
+    // 同じ人が他のゲームにも応募している場合、それらの行のアイコンURLも
+    // 今回ログインで取れた最新値に揃える（1件だけ編集しても他の申請が
+    // 古いアイコンのまま残るのを防ぐ）。公開シートへは下の syncPublicSheet_()
+    // が entries シート全体を毎回丸ごとミラーするので、ここで直せば十分。
+    const iconCol = idOf('IconUrl');
+    for (let i = 1; i < data.length; i++) {
+      if (i === foundRow) continue;
+      if (String(data[i][idOf('TwitchId')]) !== String(user.id)) continue;
+      if (String(data[i][iconCol]) === user.icon) continue;
+      sheet.getRange(i + 1, iconCol + 1).setValue(user.icon);
+    }
+
     CacheService.getScriptCache().removeAll(['public_list', 'now_live']); // 一覧・NowLive を即時反映
     syncPublicSheet_();
     return respond({
