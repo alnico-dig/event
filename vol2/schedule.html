@@ -383,19 +383,26 @@
     } catch (e) { return false; }
   }
 
+  // 注意書きは配信者ゼロでも出して、コマンドコピー機能があることを告知する（公募期間向け）
+  var NOWLIVE_HINT_LIVE = nowliveHint.innerHTML;
+  var NOWLIVE_HINT_EMPTY = bi(
+    '参加者が配信を始めるとここに表示され、📣 Shoutout ／ 🚀 Raid のコマンドをワンクリックでコピーできます',
+    'Participants appear here when they go live — copy a 📣 Shoutout / 🚀 Raid command in one click');
+
   function renderNowLive(live) {
     nowliveEl.hidden = false;
+    nowliveHint.hidden = false;
     if (!live.length) {
       nowliveCount.hidden = true;
       nowliveFade.hidden = true;
-      nowliveHint.hidden = true;
+      nowliveHint.innerHTML = NOWLIVE_HINT_EMPTY;
       nowliveList.innerHTML = '<p class="nowlive-empty">' +
         bi('現在、配信中の参加者はいません。', 'No participants are streaming right now.') + '</p>';
       return;
     }
     nowliveCount.textContent = '(' + live.length + ')';
     nowliveCount.hidden = false;
-    nowliveHint.hidden = false;
+    nowliveHint.innerHTML = NOWLIVE_HINT_LIVE;
     nowliveList.innerHTML = live.map(function (s) {
       var login = String(s.login || '').toLowerCase();
       var valid = LOGIN_RE.test(login);
