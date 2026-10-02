@@ -332,13 +332,19 @@ function handleSearch(term) {
     encodeURIComponent(term) + '&cc=jp&l=japanese';
 
   let items = [];
+  let answered = false; // Steam から 200 が返ったか（0件でも「該当なし」として確定）
+  let lastErr = '';
   // 最大2回試行（Steam の瞬間的な失敗をリカバリ）
   for (let attempt = 0; attempt < 2; attempt++) {
     if (attempt > 0) Utilities.sleep(600);
     try {
       const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-      if (res.getResponseCode() !== 200) continue;
+      if (res.getResponseCode() !== 200) {
+        lastErr = 'HTTP ' + res.getResponseCode() + ' ' + res.getContentText().slice(0, 80);
+        continue;
+      }
       const j = JSON.parse(res.getContentText());
+      answered = true;
       const list = (j && j.items) || [];
       if (list.length === 0) break; // 200 かつ 0 件＝本当に該当なし。リトライ不要
       items = rankSearchItems(list, term);
@@ -351,6 +357,19 @@ function handleSearch(term) {
       break;
     } catch (err) {
       // JSON パース失敗等 → 次の試行へ
+      lastErr = 'exception ' + String(err).slice(0, 80);
+    }
+  }
+
+  // store.steampowered.com が GAS の共有IPを 403 で弾いた等で応答自体が取れなかった場合は、
+  // 別ホストの Steam Web API（IStoreQueryService/SearchSuggestions・キー不要）で検索する
+  if (!answered) {
+    const fb = searchSuggestions_(term);
+    if (fb.items) {
+      items = rankSearchItems(fb.items, term);
+      if (items.length === 0) items = fb.items.slice(0, 8);
+    } else {
+      appendLog_('search', '', term.slice(0, 40) + ' / ' + lastErr + ' / SearchSuggestions: ' + fb.error);
     }
   }
 
@@ -664,9 +683,46 @@ function fetchStoreBrowseItem_(appId) {
   }
 }
 
+// IStoreQueryService/SearchSuggestions で検索し、storesearch と同じ形 {id, name, tiny_image} で返す
+// （handleSearch のフォールバック）。失敗時は { error }。
+function searchSuggestions_(term) {
+  const input = {
+    search_term: term,
+    max_results: 20,
+    context: { language: 'japanese', country_code: 'JP' },
+    data_request: { include_assets: true },
+  };
+  const url = 'https://api.steampowered.com/IStoreQueryService/SearchSuggestions/v1/?input_json=' +
+    encodeURIComponent(JSON.stringify(input));
+  try {
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const code = res.getResponseCode();
+    if (code !== 200) return { error: 'HTTP ' + code + ' ' + res.getContentText().slice(0, 80) };
+    const list = (JSON.parse(res.getContentText()).response || {}).store_items || [];
+    return {
+      items: list
+        .filter(function (it) { return it && it.success === 1 && it.name; })
+        .map(function (it) {
+          const a = it.assets || {};
+          return {
+            id: it.appid || it.id,
+            name: it.name,
+            tiny_image: (a.asset_url_format && a.small_capsule)
+              ? 'https://shared.akamai.steamstatic.com/store_item_assets/' +
+                a.asset_url_format.replace('${FILENAME}', a.small_capsule)
+              : '',
+          };
+        }),
+    };
+  } catch (err) {
+    return { error: 'exception ' + String(err).slice(0, 80) };
+  }
+}
+
 // Apps Script エディタから手動実行して、GAS の環境から Steam 情報が取れるか確認する用
 function test_fetchAppDetails() {
   Logger.log(JSON.stringify(fetchStoreBrowseItem_('4120310')));
+  Logger.log(JSON.stringify(searchSuggestions_('70年代風')));
   CacheService.getScriptCache().remove('ad_4120310');
   Logger.log(JSON.stringify(fetchAppDetails('4120310')));
 }
