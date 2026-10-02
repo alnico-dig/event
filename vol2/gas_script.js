@@ -561,7 +561,11 @@ function verifyTwitch(token) {
 function fetchAppDetails(appId) {
   const cache = CacheService.getScriptCache();
   const hit = cache.get('ad_' + appId);
-  if (hit) return JSON.parse(hit);
+  if (hit) {
+    // 旧コードは失敗（空）もキャッシュしていたので、空のヒットは無視して取り直す
+    const c = JSON.parse(hit);
+    if (c.game) return c;
+  }
 
   const out = { game: '', developer: '', header: '' };
   const url = 'https://store.steampowered.com/api/appdetails?appids=' +
