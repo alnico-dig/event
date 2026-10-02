@@ -808,9 +808,30 @@
       $('game-preview').classList.add('show');
       $('in-game').value = g.name || ('App ' + g.appId);
       clearError('f-game');
+      refreshGameInfo(g);
     } else {
       $('game-preview').classList.remove('show');
     }
+  }
+
+  // 暫定の名前（URL由来）・推定画像URL（新しめのアプリだと 404）を GAS 経由で
+  // Steam の正式値に差し替える。取れなければ暫定表示のまま（送信時に GAS 側で再取得される）。
+  function refreshGameInfo(g) {
+    if (DEV_MOCK) return;
+    fetch(GAS_URL + '?app=' + encodeURIComponent(g.appId))
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (selectedGame !== g || !res || !res.game) return; // 別のゲームに選び直された
+        g.name = res.game;
+        $('gp-name').textContent = res.game;
+        $('in-game').value = res.game;
+        if (res.header) {
+          g.headerImage = res.header;
+          $('gp-img').onerror = null;
+          $('gp-img').src = res.header;
+        }
+      })
+      .catch(function () {});
   }
 
   // 入力文字列が「Steam の URL っぽい」か（名前検索と貼り付けを1つの欄で見分ける）

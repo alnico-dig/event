@@ -33,6 +33,7 @@
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
 //   GET  ?list=1              → 参加者一覧（フォールバック用。通常は公開スプレッドシートのCSVを使う） { entries:[...] }
 //   GET  ?live=1              → 今 Twitch で配信中の参加者（schedule.html） { live:[{login,name,icon,title}] }
+//   GET  ?app=<appId>         → ゲームの正式名・ヘッダー画像（register.html のプレビュー） { game, header }
 //   POST {action:"register"}  → 応募の新規登録 / 上書き
 //   POST {action:"update"}    → 応募内容の編集（edit.html）
 //   POST {action:"delete"}    → 応募の削除（edit.html）
@@ -90,7 +91,17 @@ function doGet(e) {
   if (p.token) return handleMyEntries(p.token);
   if (p.list) return handlePublicList();
   if (p.live) return handleNowLive();
+  if (p.app) return handleAppInfo(p.app);
   return respond({ error: 'no_params' });
+}
+
+// ---- 1ゲームの正式名・ヘッダー画像（register.html のプレビュー差し替え用） ----
+// URL 由来の暫定名や推定画像URL（新しめのアプリだと 404）を、選択直後に正しい値へ置き換える。
+function handleAppInfo(appId) {
+  appId = String(appId || '').replace(/\D/g, '');
+  if (!appId) return respond({ error: 'no_appid' });
+  const d = fetchAppDetails(appId);
+  return respond({ game: d.game, header: d.header });
 }
 
 // ---- 参加者一覧（index.html の #streams 用・公開情報のみ） ----
