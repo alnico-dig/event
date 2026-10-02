@@ -598,6 +598,19 @@ function fetchAppDetails(appId) {
       lastErr = 'exception ' + String(err).slice(0, 120);
     }
   }
+  // store.steampowered.com は CDN（Akamai）が GAS の共有IPを 403 で弾くことがあるため、
+  // 別ホストの Steam Web API（IStoreBrowseService/GetItems・キー不要）で取り直す
+  if (!ok) {
+    const fb = fetchStoreBrowseItem_(appId);
+    if (fb.game) {
+      out.game = fb.game;
+      out.developer = fb.developer;
+      out.header = fb.header;
+      ok = true;
+    } else {
+      lastErr += ' / GetItems: ' + fb.error;
+    }
+  }
   // 成功時だけキャッシュする。失敗（空）をキャッシュすると、その間の再登録・編集・
   // 埋め直し（backfillAppDetails_）がすべて空のままになってしまうため。
   if (ok) {
@@ -606,6 +619,45 @@ function fetchAppDetails(appId) {
     appendLog_('appdetails', appId, lastErr);
   }
   return out;
+}
+
+// IStoreBrowseService/GetItems から appdetails と同じ3項目を取る（fetchAppDetails のフォールバック）
+function fetchStoreBrowseItem_(appId) {
+  const input = {
+    ids: [{ appid: Number(appId) }],
+    context: { language: 'japanese', country_code: 'JP' },
+    data_request: { include_assets: true, include_basic_info: true },
+  };
+  const url = 'https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=' +
+    encodeURIComponent(JSON.stringify(input));
+  try {
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const code = res.getResponseCode();
+    if (code !== 200) return { error: 'HTTP ' + code + ' ' + res.getContentText().slice(0, 80) };
+    const item = ((JSON.parse(res.getContentText()).response || {}).store_items || [])[0];
+    if (!item || item.success !== 1 || !item.name) return { error: 'no_item' };
+    const info = item.basic_info || {};
+    const assets = item.assets || {};
+    // asset_url_format 例: "steam/apps/4120310/${FILENAME}?t=..."、header 例: "<hash>/header_japanese.jpg"
+    const header = (assets.asset_url_format && assets.header)
+      ? 'https://shared.akamai.steamstatic.com/store_item_assets/' +
+        assets.asset_url_format.replace('${FILENAME}', assets.header)
+      : '';
+    return {
+      game: item.name,
+      developer: (info.developers || []).map(function (d) { return d.name; }).join(', '),
+      header: header,
+    };
+  } catch (err) {
+    return { error: 'exception ' + String(err).slice(0, 80) };
+  }
+}
+
+// Apps Script エディタから手動実行して、GAS の環境から Steam 情報が取れるか確認する用
+function test_fetchAppDetails() {
+  Logger.log(JSON.stringify(fetchStoreBrowseItem_('4120310')));
+  CacheService.getScriptCache().remove('ad_4120310');
+  Logger.log(JSON.stringify(fetchAppDetails('4120310')));
 }
 
 // ============================================================
