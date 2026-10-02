@@ -24,6 +24,10 @@
 // 4. manualSyncPublicSheet() を1回手動実行（既存データを流し込む。以降は自動同期）
 // 5. デプロイを新バージョンで再デプロイ
 //
+// 【定期実行トリガー（ウォームアップ＋Steam情報の埋め直し）】
+// setup_triggers() を1回手動実行（periodic() が5分ごとに動く）。イベント終了後は
+// remove_triggers() を実行して止める。失敗は同じスプレッドシートの「log」シートに残る。
+//
 // 【エンドポイント】
 //   GET  ?q=<term>            → Steam ゲーム検索の中継     { items:[{id,name,tiny_image}] }
 //   GET  ?token=<twitchToken> → 自分の応募一覧（edit.html）  { ok, login, entries:[...] }
@@ -231,9 +235,12 @@ function handleNowLive() {
               title: String(s.title || ''),
             };
           });
+      } else {
+        appendLog_('nowlive', '', 'HTTP ' + res.getResponseCode() + ' ' + res.getContentText().slice(0, 120));
       }
     } catch (err) {
       // トークン取得失敗・API エラー等 → 空で返す（パネル側は「配信中なし」表示）
+      appendLog_('nowlive', '', 'exception ' + String(err).slice(0, 120));
     }
   }
 
@@ -562,24 +569,140 @@ function fetchAppDetails(appId) {
 
   // ここで取れないとGame名が "App <ID>" のまま保存されてしまうため、
   // handleSearch と同様にSteamの瞬間的な失敗を最大2回までリトライする
+  let ok = false;
+  let lastErr = '';
   for (let attempt = 0; attempt < 2; attempt++) {
     if (attempt > 0) Utilities.sleep(600);
     try {
       const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-      if (res.getResponseCode() !== 200) continue;
+      const code = res.getResponseCode();
+      if (code !== 200) {
+        lastErr = 'HTTP ' + code + ' ' + res.getContentText().slice(0, 120);
+        continue;
+      }
       const node = JSON.parse(res.getContentText())[appId];
       if (node && node.success && node.data) {
         out.game = node.data.name || '';
         out.developer = (node.data.developers || []).join(', ');
         out.header = node.data.header_image || '';
+        ok = true;
         break;
       }
+      lastErr = 'HTTP 200 success=false ' + res.getContentText().slice(0, 120);
     } catch (err) {
       // 次の試行へ（両方失敗なら空のまま＝フロントの推定URL・入力値で代替）
+      lastErr = 'exception ' + String(err).slice(0, 120);
     }
   }
-  cache.put('ad_' + appId, JSON.stringify(out), 21600); // 6時間
+  // 成功時だけキャッシュする。失敗（空）をキャッシュすると、その間の再登録・編集・
+  // 埋め直し（backfillAppDetails_）がすべて空のままになってしまうため。
+  if (ok) {
+    cache.put('ad_' + appId, JSON.stringify(out), 21600); // 6時間
+  } else {
+    appendLog_('appdetails', appId, lastErr);
+  }
   return out;
+}
+
+// ============================================================
+// 定期実行（時間主導トリガー・5分ごと）
+// ============================================================
+// setup_triggers() を1回手動実行すると periodic() が5分ごとに動く。イベント終了後は
+// remove_triggers() で止める。
+//   ① ウォームアップ：handleNowLive() を叩き、GAS のコールドスタート（18〜35秒待ち）と
+//      NowLive キャッシュ切れを防ぐ
+//   ② 埋め直し（1時間に1回）：応募時に Steam appdetails が取れず Developer 等が空の行を
+//      取り直す（GAS の送信元IPは他ユーザーと共有のため Steam に弾かれることがある）
+function periodic() {
+  try {
+    handleNowLive();
+  } catch (err) {
+    appendLog_('warm', '', String(err).slice(0, 200));
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  const last = Number(props.getProperty('last_backfill') || 0);
+  if (Date.now() - last < 55 * 60 * 1000) return;
+  props.setProperty('last_backfill', String(Date.now()));
+  backfillAppDetails_();
+}
+
+function setup_triggers() {
+  remove_triggers();
+  ScriptApp.newTrigger('periodic').timeBased().everyMinutes(5).create();
+  Logger.log('periodic トリガーを設定しました（5分ごと）');
+}
+
+function remove_triggers() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'periodic') ScriptApp.deleteTrigger(t);
+  });
+}
+
+// Developer が空の行（＝応募時に appdetails が取れなかった行）を取り直して
+// Game / HeaderImage / Developer を上書きする。Steam 呼び出しはロックの外で行い、
+// 書き込み時にロックを取ってシートを読み直す（その間の応募・削除で行がずれても大丈夫なように）。
+function backfillAppDetails_() {
+  const data = getEntriesSheet().getDataRange().getValues();
+  const header = data[0];
+  const appCol = header.indexOf('AppId');
+  const devCol = header.indexOf('Developer');
+
+  const targets = {};
+  for (let i = 1; i < data.length; i++) {
+    const appId = String(data[i][appCol] || '');
+    if (appId && !data[i][devCol]) targets[appId] = null;
+  }
+  const appIds = Object.keys(targets);
+  if (!appIds.length) return;
+
+  let got = 0;
+  appIds.forEach(function (appId) {
+    const d = fetchAppDetails(appId);
+    if (d.game) { targets[appId] = d; got++; }
+  });
+  if (!got) return;
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) return; // 次回に回す
+  try {
+    const sheet = getEntriesSheet();
+    const cur = sheet.getDataRange().getValues();
+    const h = cur[0];
+    const col = function (name) { return h.indexOf(name); };
+    let changed = 0;
+    for (let i = 1; i < cur.length; i++) {
+      const d = targets[String(cur[i][col('AppId')] || '')];
+      if (!d || cur[i][col('Developer')]) continue;
+      sheet.getRange(i + 1, col('Game') + 1).setValue(d.game);
+      if (d.header) sheet.getRange(i + 1, col('HeaderImage') + 1).setValue(d.header);
+      sheet.getRange(i + 1, col('Developer') + 1).setValue(d.developer);
+      changed++;
+    }
+    if (changed) {
+      CacheService.getScriptCache().removeAll(['public_list', 'now_live']);
+      syncPublicSheet_();
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// 失敗時のログを entries と同じスプレッドシートの「log」シートに1行追記する
+// （非公開。公開用シートへは同期されない）。ログ書き込み自体の失敗は無視する。
+function appendLog_(kind, appId, detail) {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.spreadsheetId);
+    let sheet = ss.getSheetByName('log');
+    if (!sheet) {
+      sheet = ss.insertSheet('log');
+      sheet.appendRow(['Timestamp', 'Kind', 'AppId', 'Detail']);
+      sheet.setFrozenRows(1);
+    }
+    sheet.appendRow([new Date(), kind, appId, detail]);
+  } catch (err) {
+    Logger.log('appendLog_ 失敗: ' + err);
+  }
 }
 
 // 時間帯の複数選択を検証して "," 区切り文字列に正規化する。
