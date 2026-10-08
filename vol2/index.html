@@ -29,7 +29,7 @@
 
 <link rel="stylesheet" href="stylesheet.css">
 
-<!-- 参加者一覧を公開用スプレッドシートのCSVから読むためのパーサー（PUBLIC_SHEET_ID未設定時は未使用） -->
+<!-- CSVパーサー（参加者一覧の公開用スプレッドシート・DIG Selectionの data/selection.csv） -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SFHVH7WR23"></script>
@@ -120,7 +120,8 @@
       配信するゲームは自国の言語でSteamのレビュー件数が1000件以下のものにしてください。<br>
       <small>
         ※よほど有名なタイトルでなければ大抵は配信できます /
-        <a href="https://kenbogames.com/steamdatabase/" target="_blank">こちらから探すこともできます</a>(J-STEAM DB by kenbo様)
+        <a href="https://kenbogames.com/steamdatabase/" target="_blank">こちらから探すこともできます</a>(J-STEAM DB by kenbo様)<br>
+        ※迷ったら<a href="#selection">DIG Selection</a>からどうぞ
       </small>
     </li>
     <li>
@@ -154,7 +155,8 @@
       The game must have 1,000 or fewer Steam reviews in your own language.<br>
       <small>
         *Unless it's a really famous title, it'll usually qualify /
-        <a href="https://kenbogames.com/steamdatabase/" target="_blank">You can also search here</a> (J-STEAM DB by kenbo)
+        <a href="https://kenbogames.com/steamdatabase/" target="_blank">You can also search here</a> (J-STEAM DB by kenbo)<br>
+        *Not sure what to play? Check out the <a href="#selection">DIG Selection</a>
       </small>
     </li>
     <li>
@@ -574,6 +576,100 @@ document.querySelectorAll('#sort-filter button').forEach(btn => {
 });
 
 loadList();
+</script>
+
+<!-- ===== DIG Selection：主催おすすめタイトルのカルーセル（data/selection.csv） ===== -->
+<h2 class="section-title" id="selection">DIG Selection</h2>
+<p class="selection-note">
+  <span class="ja">どのゲームを遊ぶか迷ったら、ここからどうぞ。</span>
+  <span class="en">Not sure what to play? Start here.</span>
+</p>
+<section class="dig-selection">
+  <div class="carousel">
+    <button type="button" class="carousel-nav carousel-prev" aria-label="Previous">‹</button>
+    <div id="carousel-index"></div>
+    <div id="selection-loading">Loading…</div>
+    <div class="carousel-track" id="carousel-track"></div>
+    <button type="button" class="carousel-nav carousel-next" aria-label="Next">›</button>
+  </div>
+</section>
+<script>
+/* ===== #selection：DIG Selection カルーセル =====
+   data/selection.csv（Title,Steam,HeaderImage）を読む。HeaderImage は任意で、空なら一覧と同じく
+   AppID から組み立てた Steam CDN の URL を使う。新しめのゲームはこの URL が 404 になる
+   （実画像はハッシュ入りパス）ので、その時だけストアページの画像アドレスを HeaderImage に貼る */
+(function () {
+  const track = document.getElementById('carousel-track');
+  const indexEl = document.getElementById('carousel-index');
+  const loading = document.getElementById('selection-loading');
+  let items = [];
+  let current = 0;
+  let timer;
+
+  const appIdOf = url => (String(url || '').match(/app\/(\d+)/) || [])[1];
+
+  function render(data) {
+    track.innerHTML = '';
+    data.forEach(item => {
+      const appId = appIdOf(item.Steam);
+      const steam = safeUrl(item.Steam);
+      const header = item.HeaderImage || (appId ? `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg` : '');
+      const div = document.createElement('div');
+      div.className = 'carousel-item';
+      div.innerHTML = `
+        <div class="selection-card">
+          <a href="${steam}" target="_blank" rel="noopener">
+            <img src="${escapeHtml(header)}" class="selection-img" loading="lazy" alt=""
+              onerror="this.onerror=null;this.src='https://placehold.co/460x215?text=%23DIGspotlight'">
+          </a>
+          <h3 class="selection-title">
+            <a href="${steam}" target="_blank" rel="noopener">${escapeHtml(item.Title)}</a>
+          </h3>
+        </div>`;
+      track.appendChild(div);
+    });
+    items = track.querySelectorAll('.carousel-item');
+  }
+
+  function show(i) {
+    items[current].classList.remove('active');
+    current = (i + items.length) % items.length;
+    items[current].classList.add('active');
+    indexEl.textContent = `${current + 1} / ${items.length}`;
+  }
+
+  function start() { clearInterval(timer); timer = setInterval(() => show(current + 1), 7000); }
+
+  function init() {
+    current = Math.floor(Math.random() * items.length);
+    show(current);
+    document.querySelector('.carousel-prev').addEventListener('click', () => { show(current - 1); start(); });
+    document.querySelector('.carousel-next').addEventListener('click', () => { show(current + 1); start(); });
+    track.addEventListener('mouseenter', () => clearInterval(timer));
+    track.addEventListener('mouseleave', start);
+    start();
+  }
+
+  Papa.parse('data/selection.csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: result => {
+      const data = result.data.filter(d => d.Title && d.Steam);
+      if (!data.length) {
+        loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+        return;
+      }
+      loading.style.display = 'none';
+      render(data);
+      init();
+    },
+    error: err => {
+      console.error('selection.csv の取得に失敗:', err);
+      loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+    }
+  });
+})();
 </script>
 
 <section class="assets" id="assets">
