@@ -470,6 +470,17 @@ function applyAndRender() {
 
 const listLoading = document.getElementById('list-loading');
 
+// 一覧より下にあるアンカー（#selection 等）で開かれた時の位置補正。読み込み中に
+// ユーザーが自分でスクロールしていたら邪魔しない
+let userScrolled = false;
+['wheel', 'touchmove', 'keydown'].forEach(ev =>
+  addEventListener(ev, () => { userScrolled = true; }, { once: true, passive: true }));
+function realignHash() {
+  if (userScrolled || location.hash !== '#selection') return;
+  const el = document.getElementById('selection');
+  if (el) el.scrollIntoView();
+}
+
 // 公開スプレッドシートのCSVは直接エクスポートなので基本速い（vol1と同じ）。
 // GASフォールバック時はコールドスタートで数秒〜数十秒かかったりJSONでなくエラーHTMLを
 // 返したりする。どちらの経路でもタイムアウト・パース失敗は「失敗」とみなし少し待ってリトライする。
@@ -530,6 +541,9 @@ function loadList(attempt) {
       allData = (rows || []).filter(r => r && String(r.Game || '').trim() !== '');
       listLoading.style.display = 'none';
       applyAndRender();
+      // index.html#selection で開かれた場合、ブラウザは一覧の描画前にジャンプするので
+      // 一覧の分だけ下にずれる。描画後に一度だけ合わせ直す
+      realignHash();
 
       const heroCount = document.getElementById('hero-count');
       if (heroCount && allData.length) {
