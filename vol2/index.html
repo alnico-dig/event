@@ -609,9 +609,11 @@ loadList();
 </section>
 <script>
 /* ===== #selection：DIG Selection カルーセル =====
-   data/selection.csv（Title,Steam,HeaderImage）を読む。HeaderImage は任意で、空なら一覧と同じく
-   AppID から組み立てた Steam CDN の URL を使う。新しめのゲームはこの URL が 404 になる
-   （実画像はハッシュ入りパス）ので、その時だけストアページの画像アドレスを HeaderImage に貼る */
+   data/selection.csv（Title,Steam,HeaderImage）を読む。HeaderImage は任意で、空なら AppID から
+   組み立てた Steam CDN の header.jpg（既定版＝多くは英語）を使う。日本語版ヘッダーがあるゲームと、
+   header.jpg が 404 になる新しめのゲーム（実画像はハッシュ入りパス）は、日本語ストアページの
+   画像アドレスを HeaderImage に貼る。
+   ※ /apps/<id>/header_japanese.jpg を推測で読むのは不可：古い画像や別ゲームの画像が残っている例がある */
 (function () {
   const track = document.getElementById('carousel-track');
   const indexEl = document.getElementById('carousel-index');
