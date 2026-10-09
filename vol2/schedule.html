@@ -124,18 +124,39 @@
   var safeUrl = function (u) { return /^https?:\/\//.test(u || '') ? u : '#'; };
   var bi = function (ja, en) { return '<span class="ja">' + esc(ja) + '</span><span class="en">' + esc(en) + '</span>'; };
 
-  function cardHtml(row) {
+  // 並び順：配信者名→ゲーム名（日本語ロケールで比較、大文字小文字は区別しない）
+  var cmp = function (a, b) {
+    return String(a || '').localeCompare(String(b || ''), 'ja', { sensitivity: 'base', numeric: true });
+  };
+
+  // 同じ配信者の複数タイトルを1枚のカードにまとめる（同じ人のカードが縦に何枚も並ぶと読みにくいため）
+  function groupByStreamer(rows) {
+    var map = {}, groups = [];
+    rows.forEach(function (row) {
+      var key = String(row.TwitchLogin || row.TwitchUrl || row.Streamer || '').toLowerCase();
+      if (!map[key]) { map[key] = { head: row, games: [] }; groups.push(map[key]); }
+      map[key].games.push(row);
+    });
+    groups.sort(function (a, b) { return cmp(a.head.Streamer, b.head.Streamer); });
+    groups.forEach(function (g) { g.games.sort(function (a, b) { return cmp(a.Game, b.Game); }); });
+    return groups;
+  }
+
+  function cardHtml(group) {
+    var row = group.head;
     var icon = safeUrl(row.IconUrl);
     var twitch = safeUrl(row.TwitchUrl);
-    var steam = safeUrl(row.SteamUrl);
+    var games = group.games.map(function (g) {
+      return '<a class="sg-game" href="' + safeUrl(g.SteamUrl) + '" title="' + esc(g.Game) + '" target="_blank" rel="noopener">' + esc(g.Game) + '</a>';
+    }).join('');
     return '' +
       '<div class="sg-card">' +
-        '<a href="' + twitch + '" target="_blank" rel="noopener">' +
+        '<a class="sg-icon-link" href="' + twitch + '" target="_blank" rel="noopener">' +
           '<img class="sg-icon" src="' + esc(icon) + '" loading="lazy" ' +
           'onerror="this.onerror=null;this.src=\'https://placehold.co/36x36?text=%3F\'"></a>' +
         '<div class="sg-info">' +
           '<a class="sg-streamer" href="' + twitch + '" target="_blank" rel="noopener">' + esc(row.Streamer) + '</a>' +
-          '<a class="sg-game" href="' + steam + '" target="_blank" rel="noopener">' + esc(row.Game) + '</a>' +
+          '<div class="sg-games">' + games + '</div>' +
         '</div>' +
       '</div>';
   }
@@ -148,13 +169,14 @@
     });
 
     SLOTS.forEach(function (slot) {
-      html += '<div class="sg-slot">' + bi(slot.ja, slot.en) + '</div>';
+      // ラベルは内側の span を sticky にして、縦に長い枠でもスクロール中に見えるようにする
+      html += '<div class="sg-slot"><span class="sg-slot-label">' + bi(slot.ja, slot.en) + '</span></div>';
 
       DAYS.forEach(function (dayKey, i) {
         var matches = entries.filter(function (row) {
           return slotsOf(row[dayKey]).indexOf(slot.v) >= 0;
         });
-        html += '<div class="sg-cell" data-day="' + i + '">' + matches.map(cardHtml).join('') + '</div>';
+        html += '<div class="sg-cell" data-day="' + i + '">' + groupByStreamer(matches).map(cardHtml).join('') + '</div>';
       });
     });
 
@@ -200,8 +222,18 @@
     if (!tbd.length) return '';
     return '' +
       '<h3 class="tbd-title">' + bi('配信日未定', 'Streaming date TBD') + '</h3>' +
-      '<div class="tbd-list">' + tbd.map(cardHtml).join('') + '</div>';
+      '<div class="tbd-list">' + groupByStreamer(tbd).map(cardHtml).join('') + '</div>';
   }
+
+  // 日付見出し・時間帯ラベルの sticky 位置を固定ナビの実高さに合わせる（モバイルは2〜3段に折り返すため）
+  function syncNavHeight() {
+    var nav = document.querySelector('.site-nav');
+    if (nav) document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+  }
+  syncNavHeight();
+  // フォント読み込み後に折り返し段数が変わることもあるので、ナビ自体のサイズ変化を監視する
+  if (window.ResizeObserver) new ResizeObserver(syncNavHeight).observe(document.querySelector('.site-nav'));
+  else window.addEventListener('resize', syncNavHeight);
 
   // GAS はしばらくアクセスが無いと休眠し、復帰の初回リクエストが 15〜30 秒かかったり
   // JSON でなくエラー HTML を返したりする（＝コールドスタート）。json パース失敗も
@@ -496,6 +528,7 @@
     btn.addEventListener('click', function () {
       var next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
       apply(next);
+      syncNavHeight(); // 言語でナビの折り返し段数が変わりうる（ResizeObserver 非対応ブラウザ向け）
       try { localStorage.setItem(KEY, next); } catch (e) {}
     });
   })();

@@ -1162,12 +1162,16 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   background: white;
   border: 1px solid #eee;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: clip;            /* hidden だとスクロールコンテナ扱いになり見出しの sticky が効かない */
   box-shadow: 0 6px 20px rgba(0,0,0,0.06);
 }
 
+/* 日付見出しは固定ナビの直下に貼り付く（--nav-h は schedule.html の JS が実測して設定） */
 .sg-corner,
 .sg-head {
+  position: sticky;
+  top: var(--nav-h, 0px);
+  z-index: 2;
   background: #1f7dff;
   color: white;
   text-align: center;
@@ -1180,19 +1184,23 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   background: #eaf3ff;
   color: #1f7dff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
-  padding: 10px 4px;
+  padding: 12px 4px;
+  border-top: 2px solid #cfe2f8;
+}
+/* 枠が縦に長いので、ラベルは日付見出しの下に貼り付いてスクロール中も見える */
+.sg-slot-label {
+  position: sticky;
+  top: calc(var(--nav-h, 0px) + 56px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 2px;
-  border-top: 1px solid #eee;
 }
 
 .sg-cell {
-  border-top: 1px solid #eee;
+  border-top: 2px solid #cfe2f8;   /* 時間帯の区切りをはっきりさせる */
   border-left: 1px solid #eee;
   padding: 8px;
   display: flex;
@@ -1204,7 +1212,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
 
 .sg-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;   /* 複数タイトルで縦に伸びてもアイコンは上揃え */
   gap: 8px;
   padding: 6px 8px;
   background: #f6fafd;
@@ -1238,12 +1246,27 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   text-overflow: ellipsis;
 }
 
+.sg-icon-link { flex-shrink: 0; line-height: 0; }
+
+/* 同じ配信者のタイトルは1枚のカードに縦並び */
+.sg-games {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .sg-game {
   font-size: 13px;
-  color: #666;
+  color: #555;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* 2タイトル以上の時だけ行頭に点を付けて区切りを分かりやすく */
+.sg-games:has(.sg-game + .sg-game) .sg-game::before {
+  content: "・";
+  color: #9bbbe0;
 }
 
 /* スケジュール表の下：配信日未定の参加者 */
@@ -1258,6 +1281,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
+  align-items: start;        /* タイトル数の違うカードが同じ行で引き伸ばされないように */
 }
 
 /* モバイル用の日切替タブはデスクトップでは非表示 */
@@ -1301,6 +1325,7 @@ a.nowlive-rowname:hover { text-decoration: underline; }
 
   .sg-corner, .sg-head { font-size: 12px; padding: 8px 4px; }
   .sg-slot { font-size: 12px; padding: 8px 2px; }
+  .sg-slot-label { top: calc(var(--nav-h, 0px) + 40px); }
   .sg-cell { padding: 6px; gap: 5px; }
   .sg-icon { width: 32px; height: 32px; }
   .sg-streamer { font-size: 13px; }
