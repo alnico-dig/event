@@ -820,45 +820,101 @@ a:hover {
   margin: 10px 16px 40px;
 }
 
-.sel-tools {
+/* ジャンルへのジャンプ（ページ上部のピル） */
+.sel-genre-nav {
   max-width: 1040px;
   margin: 14px auto 0;
   padding: 0 16px;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: center;
-  gap: 8px 14px;
+  gap: 6px 8px;
 }
 
-.sel-search {
-  width: 100%;
-  max-width: 360px;
-  box-sizing: border-box;
-  padding: 8px 14px;
-  border: 1px solid #ddd;
-  border-radius: 999px;
-  font-size: 14px;
-  background: #fff;
-}
-.sel-search:focus { outline: none; border-color: #7dbfff; box-shadow: 0 0 0 3px #eaf3ff; }
-
-.sel-status {
-  display: flex;
+.sel-genre-link {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid #d6e6fb;
+  border-radius: 999px;
+  background: #fff;
+  color: #223b64;
   font-size: 13px;
-  color: #777;
+  text-decoration: none;
+}
+.sel-genre-link:hover { background: #eaf3ff; border-color: #7dbfff; text-decoration: none; }
+
+.sel-genre-count {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8aa0bf;
 }
 
-.sel-grid {
+/* ジャンルごとの帯（横スクロール） */
+.sel-bands {
   max-width: 1040px;
-  margin: 16px auto 0;
+  margin: 8px auto 0;
   padding: 0 16px;
   box-sizing: border-box;
+}
+
+.sel-band {
+  margin-top: 26px;
+  scroll-margin-top: calc(var(--nav-h, 60px) + 12px);
+}
+
+.sel-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sel-band-title {
+  margin: 0;
+  font-size: 17px;
+  color: #223b64;
+}
+
+.sel-band-arrows { display: flex; gap: 6px; }
+.sel-band.no-scroll .sel-band-arrows { display: none; }
+
+.sel-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #3f6091;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sel-arrow:hover:not(:disabled) { background: #eaf3ff; border-color: #7dbfff; }
+.sel-arrow:disabled { opacity: 0.35; cursor: default; }
+
+.sel-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
+  grid-auto-flow: column;
+  grid-auto-columns: 260px;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* カードの影が切れないよう少し余白を持たせる */
+  padding: 2px 2px 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #c9d8ec transparent;
+}
+.sel-strip > .sel-card { scroll-snap-align: start; }
+
+@media (max-width: 600px) {
+  .sel-strip { grid-auto-columns: 78%; }
+  /* スマホはスワイプで送るので矢印は出さない */
+  .sel-band-arrows { display: none; }
 }
 
 .sel-card {
@@ -908,10 +964,7 @@ a:hover {
   color: #3f6091;
   font-size: 11.5px;
   line-height: 1.4;
-  cursor: pointer;
 }
-.sel-tag:hover { border-color: #7dbfff; }
-.sel-tag.active { background: #1f7dff; border-color: #1f7dff; color: #fff; }
 
 .sel-summary {
   margin: 0;
@@ -919,8 +972,6 @@ a:hover {
   line-height: 1.65;
   color: #555;
 }
-
-.sel-empty { grid-column: 1 / -1; }
 
 #list-loading,
 #selection-loading,
