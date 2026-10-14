@@ -916,6 +916,10 @@ a:hover {
   /* スマホはスワイプで送るので矢印は出さない */
   .sel-band-arrows { display: none; }
 }
+@media (max-width: 360px) {
+  /* 小さい端末ではカードを広げてタグ3つが1行に入る幅を確保する */
+  .sel-strip { grid-auto-columns: 88%; }
+}
 
 .sel-card {
   display: flex;
@@ -950,20 +954,25 @@ a:hover {
 }
 .sel-title a { color: #223b64; }
 
+/* タグは1行に固定（紹介文の書き出し位置をそろえるため）。入りきらないタグは
+   2行目に回って丸ごと隠れる。CSV のタグは重要な順に並べておく */
 .sel-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  height: 22px;
+  overflow: hidden;
 }
 
 .sel-tag {
-  padding: 3px 9px;
+  padding: 2px 8px;
   border: 1px solid #d6e6fb;
   border-radius: 999px;
   background: #f3f8ff;
   color: #3f6091;
-  font-size: 11.5px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
 }
 
 .sel-summary {
