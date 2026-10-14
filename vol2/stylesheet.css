@@ -407,7 +407,9 @@ a:hover {
   padding-bottom: 1px;
 }
 .hero-organizer a:hover { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.9); }
-.hero-organizer-sep { margin: 0 8px; color: inherit; }
+/* 主催・Twitch・X をそれぞれ1かたまりにして、狭い画面ではかたまり単位で改行させる */
+.hero-organizer-item { display: inline-block; white-space: nowrap; margin: 0 4px; }
+.hero-organizer-sep { margin-right: 8px; color: inherit; }
 
 .hero-cta-row {
   margin-top: 16px;
