@@ -391,6 +391,8 @@ a:hover {
   font-weight: 600;
   opacity: 0.9;
 }
+/* 狭い画面では句の切れ目で改行させる */
+.hero-tagline-part { display: inline-block; }
 
 .hero-organizer {
   margin-top: 12px;
@@ -508,6 +510,10 @@ a:hover {
   margin-top: 1px;
   line-height: 1.5;
   font-size: 0.9em;
+}
+/* 注記内の強調（リンクの青と紛れないよう濃いグレー） */
+.rules li small strong {
+  color: #555;
 }
 
 .notice-group + .notice-group {

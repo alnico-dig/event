@@ -1054,7 +1054,7 @@
     var g = String(gameName || '').trim();
     if (g.length > 80) g = g.slice(0, 79) + '…';
     var text = en
-      ? 'Joining #DIGspotlight vol.2 to discover lesser-known games on Twitch\n🎮 ' + g
+      ? 'Streaming in the Twitch event #DIGspotlight vol.2!\n🎮 ' + g
       : 'Twitch配信イベント #DIGspotlight vol.2 で配信します！\n🎮 ' + g;
     var u = /^https?:\/\//.test(steamUrl || '') ? steamUrl : 'https://store.steampowered.com/';
     return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
