@@ -148,7 +148,10 @@
 
     bandsEl.innerHTML = bands.map(b => `
       <section class="sel-band" id="${b.id}">
-        <h3 class="sel-band-title">${b.g.icon} ${bi(b.g.ja, b.g.en)}<span class="sel-genre-count">${b.list.length}</span></h3>
+        <div class="sel-band-head">
+          <h3 class="sel-band-title">${b.g.icon} ${bi(b.g.ja, b.g.en)}<span class="sel-genre-count">${b.list.length}</span></h3>
+          <a href="#sel-genre-nav" class="sel-band-top" aria-label="Genres">↑<span class="sel-band-top-label"> ${bi('ジャンル一覧', 'Genres')}</span></a>
+        </div>
         <div class="sel-strip">${b.list.map(cardHtml).join('')}</div>
       </section>`).join('');
   }

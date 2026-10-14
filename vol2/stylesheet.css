@@ -824,6 +824,7 @@ a:hover {
 .sel-genre-nav {
   max-width: 1040px;
   margin: 14px auto 0;
+  scroll-margin-top: calc(var(--nav-h, 60px) + 12px);
   padding: 0 16px;
   display: flex;
   flex-wrap: wrap;
@@ -860,15 +861,51 @@ a:hover {
   box-sizing: border-box;
 }
 
+/* 帯1本＝薄い背景のパネル。ジャンルの切れ目がスクロール中でも分かるように */
 .sel-band {
-  margin-top: 26px;
+  margin-top: 32px;
+  padding: 14px 16px 18px;
+  background: #f1f6fd;
+  border: 1px solid #d9e6f7;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(31, 125, 255, 0.06);
   scroll-margin-top: calc(var(--nav-h, 60px) + 12px);
 }
 
+.sel-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  /* スケジュール表の日付見出しと同じ青。白文字の帯でジャンルの切れ目をはっきりさせる */
+  background: linear-gradient(90deg, #1f7dff, #3f6091);
+}
+
 .sel-band-title {
-  margin: 0 0 10px;
-  font-size: 17px;
-  color: #223b64;
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+.sel-band-title .sel-genre-count { font-size: 12px; color: rgba(255, 255, 255, 0.75); }
+
+.sel-band-top {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+.sel-band-top:hover { color: #fff; text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .sel-band { margin-top: 22px; padding: 10px 10px 12px; }
+  .sel-band-head { padding: 6px 10px; margin-bottom: 10px; }
+  .sel-band-title { font-size: 15px; white-space: nowrap; }
+  /* 見出しが2行に折り返さないよう、スマホでは「↑」だけにする */
+  .sel-band-top-label { display: none; }
+  .sel-band-top { font-size: 15px; padding: 0 2px; }
 }
 
 /* PC・タブレット：帯の中は折り返しのグリッド（PC幅で3列） */
@@ -897,6 +934,8 @@ a:hover {
 @media (max-width: 360px) {
   /* 小さい端末ではカードを広げてタグ3つが1行に入る幅を確保する */
   .sel-strip { grid-auto-columns: 88%; }
+  /* ここまで狭いと長いジャンル名は1行に入らないので折り返しを許す */
+  .sel-band-title { white-space: normal; }
 }
 
 .sel-card {
