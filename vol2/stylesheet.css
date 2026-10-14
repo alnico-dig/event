@@ -900,7 +900,10 @@ a:hover {
 .sel-band-top:hover { color: #fff; text-decoration: underline; }
 
 @media (max-width: 600px) {
-  .sel-band { margin-top: 22px; padding: 10px 10px 12px; }
+  /* パネルの余白でカードが狭くなるとタグが1行に収まらないので、
+     ページ左右の余白とパネル内側の余白を詰めて、カード幅をパネル導入前と同じに保つ */
+  .sel-bands { padding: 0 8px; }
+  .sel-band { margin-top: 22px; padding: 10px 8px 12px; }
   .sel-band-head { padding: 6px 10px; margin-bottom: 10px; }
   .sel-band-title { font-size: 15px; white-space: nowrap; }
   /* 見出しが2行に折り返さないよう、スマホでは「↑」だけにする */
