@@ -58,8 +58,8 @@
     <span class="nowlive-count" id="nowlive-count" hidden></span>
   </h3>
   <p class="nowlive-hint" id="nowlive-hint" hidden>
-    <span class="ja">📣 Shoutout ／ 🚀 Raid のコマンドをコピーします（参加者同士の交流にご活用ください）</span>
-    <span class="en">Copies a 📣 Shoutout / 🚀 Raid command — paste it in your own chat to connect with fellow participants</span>
+    <span class="ja">📺 で配信のサムネイルを表示、📣 Shoutout ／ 🚀 Raid のコマンドをコピーします（参加者同士の交流にご活用ください）</span>
+    <span class="en">📺 shows a stream preview; 📣 Shoutout / 🚀 Raid copies the command — paste it in your own chat to connect with fellow participants</span>
   </p>
   <div class="nowlive-scrollwrap">
     <div class="nowlive-scroll"><div class="nowlive-list" id="nowlive-list"><!-- JS生成 --></div></div>
@@ -371,10 +371,67 @@
       nowliveScrollEl.scrollTop + nowliveScrollEl.clientHeight >= nowliveScrollEl.scrollHeight - 4;
   });
 
-  // コマンドコピー（📣 /shoutout・🚀 /raid）。行は増える可能性があるのでイベント委譲。
+  // ---- サムネイル（📺）----
+  // 押した行の下に重ねて出す（行は崩さない）。同時に出すのは 1 枚だけ。
+  // 一覧はスクロール枠（.nowlive-scroll）の中なので、枠に切られないよう外側の
+  // .nowlive-scrollwrap に置いて座標で合わせる。
+  // 画像は押した時だけ読む。?t= は 5 分単位で変わる値＝Twitch 側の更新間隔（約5分）と
+  // 同じ粒度にして、5 分以内の開き直しはブラウザキャッシュで済ませる。
+  var THUMB_RE = /^https:\/\/static-cdn\.jtvnw\.net\/[^\s"'<>]+$/;
+  var peekPop = document.createElement('a');
+  peekPop.className = 'nowlive-peek-pop';
+  peekPop.target = '_blank';
+  peekPop.rel = 'noopener';
+  peekPop.hidden = true;
+  peekPop.innerHTML = '<img alt="">' +
+    '<span class="nowlive-peek-err">' +
+      bi('サムネイルを取得できませんでした', 'Preview unavailable') + '</span>';
+  var peekImg = peekPop.firstChild;
+  peekImg.addEventListener('error', function () { peekPop.classList.add('is-error'); });
+  nowliveScrollEl.parentNode.appendChild(peekPop);
+  var peekBtn = null; // 今サムネを開いている 📺 ボタン
+
+  function closePeek() {
+    if (!peekBtn) return;
+    peekBtn.classList.remove('is-open');
+    peekBtn.setAttribute('aria-expanded', 'false');
+    peekBtn = null;
+    peekPop.hidden = true;
+    peekImg.removeAttribute('src');
+  }
+  function openPeek(btn) {
+    closePeek();
+    var row = btn.closest('.nowlive-row');
+    var wrapRect = nowliveScrollEl.parentNode.getBoundingClientRect();
+    peekPop.style.top = (row.getBoundingClientRect().bottom - wrapRect.top + 4) + 'px';
+    peekPop.href = btn.getAttribute('data-url');
+    peekPop.classList.remove('is-error');
+    peekImg.src = btn.getAttribute('data-thumb') + '?t=' + Math.floor(Date.now() / 300000);
+    peekPop.hidden = false;
+    btn.classList.add('is-open');
+    btn.setAttribute('aria-expanded', 'true');
+    peekBtn = btn;
+  }
+  // 外側タップ・一覧スクロール・画面サイズ変更・Esc で閉じる
+  document.addEventListener('click', function (e) {
+    if (!peekBtn || !e.target.closest) return;
+    if (e.target.closest('.nowlive-peek') || e.target.closest('.nowlive-peek-pop')) return;
+    closePeek();
+  });
+  nowliveScrollEl.addEventListener('scroll', closePeek);
+  window.addEventListener('resize', closePeek);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePeek();
+  });
+
+  // コマンドコピー（📣 /shoutout・🚀 /raid）とサムネ（📺）。行は増える可能性があるのでイベント委譲。
   nowliveList.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.nowlive-btn') : null;
     if (!btn || !nowliveList.contains(btn)) return;
+    if (btn.classList.contains('nowlive-peek')) {
+      if (peekBtn === btn) closePeek(); else openPeek(btn);
+      return;
+    }
     var cmd = btn.getAttribute('data-cmd') || '';
     if (!cmd) return;
     copyText(cmd).then(function (ok) {
@@ -418,10 +475,11 @@
   // 注意書きは配信者ゼロでも出して、コマンドコピー機能があることを告知する（公募期間向け）
   var NOWLIVE_HINT_LIVE = nowliveHint.innerHTML;
   var NOWLIVE_HINT_EMPTY = bi(
-    '参加者が配信を始めるとここに表示され、📣 Shoutout ／ 🚀 Raid のコマンドをワンクリックでコピーできます',
-    'Participants appear here when they go live — copy a 📣 Shoutout / 🚀 Raid command in one click');
+    '参加者が配信を始めるとここに表示され、📺 でサムネイル表示、📣 Shoutout ／ 🚀 Raid のコマンドをワンクリックでコピーできます',
+    'Participants appear here when they go live — 📺 to preview, copy a 📣 Shoutout / 🚀 Raid command in one click');
 
   function renderNowLive(live) {
+    closePeek();
     nowliveEl.hidden = false;
     nowliveHint.hidden = false;
     if (!live.length) {
@@ -454,9 +512,16 @@
       // 2行目は配信タイトルを素のまま（記号除去はしない＝【】が残る等の事故を避ける）。
       // 1行に収めて末尾を「…」にするのは CSS（.nowlive-rowtitle）
       var title = String(s.title || '').trim();
+      // サムネ URL は GAS の thumb を優先。古いキャッシュ等で無い時は helix と同じ形式で組み立てる
+      var thumb = THUMB_RE.test(s.thumb || '')
+        ? s.thumb
+        : 'https://static-cdn.jtvnw.net/previews-ttv/live_user_' + login + '-320x180.jpg';
       // 配信者向けコマンド。login は LOGIN_RE を通っているので data-cmd に安全に埋め込める
       var actions = valid
         ? '<span class="nowlive-actions">' +
+            '<button type="button" class="nowlive-btn nowlive-peek" data-thumb="' + esc(thumb) + '" ' +
+              'data-url="' + url + '" aria-expanded="false" title="サムネイルを表示" aria-label="' +
+              name + ' の配信サムネイルを表示">📺</button>' +
             '<button type="button" class="nowlive-btn" data-cmd="/shoutout ' + login + '" ' +
               'title="/shoutout ' + login + ' をコピー" aria-label="' +
               name + ' の shoutout コマンドをコピー">📣</button>' +

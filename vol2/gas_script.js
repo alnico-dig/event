@@ -244,6 +244,8 @@ function handleNowLive() {
               name: info.name || s.user_name || lg,
               icon: info.icon || '',
               title: String(s.title || ''),
+              // 📺 ボタン押下時だけ読むサムネ。サイズは表示と同じ 320x180 に確定させて返す
+              thumb: String(s.thumbnail_url || '').replace('{width}x{height}', '320x180'),
             };
           });
       } else {

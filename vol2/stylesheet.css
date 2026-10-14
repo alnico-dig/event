@@ -1216,10 +1216,41 @@ a.nowlive-rowname:hover { text-decoration: underline; }
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .nowlive-btn:hover { background: #eaf6ff; }
-.nowlive-btn.copied {
+.nowlive-btn.copied,
+.nowlive-btn.is-open {
   background: #1f7dff;
   border-color: #1f7dff;
   color: #fff;
+}
+
+/* 📺 で出すサムネ。押した行の直下に重ねる（top は JS が設定）。1 枚だけ */
+.nowlive-peek-pop {
+  position: absolute;
+  right: 0;
+  z-index: 5;                       /* スケジュール表の sticky 見出し（z-index: 2）より上 */
+  width: min(320px, 100%);
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #cfe6ff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.nowlive-peek-pop[hidden] { display: none; }
+.nowlive-peek-pop img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;             /* 読み込み前から枠の大きさを確保 */
+  border-radius: 7px;
+  background: #cfe6ff;
+}
+.nowlive-peek-err { display: none; }
+.nowlive-peek-pop.is-error img { display: none; }
+.nowlive-peek-pop.is-error .nowlive-peek-err {
+  display: block;
+  padding: 16px 8px;
+  font-size: 13px;
+  color: #999;
+  text-align: center;
 }
 .nowlive-rowtitle {
   display: block;
