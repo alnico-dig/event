@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight vol.2 - DIG Selection</title>
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="description" content="#DIGspotlight vol.2 DIG Selection：配信するゲームに迷ったときのおすすめタイトル一覧">
+
+<!-- 言語のちらつき防止：スタイル適用前に保存済みの言語を反映（index.html と共有） -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
+<link rel="stylesheet" href="stylesheet.css">
+<!-- CSVパーサー（data/selection.csv） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+
+<body>
+<header class="site-nav">
+  <div class="site-nav-inner">
+    <div class="nav-brand">
+      <a class="nav-logo" href="index.html">#DIGspotlight</a>
+      <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html#about"><span class="ja">概要</span><span class="en">About</span></a>
+      <a href="index.html#rules"><span class="ja">ルール</span><span class="en">Rules</span></a>
+      <a href="index.html#notice"><span class="ja">留意事項</span><span class="en">Notes</span></a>
+      <a href="index.html#streams"><span class="ja">参加タイトル一覧</span><span class="en">Titles</span></a>
+      <a href="index.html#assets"><span class="ja">アセット</span><span class="en">Assets</span></a>
+      <a href="schedule.html"><span class="ja">スケジュール</span><span class="en">Schedule</span></a>
+      <a class="nav-prev" href="../vol1/"><span class="ja">前回(vol.1)</span><span class="en">vol.1</span></a>
+    </nav>
+    <div class="nav-actions">
+      <a href="register.html" class="nav-cta"><span class="ja">応募する</span><span class="en">Apply</span></a>
+      <a href="edit.html" class="nav-cta-outline"><span class="ja">編集する</span><span class="en">Edit</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="mini-hero"></div>
+
+<h2 class="section-title">DIG Selection</h2>
+<p class="selection-note">
+  <span class="ja">どのゲームを配信するか迷ったら、こちらからもどうぞ。<br>紹介文は各ストアページの情報をもとにした要約です。</span>
+  <span class="en">Not sure what to stream? Here are some picks.<br>Descriptions are short summaries based on each Steam store page.</span>
+</p>
+
+<div class="sel-tools">
+  <input type="search" id="sel-search" class="sel-search" autocomplete="off" placeholder="タイトル・タグ・紹介文で検索 / Search">
+  <div class="sel-status" id="sel-status" aria-live="polite"></div>
+</div>
+
+<div id="selection-loading" class="list-loading">Loading…</div>
+<div class="sel-grid" id="sel-grid"><!-- JS生成 --></div>
+
+<div class="back-link-row">
+  <a href="index.html#rules" class="back-link"><span class="ja">← 参加ルールへ戻る</span><span class="en">← Back to the rules</span></a>
+</div>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico</a>
+</footer>
+
+<script>
+/* ===== DIG Selection 一覧 =====
+   data/selection.csv（Title,Steam,HeaderImage,Tags,TagsEn,Summary,SummaryEn）を読む。
+   - HeaderImage は任意。空なら AppID から Steam CDN の header.jpg（既定版＝多くは英語）を組み立てる。
+     日本語版ヘッダーがあるゲームと header.jpg が 404 になる新しめのゲーム（実画像はハッシュ入りパス）は
+     日本語ストアページの画像アドレスを HeaderImage に貼る。
+     ※ /apps/<id>/header_japanese.jpg を推測で読むのは不可：古い画像や別ゲームの画像が残っている例がある
+   - Tags / TagsEn は "/" 区切りで、同じ位置のタグが日英で対応する（絞り込みは英語側をキーにする）
+   - 並びは訪問ごとにシャッフル（特定のタイトルだけが常に上に来ないように） */
+(function () {
+  'use strict';
+
+  const grid = document.getElementById('sel-grid');
+  const loading = document.getElementById('selection-loading');
+  const search = document.getElementById('sel-search');
+  const status = document.getElementById('sel-status');
+
+  const escapeHtml = str => {
+    if (str == null) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  };
+  const safeUrl = url => /^https?:\/\//.test(url || '') ? url : '#';
+  const bi = (ja, en) => `<span class="ja">${escapeHtml(ja)}</span><span class="en">${escapeHtml(en)}</span>`;
+  const splitTags = v => String(v || '').split('/').map(s => s.trim()).filter(Boolean);
+  const appIdOf = url => (String(url || '').match(/app\/(\d+)/) || [])[1];
+
+  let items = [];
+  let activeTag = '';   // 英語側のタグ名（日英どちらで押しても同じキー）
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function toItem(row) {
+    const ja = splitTags(row.Tags);
+    const en = splitTags(row.TagsEn);
+    const appId = appIdOf(row.Steam);
+    return {
+      title: row.Title,
+      steam: safeUrl(row.Steam),
+      header: row.HeaderImage || (appId ? `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg` : ''),
+      // 日英の数がずれていても落ちないよう、無い側は反対側の表記で埋める
+      tags: Array.from({ length: Math.max(ja.length, en.length) }, (_, i) => ({ ja: ja[i] || en[i], en: en[i] || ja[i] })),
+      summary: row.Summary || '',
+      summaryEn: row.SummaryEn || row.Summary || '',
+    };
+  }
+
+  function cardHtml(it) {
+    const tags = it.tags.map(t =>
+      `<button type="button" class="sel-tag${t.en === activeTag ? ' active' : ''}" data-tag="${escapeHtml(t.en)}">${bi(t.ja, t.en)}</button>`
+    ).join('');
+    return `
+      <article class="sel-card">
+        <a href="${escapeHtml(it.steam)}" target="_blank" rel="noopener" class="sel-img-link">
+          <img src="${escapeHtml(it.header)}" class="sel-img" loading="lazy" alt=""
+            onerror="this.onerror=null;this.src='https://placehold.co/460x215?text=%23DIGspotlight'">
+        </a>
+        <div class="sel-body">
+          <h3 class="sel-title"><a href="${escapeHtml(it.steam)}" target="_blank" rel="noopener">${escapeHtml(it.title)}</a></h3>
+          ${tags ? `<div class="sel-tags">${tags}</div>` : ''}
+          ${it.summary ? `<p class="sel-summary">${bi(it.summary, it.summaryEn)}</p>` : ''}
+        </div>
+      </article>`;
+  }
+
+  function matches(it, q) {
+    if (activeTag && !it.tags.some(t => t.en === activeTag)) return false;
+    if (!q) return true;
+    const hay = [it.title, it.summary, it.summaryEn, ...it.tags.map(t => t.ja + ' ' + t.en)].join(' ').toLowerCase();
+    return q.split(/\s+/).every(w => hay.includes(w));
+  }
+
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    const shown = items.filter(it => matches(it, q));
+    grid.innerHTML = shown.length
+      ? shown.map(cardHtml).join('')
+      : `<div class="list-loading sel-empty">${bi('条件に合うタイトルはありません。', 'No titles match.')}</div>`;
+
+    const tag = activeTag ? items.flatMap(it => it.tags).find(t => t.en === activeTag) : null;
+    status.innerHTML =
+      (tag ? `<button type="button" class="sel-tag active sel-clear" data-tag="">${bi(tag.ja, tag.en)} ✕</button> ` : '') +
+      bi(`${shown.length} / ${items.length} タイトル`, `${shown.length} / ${items.length} titles`);
+  }
+
+  // タグ（カード内・絞り込み中表示）を押したら絞り込み／同じタグをもう一度押したら解除
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.sel-tag');
+    if (!btn) return;
+    const tag = btn.dataset.tag;
+    activeTag = (tag && tag !== activeTag) ? tag : '';
+    render();
+    if (activeTag) window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  search.addEventListener('input', render);
+
+  Papa.parse('data/selection.csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: result => {
+      items = shuffle(result.data.filter(d => d.Title && d.Steam).map(toItem));
+      if (!items.length) {
+        loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+        return;
+      }
+      loading.style.display = 'none';
+      render();
+    },
+    error: err => {
+      console.error('selection.csv の取得に失敗:', err);
+      loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+    }
+  });
+
+  // ---- 言語切替（index.html と同じ方式・localStorage共有） ----
+  (function () {
+    const KEY = 'digspotlight-lang';
+    const btn = document.getElementById('lang-toggle');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+    }
+    let saved = 'ja';
+    try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+      apply(next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+    });
+  })();
+})();
+</script>
+</body>
+</html>

@@ -805,120 +805,122 @@ a:hover {
   margin-left: 6px;
 }
 
-/* DIG Selection（主催おすすめのカルーセル） */
+/* DIG Selection（selection.html：主催おすすめタイトルの一覧） */
 .selection-note {
   text-align: center;
   font-size: 14px;
   color: #555;
-  margin: 10px 0;
+  margin: 10px 16px;
+  line-height: 1.6;
 }
 
-.dig-selection {
-  max-width: 900px;
-  margin: 20px auto 40px;
+/* index.html の DIG Selection への入口（旧カルーセルの位置） */
+.selection-entry {
+  text-align: center;
+  margin: 10px 16px 40px;
+}
+
+.sel-tools {
+  max-width: 1040px;
+  margin: 14px auto 0;
   padding: 0 16px;
-}
-
-.carousel {
-  position: relative;
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.carousel-track {
-  position: relative;
-  min-height: 320px;
-  overflow: hidden;
-}
-
-.carousel-item {
-  position: absolute;
-  inset: 0 auto auto 0;
-  width: 100%;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
-  opacity: 0;
-  transform: translateX(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  pointer-events: none;
-  z-index: 0;
+  gap: 8px 14px;
 }
 
-.carousel-item.active {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-  z-index: 1;
+.sel-search {
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  font-size: 14px;
+  background: #fff;
+}
+.sel-search:focus { outline: none; border-color: #7dbfff; box-shadow: 0 0 0 3px #eaf3ff; }
+
+.sel-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #777;
 }
 
-.selection-card {
+.sel-grid {
+  max-width: 1040px;
+  margin: 16px auto 0;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.sel-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-  background: white;
-  border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  background: #fff;
   border: 1px solid #eee;
-  max-width: 520px;
-  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.selection-img {
+.sel-img {
   display: block;
   width: 100%;
-  max-width: 460px;
   height: auto;
   aspect-ratio: 460 / 215;
   object-fit: cover;
-  border-radius: 8px;
+  background: #eef2f7;
 }
 
-.selection-title {
+.sel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.sel-title {
   margin: 0;
-  font-size: 16px;
-}
-
-.selection-title a {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 15px;
   line-height: 1.4;
-  max-height: calc(1.4em * 2);
+}
+.sel-title a { color: #223b64; }
+
+.sel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.carousel-nav {
-  position: absolute;
-  top: 45%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid #ddd;
-  background: white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.sel-tag {
+  padding: 3px 9px;
+  border: 1px solid #d6e6fb;
+  border-radius: 999px;
+  background: #f3f8ff;
+  color: #3f6091;
+  font-size: 11.5px;
+  line-height: 1.4;
   cursor: pointer;
-  z-index: 10;
-  opacity: 0.7;
+}
+.sel-tag:hover { border-color: #7dbfff; }
+.sel-tag.active { background: #1f7dff; border-color: #1f7dff; color: #fff; }
+
+.sel-summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #555;
 }
 
-.carousel-prev { left: -8px; }
-.carousel-next { right: -8px; }
-
-.carousel-nav:hover {
-  background: #eaf3ff;
-  opacity: 1;
-}
-
-#carousel-index {
-  text-align: center;
-  font-size: 12px;
-  color: #777;
-  margin-bottom: 6px;
-}
+.sel-empty { grid-column: 1 / -1; }
 
 #list-loading,
 #selection-loading,
