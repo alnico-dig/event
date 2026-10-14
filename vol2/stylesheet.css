@@ -852,7 +852,7 @@ a:hover {
   color: #8aa0bf;
 }
 
-/* ジャンルごとの帯（横スクロール） */
+/* ジャンルごとの帯（PCはグリッド・スマホは横スワイプ） */
 .sel-bands {
   max-width: 1040px;
   margin: 8px auto 0;
@@ -865,56 +865,34 @@ a:hover {
   scroll-margin-top: calc(var(--nav-h, 60px) + 12px);
 }
 
-.sel-band-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .sel-band-title {
-  margin: 0;
+  margin: 0 0 10px;
   font-size: 17px;
   color: #223b64;
 }
 
-.sel-band-arrows { display: flex; gap: 6px; }
-.sel-band.no-scroll .sel-band-arrows { display: none; }
-
-.sel-arrow {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #3f6091;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-.sel-arrow:hover:not(:disabled) { background: #eaf3ff; border-color: #7dbfff; }
-.sel-arrow:disabled { opacity: 0.35; cursor: default; }
-
+/* PC・タブレット：帯の中は折り返しのグリッド（PC幅で3列） */
 .sel-strip {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 260px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  /* カードの影が切れないよう少し余白を持たせる */
-  padding: 2px 2px 12px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #c9d8ec transparent;
 }
-.sel-strip > .sel-card { scroll-snap-align: start; }
 
+/* スマホ：帯ごとに横スワイプ（次のカードが少し見えて、続きがあると分かる） */
 @media (max-width: 600px) {
-  .sel-strip { grid-auto-columns: 78%; }
-  /* スマホはスワイプで送るので矢印は出さない */
-  .sel-band-arrows { display: none; }
+  .sel-strip {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* カードの影が切れないよう少し余白を持たせる */
+    padding: 2px 2px 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #c9d8ec transparent;
+  }
+  .sel-strip > .sel-card { scroll-snap-align: start; }
 }
 @media (max-width: 360px) {
   /* 小さい端末ではカードを広げてタグ3つが1行に入る幅を確保する */

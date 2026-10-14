@@ -63,7 +63,7 @@
 <script>
 /* ===== DIG Selection 一覧 =====
    data/selection.csv（Title,Steam,HeaderImage,Genre,Tags,TagsEn,Summary,SummaryEn）を読み、
-   Genre ごとの帯（横スクロール）に並べる。帯の中は CSV の順番（＝おすすめ順）のまま。
+   Genre ごとの帯（PCは折り返しのグリッド・スマホは横スワイプ。切替は CSS 側）に並べる。帯の中は CSV の順番（＝おすすめ順）のまま。
    - Genre は下の GENRES の ja と同じ文字列を入れる。未知・空欄のジャンルは最後の「その他」帯へ
    - HeaderImage は任意。空なら AppID から Steam CDN の header.jpg（既定版＝多くは英語）を組み立てる。
      日本語版ヘッダーがあるゲームと header.jpg が 404 になる新しめのゲーム（実画像はハッシュ入りパス）は
@@ -148,36 +148,9 @@
 
     bandsEl.innerHTML = bands.map(b => `
       <section class="sel-band" id="${b.id}">
-        <div class="sel-band-head">
-          <h3 class="sel-band-title">${b.g.icon} ${bi(b.g.ja, b.g.en)}<span class="sel-genre-count">${b.list.length}</span></h3>
-          <div class="sel-band-arrows">
-            <button type="button" class="sel-arrow" data-dir="-1" aria-label="Previous">‹</button>
-            <button type="button" class="sel-arrow" data-dir="1" aria-label="Next">›</button>
-          </div>
-        </div>
+        <h3 class="sel-band-title">${b.g.icon} ${bi(b.g.ja, b.g.en)}<span class="sel-genre-count">${b.list.length}</span></h3>
         <div class="sel-strip">${b.list.map(cardHtml).join('')}</div>
       </section>`).join('');
-
-    bandsEl.querySelectorAll('.sel-band').forEach(band => {
-      const strip = band.querySelector('.sel-strip');
-      const [prev, next] = band.querySelectorAll('.sel-arrow');
-      // 端に来たら矢印を薄くする。全部見えている帯は矢印ごと隠す
-      const update = () => {
-        const max = strip.scrollWidth - strip.clientWidth;
-        // スナップや余白で数px ずれるので少し余裕を持たせて判定する
-        band.classList.toggle('no-scroll', max <= 4);
-        prev.disabled = strip.scrollLeft <= 4;
-        next.disabled = strip.scrollLeft >= max - 4;
-      };
-      band.querySelectorAll('.sel-arrow').forEach(btn => btn.addEventListener('click', () => {
-        const card = strip.querySelector('.sel-card');
-        const step = card ? card.getBoundingClientRect().width + 16 : strip.clientWidth * 0.8;
-        strip.scrollBy({ left: step * Number(btn.dataset.dir), behavior: 'smooth' });
-      }));
-      strip.addEventListener('scroll', update, { passive: true });
-      window.addEventListener('resize', update);
-      update();
-    });
   }
 
   // ジャンルへのジャンプ位置を固定ナビの高さ分ずらすため、ナビの実測値を --nav-h に入れる
