@@ -2,6 +2,8 @@
 *.html  text eol=crlf
 *.css   text eol=crlf
 *.js    text eol=crlf
+*.py    text eol=crlf
+*.bat   text eol=crlf
 
 # アーカイブのデータスナップショットはバイト単位で凍結する（改行変換しない）
 vol1/data/*.csv -text

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#DIGspotlight Archive</title>
+<link rel="icon" href="../vol2/favicon.png">
+<link rel="apple-touch-icon" href="../vol2/favicon.png">
+<meta name="description" content="#DIGspotlight でこれまでに配信されたゲームの記録 / Every game streamed at #DIGspotlight so far.">
+
+<!-- OGP：画像は vol2 と共通 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="#DIGspotlight">
+<meta property="og:url" content="https://alnico-dig.github.io/event/archive/">
+<meta property="og:title" content="#DIGspotlight Archive">
+<meta property="og:description" content="#DIGspotlight でこれまでに配信されたゲームの記録 / Every game streamed at #DIGspotlight so far.">
+<meta property="og:image" content="https://alnico-dig.github.io/event/vol2/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@alnico_ow">
+<meta name="twitter:title" content="#DIGspotlight Archive">
+<meta name="twitter:description" content="#DIGspotlight でこれまでに配信されたゲームの記録 / Every game streamed at #DIGspotlight so far.">
+<meta name="twitter:image" content="https://alnico-dig.github.io/event/vol2/ogp.jpg">
+
+<!-- 言語のちらつき防止（各回のページと localStorage を共有） -->
+<script>try{var l=localStorage.getItem('digspotlight-lang');if(l==='en')document.documentElement.lang='en';}catch(e){}</script>
+
+<link rel="stylesheet" href="../vol2/stylesheet.css">
+<!-- CSVパーサー（data/games.csv） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  .arc-search-row { max-width: 1040px; margin: 14px auto 0; padding: 0 16px; text-align: center; }
+  .arc-search {
+    width: 100%; max-width: 420px; box-sizing: border-box;
+    padding: 9px 14px; border: 1px solid #cfe0f5; border-radius: 999px;
+    font-size: 14px; background: #fff;
+  }
+  .arc-search:focus { outline: none; border-color: #1f7dff; box-shadow: 0 0 0 3px rgba(31, 125, 255, 0.15); }
+  .arc-empty { text-align: center; color: #6a7c96; font-size: 14px; margin: 24px 0; }
+
+  .arc-band-sub { font-size: 12px; font-weight: 400; color: rgba(255, 255, 255, 0.8); margin-left: 8px; }
+  .arc-band-link { flex-shrink: 0; font-size: 12px; color: rgba(255, 255, 255, 0.9); }
+  .arc-band-link:hover { color: #fff; text-decoration: underline; }
+
+  .arc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .arc-dev { margin: 0; font-size: 12px; color: #6a7c96; }
+  .arc-streamers { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: auto; padding-top: 4px; }
+  .arc-streamer {
+    padding: 2px 9px; border-radius: 999px;
+    background: #eaf3ff; color: #1f5fbf; font-size: 12px; line-height: 1.6;
+  }
+  .arc-streamer:hover { background: #d6e8ff; text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .arc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .arc-grid .sel-body { padding: 8px 9px 10px; gap: 4px; }
+    .arc-grid .sel-title { font-size: 13px; }
+    .arc-band-sub { display: block; margin-left: 0; }
+    /* 見出しが「ゲー／ム」で折り返さないよう、スマホでは飾り線を短くして1行に収める */
+    .section-title { gap: 8px; font-size: 18px; white-space: nowrap; }
+    .section-title::before, .section-title::after { width: 20px; }
+  }
+</style>
+</head>
+
+<body>
+<header class="site-nav">
+  <div class="site-nav-inner">
+    <div class="nav-brand">
+      <a class="nav-logo" href="../">#DIGspotlight</a>
+      <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Switch language">EN</button>
+    </div>
+    <nav class="nav-links" id="vol-links"><!-- JS生成：各回へのジャンプ --></nav>
+  </div>
+</header>
+
+<div class="mini-hero"></div>
+
+<h2 class="section-title">
+  <span class="ja">これまでに配信されたゲーム</span><span class="en">Games streamed so far</span>
+</h2>
+<p class="selection-note">
+  <span class="ja">#DIGspotlight で配信されたゲームの記録です。<br>掲載内容について気になる点があれば <a href="https://x.com/alnico_ow" target="_blank" rel="noopener">@alnico_ow</a> までお知らせください。</span>
+  <span class="en">A record of every game streamed at #DIGspotlight.<br>If you'd like anything changed or removed, let us know at <a href="https://x.com/alnico_ow" target="_blank" rel="noopener">@alnico_ow</a>.</span>
+</p>
+
+<div class="arc-search-row">
+  <input type="search" id="arc-search" class="arc-search" autocomplete="off"
+    placeholder="ゲーム名・デベロッパー・配信者で絞り込み" data-ph-ja="ゲーム名・デベロッパー・配信者で絞り込み" data-ph-en="Filter by game, developer or streamer">
+</div>
+
+<div id="arc-loading" class="list-loading">Loading…</div>
+<div class="sel-bands" id="arc-bands"><!-- JS生成：回ごとの帯 --></div>
+<p class="arc-empty" id="arc-empty" hidden><span class="ja">該当するゲームがありません</span><span class="en">No matches</span></p>
+
+<footer class="footer">
+  ©2026 <a href="https://www.twitch.tv/alnico_gamenews" target="_blank">alnico</a>
+</footer>
+
+<script>
+/* ===== アーカイブ一覧 =====
+   data/games.csv（Vol,AppId,Title,Developer,Streamer,TwitchLogin・1行＝配信者×ゲーム）を読み、
+   回ごとの帯にゲーム1本＝カード1枚でまとめて並べる。CSV と images/ は update_archive.bat で作り直す。
+   新しい回を足すときは下の VOLS と build_archive.py の VOLS にそれぞれ1行足す */
+(function () {
+  'use strict';
+
+  const VOLS = {
+    2: { date: '2026.12.18–20', url: '../vol2/' },
+    1: { date: '2026.6.19–21', url: '../vol1/' },
+  };
+
+  const bandsEl = document.getElementById('arc-bands');
+  const linksEl = document.getElementById('vol-links');
+  const loading = document.getElementById('arc-loading');
+  const emptyEl = document.getElementById('arc-empty');
+  const search = document.getElementById('arc-search');
+
+  const escapeHtml = str => {
+    if (str == null) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  };
+  const bi = (ja, en) => `<span class="ja">${escapeHtml(ja)}</span><span class="en">${escapeHtml(en)}</span>`;
+  const LOGIN_RE = /^[a-z0-9_]{1,25}$/;
+
+  // 1行＝配信者×ゲーム → 回ごと・ゲームごとにまとめる
+  function group(rows) {
+    const vols = new Map();
+    rows.forEach(r => {
+      if (!/^\d+$/.test(r.AppId || '') || !/^\d+$/.test(r.Vol || '')) return;
+      if (!vols.has(r.Vol)) vols.set(r.Vol, new Map());
+      const games = vols.get(r.Vol);
+      if (!games.has(r.AppId)) {
+        games.set(r.AppId, { appId: r.AppId, title: r.Title || r.AppId, dev: r.Developer || '', streamers: [] });
+      }
+      if (LOGIN_RE.test(r.TwitchLogin || '')) {
+        games.get(r.AppId).streamers.push({ login: r.TwitchLogin, name: r.Streamer || r.TwitchLogin });
+      }
+    });
+    return [...vols.entries()]
+      .sort((a, b) => b[0] - a[0])
+      .map(([vol, games]) => {
+        const list = [...games.values()].sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+        list.forEach(g => {
+          g.streamers.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+          g.haystack = [g.title, g.dev, ...g.streamers.flatMap(s => [s.name, s.login])].join('\n').toLowerCase();
+        });
+        const people = new Set(list.flatMap(g => g.streamers.map(s => s.login)));
+        return { vol, list, people: people.size };
+      });
+  }
+
+  function cardHtml(g) {
+    const steam = `https://store.steampowered.com/app/${g.appId}/`;
+    const streamers = g.streamers.map(s =>
+      `<a class="arc-streamer" href="https://www.twitch.tv/${s.login}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a>`
+    ).join('');
+    return `
+      <article class="sel-card" data-hay="${escapeHtml(g.haystack)}">
+        <a href="${steam}" target="_blank" rel="noopener" class="sel-img-link">
+          <img src="images/${g.appId}.jpg" class="sel-img" loading="lazy" alt=""
+            onerror="this.onerror=null;this.src='https://placehold.co/460x215?text=%23DIGspotlight'">
+        </a>
+        <div class="sel-body">
+          <h4 class="sel-title"><a href="${steam}" target="_blank" rel="noopener">${escapeHtml(g.title)}</a></h4>
+          ${g.dev ? `<p class="arc-dev">${escapeHtml(g.dev)}</p>` : ''}
+          <div class="arc-streamers">${streamers}</div>
+        </div>
+      </article>`;
+  }
+
+  function render(vols) {
+    linksEl.innerHTML = vols.map(v => `<a href="#vol${v.vol}">vol.${v.vol}</a>`).join('');
+    bandsEl.innerHTML = vols.map(v => {
+      const meta = VOLS[v.vol] || {};
+      return `
+      <section class="sel-band" id="vol${v.vol}">
+        <div class="sel-band-head">
+          <h3 class="sel-band-title">vol.${v.vol}<span class="arc-band-sub">${escapeHtml(meta.date || '')}
+            · ${bi(`${v.list.length}タイトル / ${v.people}名`, `${v.list.length} titles / ${v.people} streamers`)}</span></h3>
+          ${meta.url ? `<a class="arc-band-link" href="${meta.url}">${bi('イベントページ →', 'Event page →')}</a>` : ''}
+        </div>
+        <div class="arc-grid">${v.list.map(cardHtml).join('')}</div>
+      </section>`;
+    }).join('');
+  }
+
+  function applyFilter() {
+    const q = search.value.trim().toLowerCase();
+    let any = false;
+    bandsEl.querySelectorAll('.sel-band').forEach(band => {
+      let shown = 0;
+      band.querySelectorAll('.sel-card').forEach(card => {
+        const hit = !q || card.dataset.hay.includes(q);
+        card.hidden = !hit;
+        if (hit) shown++;
+      });
+      band.hidden = !shown;
+      if (shown) any = true;
+    });
+    emptyEl.hidden = any;
+  }
+  search.addEventListener('input', applyFilter);
+
+  // 回へのジャンプ位置を固定ナビの高さ分ずらすため、ナビの実測値を --nav-h に入れる
+  function syncNavHeight() {
+    const nav = document.querySelector('.site-nav');
+    if (nav) document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+  }
+  syncNavHeight();
+  if (window.ResizeObserver) new ResizeObserver(syncNavHeight).observe(document.querySelector('.site-nav'));
+  else window.addEventListener('resize', syncNavHeight);
+
+  Papa.parse('data/games.csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: result => {
+      const vols = group(result.data);
+      if (!vols.length) {
+        loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+        return;
+      }
+      loading.style.display = 'none';
+      render(vols);
+      applyFilter(); // 戻る操作などで検索欄に文字が残っている場合
+    },
+    error: err => {
+      console.error('games.csv の取得に失敗:', err);
+      loading.innerHTML = bi('読み込みに失敗しました。', 'Failed to load.');
+    }
+  });
+
+  // ---- 言語切替（各回のページと同じ方式・localStorage共有） ----
+  (function () {
+    const KEY = 'digspotlight-lang';
+    const btn = document.getElementById('lang-toggle');
+    function apply(lang) {
+      document.documentElement.lang = lang;
+      btn.textContent = lang === 'ja' ? 'EN' : '日本語';
+      search.placeholder = search.dataset[lang === 'ja' ? 'phJa' : 'phEn'];
+    }
+    let saved = 'ja';
+    try { saved = localStorage.getItem(KEY) || 'ja'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.lang === 'ja' ? 'en' : 'ja';
+      apply(next);
+      syncNavHeight();
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+    });
+  })();
+})();
+</script>
+</body>
+</html>
