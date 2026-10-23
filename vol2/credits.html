@@ -57,7 +57,7 @@ body {
 .game-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 24px 20px;
   justify-content: center;
   max-width: 800px;
 }
@@ -67,13 +67,27 @@ body {
 }
 
 .game-item img {
+  display: block;
   width: 100%;
+  aspect-ratio: 460 / 215;
+  object-fit: cover;
   border-radius: 6px;
 }
 
 .game-title {
-  font-size: 16px;
-  opacity: 0.8;
+  margin-top: 8px;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.35;
+  opacity: 0.92;
+}
+
+.game-developer {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
 }
 
 .scroll {
@@ -169,11 +183,16 @@ function renderCredits(rows) {
 
     map[login].games.push({
       game: row.Game,
-      header: row.HeaderImage
+      header: row.HeaderImage,
+      developer: row.Developer
     });
   });
 
-  const grouped = Object.values(map);
+  // 配信者名順（大文字小文字・全角半角・かなカナの違いは無視、数字は数値順）
+  const collator = new Intl.Collator("ja", { sensitivity: "base", numeric: true });
+  const grouped = Object.values(map).sort((a, b) =>
+    collator.compare(String(a.streamer || "").trim(), String(b.streamer || "").trim())
+  );
 
   // ===== 描画 =====
   grouped.forEach(user => {
@@ -192,11 +211,13 @@ function renderCredits(rows) {
 
     const gamesHTML = user.games.map(g => {
       const img = g.header || "";
+      const dev = String(g.developer || "").trim();
 
       return `
         <div class="game-item">
           <img src="${img}" onerror="this.style.display='none'">
           <div class="game-title">${escapeHtml(g.game)}</div>
+          ${dev ? `<div class="game-developer">${escapeHtml(dev)}</div>` : ""}
         </div>
       `;
     }).join("");

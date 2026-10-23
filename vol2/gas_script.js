@@ -109,8 +109,9 @@ function handleAppInfo(appId) {
 const PUBLIC_COLS = [
   'TwitchLogin', 'Streamer', 'TwitchUrl', 'IconUrl',
   'AppId', 'Game', 'SteamUrl', 'HeaderImage',
-  'Day1', 'Day2', 'Day3', 'DatesTBD', 'Comment', 'X'
-]; // Developer / TwitchId / Timestamp は返さない
+  'Day1', 'Day2', 'Day3', 'DatesTBD', 'Comment', 'X',
+  'Developer' // credits.html 用（Steam の公開情報）。既存列の後ろに追加
+]; // TwitchId / Timestamp は返さない
 
 function handlePublicList() {
   const cache = CacheService.getScriptCache();
@@ -137,7 +138,7 @@ function handlePublicList() {
 }
 
 // ---- 公開用スプレッドシートへの同期 ----
-// entries シート（非公開・TwitchId/Timestamp/Developerを含む）から PUBLIC_COLS だけを
+// entries シート（非公開・TwitchId/Timestampを含む）から PUBLIC_COLS だけを
 // 別スプレッドシート（publicSheetId・リンクを知っている全員が閲覧可）にミラーする。
 // index.html/schedule.html/credits.html はこちらを直CSVエクスポートで読むため GAS の
 // doGet実行やscript.google.com側のリダイレクトを経由せず、vol1時代と同じ速さ・安定性になる。
