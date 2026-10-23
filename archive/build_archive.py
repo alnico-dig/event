@@ -122,16 +122,18 @@ def fetch_steam_items(app_ids):
             print(f'  ! Steam 情報の取得に失敗（{len(chunk)}件）: {e}')
             continue
         for it in data.get('response', {}).get('store_items', []):
-            if it.get('success') != 1 or not it.get('name'):
+            # 先頭に空白が入った名前がある（例: " ニエンタム —…"）ので、並び順が狂わないよう削る
+            name = (it.get('name') or '').strip()
+            if it.get('success') != 1 or not name:
                 continue
             assets = it.get('assets') or {}
             header = ''
             if assets.get('asset_url_format') and assets.get('header'):
                 header = ('https://shared.akamai.steamstatic.com/store_item_assets/'
                           + assets['asset_url_format'].replace('${FILENAME}', assets['header']))
-            devs = [d.get('name', '') for d in (it.get('basic_info') or {}).get('developers', [])]
+            devs = [d.get('name', '').strip() for d in (it.get('basic_info') or {}).get('developers', [])]
             items[str(it['appid'])] = {
-                'name': it['name'],
+                'name': name,
                 'developer': ' / '.join(d for d in devs if d),
                 'header': header,
             }

@@ -137,7 +137,7 @@
       if (!vols.has(r.Vol)) vols.set(r.Vol, new Map());
       const games = vols.get(r.Vol);
       if (!games.has(r.AppId)) {
-        games.set(r.AppId, { appId: r.AppId, title: r.Title || r.AppId, dev: r.Developer || '', streamers: [] });
+        games.set(r.AppId, { appId: r.AppId, title: (r.Title || '').trim() || r.AppId, dev: (r.Developer || '').trim(), streamers: [] });
       }
       if (LOGIN_RE.test(r.TwitchLogin || '')) {
         games.get(r.AppId).streamers.push({ login: r.TwitchLogin, name: r.Streamer || r.TwitchLogin });
